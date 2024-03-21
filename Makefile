@@ -4,8 +4,15 @@ MAKEFLAGS += -rR
 
 CARGO ?= cargo
 
+DESTDIR=
+PREFIX=/usr/local
+BINDIR=$(PREFIX)/bin
+
 build:
 	$(CARGO) build
+
+clean:
+	$(CARGO) clean
 
 check:
 	$(CARGO) check
@@ -19,4 +26,13 @@ clippy:
 check-fmt:
 	$(CARGO) fmt --all -- --check
 
-.PHONY: build check test clippy check-fmt
+release:
+	$(CARGO) build --release
+
+install:
+	install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
+
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/dataset
+
+.PHONY: build clean check test clippy check-fmt release install uninstall
