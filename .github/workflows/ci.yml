@@ -19,6 +19,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: make check
 
+  dco:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-dco.sh
+
   test:
     name: test (${{ matrix.target.os }} - ${{ matrix.target.toolchain }})
     needs: check
