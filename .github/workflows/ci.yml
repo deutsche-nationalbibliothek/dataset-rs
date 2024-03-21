@@ -20,7 +20,7 @@ jobs:
       - run: make check
 
   test:
-    name: test ${{ matrix.target.os }} - ${{ matrix.target.toolchain }}
+    name: test (${{ matrix.target.os }} - ${{ matrix.target.toolchain }})
     needs: check
     strategy:
       matrix:
@@ -54,5 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
       - uses: Swatinem/rust-cache@v2
       - run: make check-fmt
