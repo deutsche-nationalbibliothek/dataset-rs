@@ -3,4 +3,7 @@ CARGO ?= cargo
 check:
 	$(CARGO) check
 
-.PHONY: check
+test:
+	$(CARGO) test
+
+.PHONY: check test
