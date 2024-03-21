@@ -5,9 +5,14 @@ processing the Integrated Authority File (GND). These are developments
 to support the research work in the Automated Indexing System project of
 the [German National Library].
 
+[German National Library]: https://www.dnb.de
+
 The tools are not recommended for productive use; no support is
 provided.
 
-[German National Library]: https://www.dnb.de
 
+## License
 
+This project is licensed under the terms of the [MIT license].
+
+[MIT license]: ./LICENSE
