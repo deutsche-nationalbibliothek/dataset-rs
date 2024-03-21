@@ -41,7 +41,7 @@ jobs:
 
   clippy:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -50,7 +50,7 @@ jobs:
 
   fmt:
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: test
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
@@ -58,3 +58,12 @@ jobs:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
       - run: make check-fmt
+
+  dco:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/check-dco.sh
+
