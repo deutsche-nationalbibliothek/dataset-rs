@@ -12,6 +12,8 @@ provided.
 
 ## Installation
 
+This project's minimum supported `rustc` version is `1.77.0`.
+
 To install the `dataset` binary from source:
 
 ```console
