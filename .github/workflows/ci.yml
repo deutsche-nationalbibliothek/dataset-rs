@@ -20,7 +20,7 @@ jobs:
       - run: make check
 
   test:
-    name: test ${{ matrix.target.triple }} (${{ matrix.target.toolchain }})
+    name: test ${{ matrix.target.os }} - ${{ matrix.target.toolchain }}
     needs: check
     strategy:
       matrix:
@@ -38,3 +38,21 @@ jobs:
           targets: ${{ matrix.target.triple }}
       - uses: Swatinem/rust-cache@v2
       - run: make test
+
+  clippy:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: make clippy
+
+  fmt:
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: make check-fmt

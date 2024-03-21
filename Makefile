@@ -1,4 +1,11 @@
+.DEFAULT_GOAL := build
+
+MAKEFLAGS += -rR
+
 CARGO ?= cargo
+
+build:
+	$(CARGO) build
 
 check:
 	$(CARGO) check
@@ -6,4 +13,10 @@ check:
 test:
 	$(CARGO) test
 
-.PHONY: check test
+clippy:
+	$(CARGO) clippy
+
+check-fmt:
+	$(CARGO) fmt --all -- --check
+
+.PHONY: build check test clippy check-fmt
