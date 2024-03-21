@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-commits=$(git log --grep 'Signed-off-by: ' --invert-grep --format='%H')
+commits=$(git log origin/main \
+    --grep 'Signed-off-by: ' --invert-grep --format='%H')
 
 if [[ ! -z $commits ]]; then
     for commit in $commits; do
