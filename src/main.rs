@@ -1,4 +1,4 @@
-use std::process::{self};
+use std::process;
 
 use clap::Parser;
 use cli::Command;
@@ -7,7 +7,6 @@ use error::DatasetError;
 use rayon::ThreadPoolBuilder;
 
 use crate::cli::Args;
-use crate::commands::*;
 
 mod cli;
 mod commands;
@@ -21,8 +20,10 @@ fn num_threads(args: &Args) -> usize {
     }
 
     if let Ok(config) = Dataset::discover().and_then(|ds| ds.config()) {
-        if let Some(num_threads) = config.num_jobs {
-            return num_threads;
+        if let Some(runtime) = config.runtime {
+            if let Some(num_threads) = runtime.num_jobs {
+                return num_threads;
+            }
         }
     }
 
@@ -31,8 +32,9 @@ fn num_threads(args: &Args) -> usize {
 
 fn run(args: Args) -> Result<(), DatasetError> {
     match args.cmd {
-        Command::Init(args) => init::execute(args),
-        Command::Version(args) => version::execute(args),
+        Command::Init(args) => commands::init::execute(args),
+        Command::Config(args) => commands::config::execute(args),
+        Command::Version(args) => commands::version::execute(args),
     }
 }
 

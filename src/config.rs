@@ -28,10 +28,8 @@ pub(crate) struct Config {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub(crate) authors: Vec<String>,
 
-    /// Number of threads to use. If this options isn't set or a value
-    /// of "0" is chosen, the maximum number of available threads
-    /// is used.
-    pub(crate) num_jobs: Option<usize>,
+    /// Runtime options.
+    pub(crate) runtime: Option<Runtime>,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:
@@ -49,6 +47,14 @@ pub(crate) struct Config {
     __non_exhaustive: (),
 }
 
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub(crate) struct Runtime {
+    /// Number of threads to use. If this options isn't set or a value
+    /// of "0" is chosen, the maximum number of available threads
+    /// is used.
+    pub(crate) num_jobs: Option<usize>,
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -57,7 +63,7 @@ impl Default for Config {
             version: Version::new(0, 1, 0),
             description: None,
             authors: vec![],
-            num_jobs: None,
+            runtime: None,
             __non_exhaustive: (),
         }
     }
