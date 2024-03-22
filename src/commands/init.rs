@@ -82,10 +82,10 @@ pub(crate) fn execute(args: Init) -> Result<(), DatasetError> {
 
     if !config.exists() || args.force {
         let mut config = Config::create(config)?;
-        config.description = args.description;
-        config.authors = args.authors;
-        config.version = args.version;
-        config.name = args.name.unwrap_or(
+        config.metadata.description = args.description;
+        config.metadata.authors = args.authors;
+        config.metadata.version = args.version;
+        config.metadata.name = args.name.unwrap_or(
             root_dir
                 .file_name()
                 .and_then(OsStr::to_str)

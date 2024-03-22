@@ -8,25 +8,14 @@ use serde::{Deserialize, Serialize};
 use crate::error::DatasetError;
 
 /// Dataset manifest.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub(crate) struct Config {
     /// The path of the config.
     #[serde(skip)]
     path: PathBuf,
 
-    /// The name of the dataset.
-    pub(crate) name: String,
-
-    /// The version of the dataset.
-    pub(crate) version: Version,
-
-    /// A short blurb about the dataset.
-    pub(crate) description: Option<String>,
-
-    /// A list of people or organizations, which are considered as the
-    /// authors of the dataset.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub(crate) authors: Vec<String>,
+    /// Dataset metadata.
+    pub(crate) metadata: Metadata,
 
     /// Runtime options.
     pub(crate) runtime: Option<Runtime>,
@@ -47,26 +36,40 @@ pub(crate) struct Config {
     __non_exhaustive: (),
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct Metadata {
+    /// The name of the dataset.
+    pub(crate) name: String,
+
+    /// The version of the dataset.
+    pub(crate) version: Version,
+
+    /// A short blurb about the dataset.
+    pub(crate) description: Option<String>,
+
+    /// A list of people or organizations, which are considered as the
+    /// authors of the dataset.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) authors: Vec<String>,
+}
+
+impl Default for Metadata {
+    fn default() -> Self {
+        Self {
+            name: "".into(),
+            version: Version::new(0, 1, 0),
+            description: None,
+            authors: vec![],
+        }
+    }
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub(crate) struct Runtime {
     /// Number of threads to use. If this options isn't set or a value
     /// of "0" is chosen, the maximum number of available threads
     /// is used.
     pub(crate) num_jobs: Option<usize>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            path: PathBuf::default(),
-            name: "".into(),
-            version: Version::new(0, 1, 0),
-            description: None,
-            authors: vec![],
-            runtime: None,
-            __non_exhaustive: (),
-        }
-    }
 }
 
 impl Config {

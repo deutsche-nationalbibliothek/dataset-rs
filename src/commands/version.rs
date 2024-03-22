@@ -20,17 +20,17 @@ pub(crate) fn execute(args: Version) -> Result<(), DatasetError> {
     let mut config = dataset.config()?;
 
     if let Some(version) = args.version {
-        if !args.force && version <= config.version {
+        if !args.force && version <= config.metadata.version {
             return Err(DatasetError::Other(format!(
                 "{} must be greater than {}",
-                version, config.version
+                version, config.metadata.version
             )));
         }
 
-        config.version = version;
+        config.metadata.version = version;
         config.save()?;
     } else {
-        println!("{}", config.version);
+        println!("{}", config.metadata.version);
     }
 
     Ok(())
