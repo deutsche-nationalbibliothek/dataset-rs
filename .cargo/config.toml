@@ -3,6 +3,7 @@ rustflags = [
     # rust
     "-D", "warnings",
     "-W", "unreachable-pub",
+    "-A", "dead-code",
 
     # clippy
     "-W", "clippy::cloned_instead_of_copied",
