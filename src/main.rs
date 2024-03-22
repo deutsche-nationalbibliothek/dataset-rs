@@ -7,6 +7,7 @@ use error::DatasetError;
 use rayon::ThreadPoolBuilder;
 
 use crate::cli::Args;
+use crate::commands::*;
 
 mod cli;
 mod commands;
@@ -30,7 +31,8 @@ fn num_threads(args: &Args) -> usize {
 
 fn run(args: Args) -> Result<(), DatasetError> {
     match args.cmd {
-        Command::Init(args) => commands::init::execute(args),
+        Command::Init(args) => init::execute(args),
+        Command::Version(args) => version::execute(args),
     }
 }
 
@@ -49,9 +51,8 @@ fn main() {
         {
             process::exit(0)
         }
-
         Err(e) => {
-            eprintln!("{e:#}");
+            eprintln!("error: {e:#}");
             process::exit(1);
         }
     }
