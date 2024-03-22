@@ -40,7 +40,7 @@ impl Dataset {
 
     /// Returns the manifest associated with the dataset.
     #[inline]
-    pub(crate) fn manifest(&self) -> Result<Config, DatasetError> {
+    pub(crate) fn config(&self) -> Result<Config, DatasetError> {
         Config::from_path(self.root_dir.join(Config::FILENAME))
     }
 }
