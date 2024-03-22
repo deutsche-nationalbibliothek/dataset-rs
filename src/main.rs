@@ -13,6 +13,7 @@ mod commands;
 mod config;
 mod dataset;
 mod error;
+mod remote;
 
 fn num_threads(args: &Args) -> usize {
     if let Some(num_threads) = args.num_jobs {
@@ -34,6 +35,7 @@ fn run(args: Args) -> Result<(), DatasetError> {
     match args.cmd {
         Command::Init(args) => commands::init::execute(args),
         Command::Config(args) => commands::config::execute(args),
+        Command::Remote(args) => commands::remote::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }
