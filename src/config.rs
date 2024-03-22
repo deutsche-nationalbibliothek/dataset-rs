@@ -2,16 +2,31 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::error::DatasetError;
 
 /// Dataset manifest.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Config {
     /// The path of the config.
     #[serde(skip)]
     path: PathBuf,
+
+    /// The name of the dataset.
+    pub(crate) name: String,
+
+    /// The version of the dataset.
+    pub(crate) version: Version,
+
+    /// A short blurb about the dataset.
+    pub(crate) description: Option<String>,
+
+    /// A list of people or organizations, which are considered as the
+    /// authors of the dataset.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub(crate) authors: Vec<String>,
 
     /// Number of threads to use. If this options isn't set or a value
     /// of "0" is chosen, the maximum number of available threads
@@ -34,11 +49,36 @@ pub(crate) struct Config {
     __non_exhaustive: (),
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            path: PathBuf::default(),
+            name: "".into(),
+            version: Version::new(0, 1, 0),
+            description: None,
+            authors: vec![],
+            num_jobs: None,
+            __non_exhaustive: (),
+        }
+    }
+}
+
 impl Config {
     /// The filename of the manifest.
     pub(crate) const FILENAME: &'static str = "dataset.toml";
 
-    /// Creates a new Manifest from a path.
+    /// Creates a new default config and sets the file location.
+    pub(crate) fn create<P>(path: P) -> Result<Self, DatasetError>
+    where
+        P: AsRef<Path>,
+    {
+        Ok(Self {
+            path: path.as_ref().into(),
+            ..Default::default()
+        })
+    }
+
+    /// Loads an existing config from a path.
     pub(crate) fn from_path<P>(path: P) -> Result<Self, DatasetError>
     where
         P: AsRef<Path>,
@@ -51,7 +91,7 @@ impl Config {
         Ok(manifest)
     }
 
-    /// Saves the manifest.
+    /// Saves the config.
     pub(crate) fn save(&self) -> Result<(), DatasetError> {
         let content = toml::to_string(self).expect("valid toml");
         let mut out = File::create(&self.path)?;

@@ -8,6 +8,7 @@ rust-version = "1.77.0"
 [dependencies]
 clap = { version = "4.5.3", features = ["cargo", "derive", "wrap_help", "usage", "env"] }
 rayon = "1.9.0"
+semver = { version = "1.0.22", features = ["serde"] }
 serde = { version = "1.0.197", features = ["derive"] }
 thiserror = "1.0.58"
 toml = { version = "0.8.12", features = ["preserve_order"] }

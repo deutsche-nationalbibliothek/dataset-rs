@@ -134,6 +134,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "rayon",
+ "semver",
  "serde",
  "thiserror",
  "toml",
@@ -250,6 +251,15 @@ dependencies = [
  "libc",
  "linux-raw-sys",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "semver"
+version = "1.0.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92d43fe69e652f3df9bdc2b85b2854a0825b86e4fb76bc44d945137d053639ca"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
