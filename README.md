@@ -45,10 +45,10 @@ Certificate of Origin][DCO].
 
 ## License
 
-This project is licensed under the terms of the [MIT license].
+This project is licensed under the terms of the [EUPL v1.2].
 
 
 [German National Library]: https://www.dnb.de
 [DCO]: https://developercertificate.org/
 [German National Library]: https://www.dnb.de
-[MIT license]: ./LICENSE
+[EUPL v1.2]: ./LICENSE
