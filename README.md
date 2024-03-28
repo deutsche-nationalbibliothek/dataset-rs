@@ -25,7 +25,6 @@ By default the binary is installed to `/usr/local/bin`. You can change
 `PREFIX` or `DESTDIR` if you want to install into another directory:
 
 ```console
-$ make PREFIX=/usr release
 $ sudo make PREFIX=/usr install
 ```
 
