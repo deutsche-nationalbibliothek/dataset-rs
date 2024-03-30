@@ -7,7 +7,8 @@ National Library].
 ## Contents
 
 - [Installation Guide](./INSTALL.md)
-- [Contributing Guide](./CONTRIBUTING.md)
+- [Contributing](./CONTRIBUTING.md)
+
 
 [German National Library]: https://www.dnb.de
 
