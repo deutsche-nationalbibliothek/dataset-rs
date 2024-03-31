@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::{env, fs};
+use std::process::Stdio;
+use std::{env, fs, process};
 
 use clap::{Parser, ValueEnum};
 use semver::Version;
@@ -66,6 +67,31 @@ enum Vcs {
     None,
 }
 
+#[inline]
+fn is_inside_git_work_tree(path: &PathBuf) -> bool {
+    process::Command::new("git")
+        .arg("rev-parse")
+        .arg("--is-inside-work-tree")
+        .current_dir(path)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
+#[inline]
+fn git_init(path: &PathBuf) -> bool {
+    process::Command::new("git")
+        .arg("init")
+        .current_dir(path)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
 pub(crate) fn execute(args: Init) -> Result<(), DatasetError> {
     let root_dir = env::current_dir()?.join(args.path);
     let config = root_dir.join(Config::FILENAME);
@@ -97,6 +123,12 @@ pub(crate) fn execute(args: Init) -> Result<(), DatasetError> {
     }
 
     if args.vcs == Vcs::Git {
+        if !is_inside_git_work_tree(&root_dir) && !git_init(&root_dir) {
+            return Err(DatasetError::Other(
+                "Failed to initialize Git repository".into(),
+            ));
+        }
+
         fs::write(root_dir.join(".gitignore"), GITGINORE)?;
     }
 
