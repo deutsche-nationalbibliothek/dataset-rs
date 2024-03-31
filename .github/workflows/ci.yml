@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - '*'
+    schedule:
+      - cron: '30 4 * * *'
 
 defaults:
   run:
