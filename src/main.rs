@@ -12,6 +12,7 @@ mod cli;
 mod commands;
 mod config;
 mod dataset;
+mod document;
 mod error;
 mod remote;
 
@@ -36,6 +37,7 @@ fn run(args: Args) -> Result<(), DatasetError> {
         Command::Init(args) => commands::init::execute(args),
         Command::Config(args) => commands::config::execute(args),
         Command::Remote(args) => commands::remote::execute(args),
+        Command::Update(args) => commands::update::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }

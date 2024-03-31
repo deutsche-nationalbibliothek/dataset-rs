@@ -21,6 +21,7 @@ jobs:
       - clippy
       - deny
       - dco
+      - outdated
       - rustfmt
       - test
       - typos
@@ -81,6 +82,17 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: make clippy
 
+  outdated:
+    continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/install@cargo-outdated
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo outdated --exit-code 1
+
   rustfmt:
     runs-on: ubuntu-latest
     needs: check
@@ -99,6 +111,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/check-dco.sh
+
+
 
   typos:
     runs-on: ubuntu-latest

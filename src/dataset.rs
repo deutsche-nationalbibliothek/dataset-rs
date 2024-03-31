@@ -11,6 +11,7 @@ pub(crate) struct Dataset {
 
 impl Dataset {
     pub(crate) const DOT_DIR: &'static str = ".dataset";
+    pub(crate) const DATA_DIR: &'static str = "data";
 
     /// Discovers the root of the dataset.
     ///
@@ -42,5 +43,17 @@ impl Dataset {
     #[inline]
     pub(crate) fn config(&self) -> Result<Config, DatasetError> {
         Config::from_path(self.root_dir.join(Config::FILENAME))
+    }
+
+    /// Returns the app directory of the dataset.
+    #[inline]
+    pub(crate) fn app_dir(&self) -> PathBuf {
+        self.root_dir.join(Self::DOT_DIR)
+    }
+
+    /// Returns the temporary directory of the dataset.
+    #[inline]
+    pub(crate) fn data_dir(&self) -> PathBuf {
+        self.app_dir().join(Self::DATA_DIR)
     }
 }

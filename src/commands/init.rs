@@ -7,9 +7,10 @@ use clap::{Parser, ValueEnum};
 use semver::Version;
 
 use crate::config::Config;
+use crate::dataset::Dataset;
 use crate::error::DatasetError;
 
-const DVCIGNORE: &[u8] = b"/.dataset/tmp\n";
+const DVCIGNORE: &[u8] = b"/.dataset/temp\n";
 const GITGINORE: &[u8] = b"/.dataset\n";
 
 /// Initialize a new or re-initialize an existing dataset.
@@ -94,6 +95,8 @@ fn git_init(path: &PathBuf) -> bool {
 
 pub(crate) fn execute(args: Init) -> Result<(), DatasetError> {
     let root_dir = env::current_dir()?.join(args.path);
+    let app_dir = root_dir.join(Dataset::DOT_DIR);
+    let data_dir = app_dir.join(Dataset::DATA_DIR);
     let config = root_dir.join(Config::FILENAME);
 
     if !root_dir.exists() {
@@ -104,6 +107,14 @@ pub(crate) fn execute(args: Init) -> Result<(), DatasetError> {
         }
     } else if args.verbose {
         eprintln!("Re-Initialize exiting dataset in {root_dir:?}");
+    }
+
+    if !app_dir.exists() {
+        fs::create_dir_all(&app_dir)?;
+    }
+
+    if !data_dir.exists() {
+        fs::create_dir_all(&data_dir)?;
     }
 
     if !config.exists() || args.force {
