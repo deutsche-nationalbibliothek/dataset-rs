@@ -29,6 +29,9 @@ check-fmt:
 release:
 	$(CARGO) build --release
 
+dev-install:
+	cargo install --path .
+
 install:
 	install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
 
