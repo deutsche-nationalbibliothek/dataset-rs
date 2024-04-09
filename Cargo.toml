@@ -23,3 +23,9 @@ url = { version = "2.5.0", features = ["serde"] }
 version = "4.5.3"
 features = ["cargo", "derive", "wrap_help", "usage", "env"]
 
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+strip = true
+

@@ -13,6 +13,10 @@ impl Dataset {
     pub(crate) const DOT_DIR: &'static str = ".dataset";
     pub(crate) const DATA_DIR: &'static str = "data";
 
+    /// The file path of an index over documents of all remotes (data
+    /// sources).
+    pub(crate) const REMOTES_INDEX: &'static str = "remotes.ipc";
+
     /// Discovers the root of the dataset.
     ///
     /// This function fails, if neither the current directory nor any

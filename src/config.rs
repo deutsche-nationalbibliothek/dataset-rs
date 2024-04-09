@@ -59,7 +59,7 @@ pub(crate) struct Metadata {
 
     /// A list of people or organizations, which are considered as the
     /// authors of the dataset.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub(crate) authors: Vec<String>,
 }
 

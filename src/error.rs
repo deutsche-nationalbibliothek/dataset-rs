@@ -1,3 +1,5 @@
+pub(crate) type DatasetResult<T> = Result<T, DatasetError>;
+
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum DatasetError {
     #[error(transparent)]

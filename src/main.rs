@@ -14,6 +14,7 @@ mod config;
 mod dataset;
 mod document;
 mod error;
+mod progress;
 mod remote;
 
 fn num_threads(args: &Args) -> usize {

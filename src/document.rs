@@ -1,18 +1,52 @@
-use std::fmt::Write;
+use std::fmt::{self, Display, Write};
 use std::fs::{read_to_string, Metadata};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
+use std::str::FromStr;
 use std::time::UNIX_EPOCH;
 
 use sha2::{Digest, Sha256};
 
-use crate::error::DatasetError;
+use crate::error::DatasetResult;
 use crate::remote::Remote;
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum DocumentKind {
+    Ft,
+    Toc,
+    Blurb,
+    Wp,
+}
+
+impl Display for DocumentKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Ft => write!(f, "ft"),
+            Self::Toc => write!(f, "toc"),
+            Self::Blurb => write!(f, "blurb"),
+            Self::Wp => write!(f, "wp"),
+        }
+    }
+}
+
+impl FromStr for DocumentKind {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ft" => Ok(Self::Ft),
+            "toc" => Ok(Self::Toc),
+            "iht" | "blurb" => Ok(Self::Blurb),
+            "wp" => Ok(Self::Wp),
+            _ => Err(()),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct Document {
     path: PathBuf,
     metadata: Metadata,
-    content: String,
+    content: Option<String>,
 }
 
 impl Document {
@@ -21,19 +55,29 @@ impl Document {
     /// This function fails if either no metadata could be extracted
     /// (file doesn't exists or isn't readable) or the file content
     /// could not be read.
-    pub(crate) fn from_path<P>(path: P) -> Result<Self, DatasetError>
+    pub(crate) fn from_path<P>(path: P) -> DatasetResult<Self>
     where
         P: AsRef<Path>,
     {
         let path: PathBuf = path.as_ref().into();
-        let content = read_to_string(&path)?;
         let metadata = path.metadata()?;
+        let content = None;
 
         Ok(Self {
             path,
             metadata,
             content,
         })
+    }
+
+    /// Returns a reference to the file content.
+    #[inline]
+    pub(crate) fn content(&mut self) -> DatasetResult<&str> {
+        if self.content.is_none() {
+            self.content = Some(read_to_string(&self.path)?);
+        }
+
+        Ok(self.content.as_ref().unwrap())
     }
 
     /// Returns the identifier of the document.
@@ -47,6 +91,26 @@ impl Document {
     /// or the id cant be converted to a string.
     pub(crate) fn idn(&self) -> String {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
+    }
+
+    /// Returns the kind of the document.
+    ///
+    /// # Panics
+    ///
+    /// This function panics if it's not possible to extract a valid
+    /// document kind of the path's components.
+    pub(crate) fn kind(&self) -> DocumentKind {
+        self.path
+            .components()
+            .filter_map(|c| {
+                if let Component::Normal(s) = c {
+                    s.to_str()
+                } else {
+                    None
+                }
+            })
+            .find_map(|s| DocumentKind::from_str(s).ok())
+            .unwrap()
     }
 
     /// Returns the location of the document relative to the base path
@@ -95,9 +159,9 @@ impl Document {
     ///
     /// Use the `len` parameter to shorten the digest to the specified
     /// length.
-    pub(crate) fn hash(&self, len: usize) -> String {
+    pub(crate) fn hash(&mut self, len: usize) -> DatasetResult<String> {
         let mut hasher = Sha256::new();
-        hasher.update(&self.content);
+        hasher.update(self.content()?);
 
         let hash = hasher.finalize();
         let digest =
@@ -106,6 +170,6 @@ impl Document {
                 out
             });
 
-        digest
+        Ok(digest)
     }
 }
