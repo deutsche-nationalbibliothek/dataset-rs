@@ -10,7 +10,7 @@ csv = "1.3.0"
 glob = "0.3.1"
 indicatif = { version = "0.17.8", features = ["rayon"] }
 itertools = "0.12.1"
-polars = { version = "0.38.3", features = ["ipc", "dtype-categorical"] }
+polars = { version = "0.39", features = ["ipc", "dtype-categorical"] }
 rayon = "1.9"
 semver = { version = "1.0.22", features = ["serde"] }
 serde = { version = "1.0.197", features = ["derive"] }
