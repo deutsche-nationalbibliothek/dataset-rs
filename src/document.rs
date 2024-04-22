@@ -3,6 +3,7 @@ use std::fs::{read_to_string, Metadata};
 use std::path::{Component, Path, PathBuf};
 use std::str::FromStr;
 use std::time::UNIX_EPOCH;
+use std::usize;
 
 use sha2::{Digest, Sha256};
 
@@ -138,6 +139,12 @@ impl Document {
     #[inline]
     pub(crate) fn size(&self) -> u64 {
         self.metadata.len()
+    }
+
+    /// Returns the string length of the file.
+    #[inline]
+    pub(crate) fn strlen(&mut self) -> DatasetResult<usize> {
+        Ok(self.content()?.chars().count())
     }
 
     /// Returns the last modification time of the document.

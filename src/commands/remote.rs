@@ -157,6 +157,7 @@ struct Row {
     kind: DocumentKind,
     path: String,
     size: u64,
+    strlen: u64,
     modified: u64,
     hash: String,
 }
@@ -222,6 +223,7 @@ impl SyncCommand {
                         kind: document.kind(),
                         path: document.relpath(remote),
                         size: document.size(),
+                        strlen: document.strlen().unwrap() as u64,
                         modified: document.modified(),
                         hash: document.hash(8).unwrap(),
                     }
@@ -229,7 +231,11 @@ impl SyncCommand {
             ),
         );
 
-        vecs!(ids, remotes, idns, kinds, paths, sizes, mtime, hashes);
+        vecs!(
+            ids, remotes, idns, kinds, paths, sizes, strlens, mtime,
+            hashes
+        );
+
         for (id, record) in records.into_iter().enumerate() {
             ids.push(id as u32 + 1);
             remotes.push(record.remote);
@@ -237,6 +243,7 @@ impl SyncCommand {
             kinds.push(record.kind.to_string());
             paths.push(record.path);
             sizes.push(record.size);
+            strlens.push(record.strlen);
             mtime.push(record.modified);
             hashes.push(record.hash);
         }
@@ -248,6 +255,7 @@ impl SyncCommand {
             Series::new("kind", kinds).cast(&CATEGORICAL)?,
             Series::new("path", paths),
             Series::new("size", sizes),
+            Series::new("strlen", strlens),
             Series::new("mtime", mtime),
             Series::new("hash", hashes),
         ])?;
