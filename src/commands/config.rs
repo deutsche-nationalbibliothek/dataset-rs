@@ -87,7 +87,7 @@ pub(crate) fn execute(args: Config) -> Result<(), DatasetError> {
         }
     } else if args.unset {
         match args.key.as_str() {
-            "num_jobs" => {
+            "runtime.num_jobs" => {
                 config.runtime = None;
                 config.save()?;
             }
