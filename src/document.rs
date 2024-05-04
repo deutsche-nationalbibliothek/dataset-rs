@@ -3,11 +3,12 @@ use std::fs::{read_to_string, Metadata};
 use std::path::{Component, Path, PathBuf};
 use std::str::FromStr;
 use std::time::UNIX_EPOCH;
-use std::usize;
 
+use lingua::Language;
 use sha2::{Digest, Sha256};
 
-use crate::error::DatasetResult;
+use crate::error::{DatasetError, DatasetResult};
+use crate::lang::{lang_to_639_2b, language_detector};
 use crate::remote::Remote;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -48,6 +49,7 @@ pub(crate) struct Document {
     path: PathBuf,
     metadata: Metadata,
     content: Option<String>,
+    lang: Option<(Language, f64)>,
 }
 
 impl Document {
@@ -63,11 +65,13 @@ impl Document {
         let path: PathBuf = path.as_ref().into();
         let metadata = path.metadata()?;
         let content = None;
+        let lang = None;
 
         Ok(Self {
             path,
             metadata,
             content,
+            lang,
         })
     }
 
@@ -178,5 +182,22 @@ impl Document {
             });
 
         Ok(digest)
+    }
+
+    pub(crate) fn lang(
+        &mut self,
+    ) -> DatasetResult<(&'static str, f64)> {
+        if self.lang.is_none() {
+            self.lang = language_detector()
+                .compute_language_confidence_values(self.content()?)
+                .into_iter()
+                .next();
+        }
+
+        self.lang
+            .map(|(code, score)| (lang_to_639_2b(&code), score))
+            .ok_or(DatasetError::Other(
+                "unable to detect language".into(),
+            ))
     }
 }

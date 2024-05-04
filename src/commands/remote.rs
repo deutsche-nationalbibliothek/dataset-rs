@@ -156,6 +156,8 @@ struct Row {
     idn: String,
     kind: DocumentKind,
     path: String,
+    lang_code: &'static str,
+    lang_score: f64,
     size: u64,
     strlen: u64,
     modified: u64,
@@ -217,6 +219,9 @@ impl SyncCommand {
             documents.into_par_iter().progress_with(pbar).map(
                 |(name, mut document)| {
                     let remote = config.remotes.get(name).unwrap();
+                    let (lang_code, lang_score) =
+                        document.lang().unwrap();
+
                     Row {
                         remote: name.into(),
                         idn: document.idn(),
@@ -226,14 +231,25 @@ impl SyncCommand {
                         strlen: document.strlen().unwrap() as u64,
                         modified: document.modified(),
                         hash: document.hash(8).unwrap(),
+                        lang_code,
+                        lang_score,
                     }
                 },
             ),
         );
 
         vecs!(
-            ids, remotes, idns, kinds, paths, sizes, strlens, mtime,
-            hashes
+            ids,
+            remotes,
+            idns,
+            kinds,
+            paths,
+            sizes,
+            strlens,
+            mtime,
+            hashes,
+            lang_codes,
+            lang_scores
         );
 
         for (id, record) in records.into_iter().enumerate() {
@@ -242,6 +258,8 @@ impl SyncCommand {
             idns.push(record.idn);
             kinds.push(record.kind.to_string());
             paths.push(record.path);
+            lang_codes.push(record.lang_code);
+            lang_scores.push(record.lang_score);
             sizes.push(record.size);
             strlens.push(record.strlen);
             mtime.push(record.modified);
@@ -254,6 +272,8 @@ impl SyncCommand {
             Series::new("remote", remotes).cast(&CATEGORICAL)?,
             Series::new("kind", kinds).cast(&CATEGORICAL)?,
             Series::new("path", paths),
+            Series::new("lang_code", lang_codes).cast(&CATEGORICAL)?,
+            Series::new("lang_score", lang_scores),
             Series::new("size", sizes),
             Series::new("strlen", strlens),
             Series::new("mtime", mtime),

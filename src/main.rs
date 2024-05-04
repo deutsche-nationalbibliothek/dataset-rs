@@ -14,6 +14,7 @@ mod config;
 mod dataset;
 mod document;
 mod error;
+mod lang;
 mod progress;
 mod remote;
 
