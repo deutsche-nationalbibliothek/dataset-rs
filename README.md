@@ -3,7 +3,7 @@
 [![CI](https://github.com/nwagner84/dataset/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nwagner84/dataset/actions/workflows/ci.yml)
 
 This project contains tools for creating datasets and for analyzing and
-processing the Integrated Authority File (GND). These are developments
+processing the [GND] (Integrated Authority File). These are developments
 to support the research work in the Automated Indexing System project of
 the [German National Library].
 
@@ -47,6 +47,7 @@ Certificate of Origin][DCO].
 This project is licensed under the terms of the [EUPL v1.2].
 
 
+[GND]: https://gnd.network/
 [German National Library]: https://www.dnb.de
 [DCO]: https://developercertificate.org/
 [German National Library]: https://www.dnb.de
