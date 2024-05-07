@@ -13,18 +13,24 @@ use crate::remote::Remote;
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum DocumentKind {
-    Ft,
-    Toc,
+    Article,
     Blurb,
+    Book,
+    Other,
+    Title,
+    Toc,
     Wp,
 }
 
 impl Display for DocumentKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Ft => write!(f, "ft"),
-            Self::Toc => write!(f, "toc"),
+            Self::Article => write!(f, "article"),
             Self::Blurb => write!(f, "blurb"),
+            Self::Book => write!(f, "book"),
+            Self::Other => write!(f, "other"),
+            Self::Title => write!(f, "title"),
+            Self::Toc => write!(f, "toc"),
             Self::Wp => write!(f, "wp"),
         }
     }
@@ -35,9 +41,12 @@ impl FromStr for DocumentKind {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "ft" => Ok(Self::Ft),
+            "article" => Ok(Self::Article),
+            "blurb" | "iht" => Ok(Self::Blurb),
+            "book" => Ok(Self::Book),
+            "other" | "ft" => Ok(Self::Other),
+            "title" => Ok(Self::Title),
             "toc" => Ok(Self::Toc),
-            "iht" | "blurb" => Ok(Self::Blurb),
             "wp" => Ok(Self::Wp),
             _ => Err(()),
         }
