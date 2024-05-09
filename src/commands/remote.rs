@@ -164,14 +164,6 @@ struct Row {
     hash: String,
 }
 
-macro_rules! vecs {
-    ($x:ident) => (let mut $x = vec![];);
-    ($x:ident, $($y:ident),+) => {
-        vecs!($x);
-        vecs!($($y),+);
-    };
-}
-
 const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
@@ -238,46 +230,44 @@ impl SyncCommand {
             ),
         );
 
-        vecs!(
-            ids,
-            remotes,
-            idns,
-            kinds,
-            paths,
-            sizes,
-            strlens,
-            mtime,
-            hashes,
-            lang_codes,
-            lang_scores
-        );
+        let mut doc_id = vec![];
+        let mut idn = vec![];
+        let mut remote = vec![];
+        let mut kind = vec![];
+        let mut path = vec![];
+        let mut lang_code = vec![];
+        let mut lang_score = vec![];
+        let mut size = vec![];
+        let mut strlen = vec![];
+        let mut mtime = vec![];
+        let mut hash = vec![];
 
         for (id, record) in records.into_iter().enumerate() {
-            ids.push(id as u32 + 1);
-            remotes.push(record.remote);
-            idns.push(record.idn);
-            kinds.push(record.kind.to_string());
-            paths.push(record.path);
-            lang_codes.push(record.lang_code);
-            lang_scores.push(record.lang_score);
-            sizes.push(record.size);
-            strlens.push(record.strlen);
+            doc_id.push(id as u32 + 1);
+            remote.push(record.remote);
+            idn.push(record.idn);
+            kind.push(record.kind.to_string());
+            path.push(record.path);
+            lang_code.push(record.lang_code);
+            lang_score.push(record.lang_score);
+            size.push(record.size);
+            strlen.push(record.strlen);
             mtime.push(record.modified);
-            hashes.push(record.hash);
+            hash.push(record.hash);
         }
 
         let mut df = DataFrame::new(vec![
-            Series::new("id", ids),
-            Series::new("idn", idns),
-            Series::new("remote", remotes).cast(&CATEGORICAL)?,
-            Series::new("kind", kinds).cast(&CATEGORICAL)?,
-            Series::new("path", paths),
-            Series::new("lang_code", lang_codes).cast(&CATEGORICAL)?,
-            Series::new("lang_score", lang_scores),
-            Series::new("size", sizes),
-            Series::new("strlen", strlens),
+            Series::new("doc_id", doc_id),
+            Series::new("idn", idn),
+            Series::new("remote", remote).cast(&CATEGORICAL)?,
+            Series::new("kind", kind).cast(&CATEGORICAL)?,
+            Series::new("path", path),
+            Series::new("lang_code", lang_code).cast(&CATEGORICAL)?,
+            Series::new("lang_score", lang_score),
+            Series::new("size", size),
+            Series::new("strlen", strlen),
             Series::new("mtime", mtime),
-            Series::new("hash", hashes),
+            Series::new("hash", hash),
         ])?;
 
         let path = match self.output {
