@@ -1,4 +1,4 @@
-# Dataset
+# dataset-rs
 
 [![CI](https://github.com/nwagner84/dataset/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nwagner84/dataset/actions/workflows/ci.yml)
 
