@@ -4,6 +4,7 @@ use crate::commands::config::Config;
 use crate::commands::init::Init;
 use crate::commands::remote::Remote;
 use crate::commands::update::Update;
+use crate::commands::verify::Verify;
 use crate::commands::version::Version;
 
 #[derive(Debug, Parser)]
@@ -30,5 +31,6 @@ pub(crate) enum Command {
     Config(Config),
     Remote(Remote),
     Update(Update),
+    Verify(Verify),
     Version(Version),
 }

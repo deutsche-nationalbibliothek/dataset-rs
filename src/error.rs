@@ -11,6 +11,9 @@ pub(crate) enum DatasetError {
     #[error(transparent)]
     Polars(#[from] polars::error::PolarsError),
 
+    #[error("remote error: {0}")]
+    Remote(String),
+
     #[error("{0}")]
     Other(String),
 }

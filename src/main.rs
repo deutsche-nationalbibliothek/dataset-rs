@@ -40,6 +40,7 @@ fn run(args: Args) -> Result<(), DatasetError> {
         Command::Config(args) => commands::config::execute(args),
         Command::Remote(args) => commands::remote::execute(args),
         Command::Update(args) => commands::update::execute(args),
+        Command::Verify(args) => commands::verify::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }

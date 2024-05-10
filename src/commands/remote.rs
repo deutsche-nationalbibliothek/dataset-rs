@@ -7,6 +7,7 @@ use polars::prelude::*;
 use rayon::prelude::*;
 use url::Url;
 
+use super::verify::VerifyMode;
 use crate::dataset::Dataset;
 use crate::document::{Document, DocumentKind};
 use crate::error::DatasetError;
@@ -62,7 +63,12 @@ pub(crate) enum Command {
         suffix: String,
     },
 
+    /// Update the document index based on the remote config.
     Sync(SyncCommand),
+
+    /// Verify that the indexed documents are consistent with the
+    /// tracked data sources (remotes).
+    Verify(VerifyCommand),
 }
 
 pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
@@ -73,9 +79,10 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
 
     match args.cmd {
         Command::Sync(cmd) => return cmd.execute(),
+        Command::Verify(cmd) => return cmd.execute(),
         Command::Add { name, suffix, url } => {
             if config.remotes.contains_key(&name) {
-                return Err(DatasetError::Other(format!(
+                return Err(DatasetError::Remote(format!(
                     "remote with name '{name}' already exists"
                 )));
             }
@@ -86,7 +93,7 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
 
         Command::Remove { name } => {
             if !config.remotes.contains_key(&name) {
-                return Err(DatasetError::Other(format!(
+                return Err(DatasetError::Remote(format!(
                     "remote with name '{name}' does not exists.",
                 )));
             }
@@ -102,7 +109,7 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
                     }
                 }
             } else {
-                return Err(DatasetError::Other(format!(
+                return Err(DatasetError::Remote(format!(
                     "remote with name '{name}' does not exists.",
                 )));
             }
@@ -119,7 +126,7 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
                     }
                 }
             } else {
-                return Err(DatasetError::Other(format!(
+                return Err(DatasetError::Remote(format!(
                     "remote with name '{name}' does not exists.",
                 )));
             }
@@ -130,7 +137,6 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
     Ok(())
 }
 
-/// Update the document index based on the remote config.
 #[derive(Debug, Default, Parser)]
 pub(crate) struct SyncCommand {
     /// Run verbosely. Print additional progress information to the
@@ -164,11 +170,12 @@ struct Row {
     hash: String,
 }
 
-const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
+const PBAR_COLLECT: &str =
+    "remote: Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
 const PBAR_INDEX: &str =
-    "Indexing documents: {human_pos} ({percent}%) | \
+    "remote: Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 impl SyncCommand {
@@ -281,5 +288,139 @@ impl SyncCommand {
         writer.finish(&mut df)?;
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Default, Parser)]
+pub(crate) struct VerifyCommand {
+    /// Run verbosely. Print additional progress information to the
+    /// standard error stream. This option conflicts with the
+    /// `--quiet` option.
+    #[arg(short, long, conflicts_with = "quiet")]
+    verbose: bool,
+
+    /// Operate quietly; do not show progress. This option conflicts
+    /// with the `--verbose` option.
+    #[arg(short, long, conflicts_with = "verbose")]
+    quiet: bool,
+
+    /// Set the verify mode: permissive, strict (default), or
+    /// pedantic.
+    #[arg(
+        short,
+        long,
+        default_value = "strict",
+        value_name = "mode",
+        hide_possible_values = true,
+        hide_default_value = true
+    )]
+    mode: VerifyMode,
+
+    /// Read the index from <filename>. By default, the index will
+    /// be read from the internal data directory.
+    #[arg(value_name = "filename")]
+    path: Option<PathBuf>,
+}
+
+const PBAR_VERIFY: &str =
+    "remote: Verifying documents: {human_pos} ({percent}%) | \
+        elapsed: {elapsed_precise}{msg}";
+
+impl VerifyCommand {
+    pub(crate) fn new(
+        quiet: bool,
+        verbose: bool,
+        mode: VerifyMode,
+    ) -> Self {
+        Self {
+            quiet,
+            verbose,
+            mode,
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn execute(self) -> Result<(), DatasetError> {
+        let dataset = Dataset::discover()?;
+        let config = dataset.config()?;
+
+        let path = match self.path {
+            None => dataset.data_dir().join(Dataset::REMOTES_INDEX),
+            Some(path) => path,
+        };
+
+        let df = IpcReader::new(File::open(path)?)
+            .memory_mapped(false)
+            .finish()?;
+
+        let temp = &df.column("remote")?.cast(&DataType::String)?;
+        let remote = temp.str()?;
+
+        let temp = &df.column("kind")?.cast(&DataType::String)?;
+        let kind = temp.str()?;
+
+        let path = df.column("path")?.str()?;
+        let hash = df.column("hash")?.str()?;
+        let mtime = df.column("mtime")?.u64()?;
+        let size = df.column("size")?.u64()?;
+
+        let pbar = ProgressBarBuilder::new(PBAR_VERIFY, self.quiet)
+            .len(df.height() as u64)
+            .build();
+
+        (0..df.height())
+            .into_par_iter()
+            .progress_with(pbar)
+            .try_for_each(|idx| -> Result<(), DatasetError> {
+                let name = remote.get(idx).unwrap();
+                let remote = config.remotes.get(name).unwrap();
+                let path = path.get(idx).unwrap();
+
+                let result = remote.document(path);
+                if result.is_err() {
+                    return Err(DatasetError::Remote(format!(
+                        "verification failed: document not found \
+                            (path = {path:?}, remote = {name})"
+                    )));
+                }
+
+                let mut document = result.unwrap();
+                let expected = hash.get(idx).unwrap();
+                let actual = document.hash(64).unwrap();
+                if !actual.starts_with(expected) {
+                    return Err(DatasetError::Remote(format!(
+                        "verification failed: hash mismatch \
+                            (path = {path:?}, remote = {name})"
+                    )));
+                }
+
+                let kind = kind.get(idx).unwrap().parse().unwrap();
+                if document.kind() != kind {
+                    return Err(DatasetError::Remote(format!(
+                        "verification failed: kind mismatch \
+                            (path = {path:?}, remote = {name})"
+                    )));
+                }
+
+                if self.mode >= VerifyMode::Strict
+                    && document.modified() != mtime.get(idx).unwrap()
+                {
+                    return Err(DatasetError::Remote(format!(
+                        "verification failed: mtime mismatch \
+                                (path = {path:?}, remote = {name})"
+                    )));
+                }
+
+                if self.mode >= VerifyMode::Pedantic
+                    && document.size() != size.get(idx).unwrap()
+                {
+                    return Err(DatasetError::Remote(format!(
+                        "verification failed: size mismatch \
+                            (path = {path:?}, remote = {name})"
+                    )));
+                }
+
+                Ok(())
+            })
     }
 }

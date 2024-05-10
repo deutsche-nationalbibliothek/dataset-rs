@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use glob::{glob_with, MatchOptions};
 use serde::{Deserialize, Serialize};
@@ -50,6 +50,18 @@ impl Remote {
         }
 
         Ok(Self::Local { path, suffix })
+    }
+
+    /// Returns a document relative to the base path of a remote.
+    pub(crate) fn document<P: AsRef<Path>>(
+        &self,
+        path: P,
+    ) -> Result<Document, DatasetError> {
+        match self {
+            Self::Local { path: base, .. } => {
+                Document::from_path(base.join(path))
+            }
+        }
     }
 
     /// Returns an iterator over all documents managned by this remote.
