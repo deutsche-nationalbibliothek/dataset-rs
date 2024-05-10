@@ -27,7 +27,7 @@ check-fmt:
 	$(CARGO) fmt --all -- --check
 
 release:
-	$(CARGO) build --release
+	$(CARGO) build --features performant --release
 
 dev-install:
 	cargo install --path .
