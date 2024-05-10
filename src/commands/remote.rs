@@ -167,7 +167,8 @@ struct Row {
 const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
-const PBAR_INDEX: &str = "Indexing documents: {human_pos} | \
+const PBAR_INDEX: &str =
+    "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 impl SyncCommand {
