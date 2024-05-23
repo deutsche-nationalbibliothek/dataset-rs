@@ -38,14 +38,14 @@ pub(crate) enum Command {
         url: Url,
     },
 
-    /// Remove the remote named <name>.
+    /// Remove the remote named `name`.
     #[clap(visible_alias = "rm")]
     Remove {
         /// The name of the remote.
         name: String,
     },
 
-    /// Changes the URL for the remote <name>.
+    /// Changes the URL for the remote `name`.
     SetUrl {
         /// The name of the remote.
         name: String,
@@ -54,7 +54,7 @@ pub(crate) enum Command {
         url: Url,
     },
 
-    /// Change the file suffix for the remote <name>.
+    /// Change the file suffix for the remote `name`.
     SetSuffix {
         /// The name of the remote.
         name: String,
@@ -150,7 +150,7 @@ pub(crate) struct SyncCommand {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// Write the index into <filename>. By default, the index will
+    /// Write the index into `filename`. By default, the index will
     /// be written to the internal data directory.
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
@@ -320,7 +320,7 @@ pub(crate) struct VerifyCommand {
     )]
     mode: VerifyMode,
 
-    /// Read the index from <filename>. By default, the index will
+    /// Read the index from `filename`. By default, the index will
     /// be read from the internal data directory.
     #[arg(value_name = "filename")]
     path: Option<PathBuf>,

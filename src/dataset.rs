@@ -20,7 +20,7 @@ impl Dataset {
     /// Discovers the root of the dataset.
     ///
     /// This function fails, if neither the current directory nor any
-    /// parent directory contains a dataset [Manifest].
+    /// parent directory contains a dataset [Config].
     pub(crate) fn discover() -> Result<Self, DatasetError> {
         let mut root_dir = env::current_dir()?;
 

@@ -26,6 +26,7 @@ jobs:
       - clippy
       - deny
       - dco
+      - docs
       - outdated
       - rustfmt
       - test
@@ -117,6 +118,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/check-dco.sh
+
+  docs:
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: Swatinem/rust-cache@v2
+      - run: make docs
 
   typos:
     runs-on: ubuntu-latest
