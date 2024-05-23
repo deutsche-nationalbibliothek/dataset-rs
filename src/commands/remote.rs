@@ -164,6 +164,7 @@ struct Row {
     path: String,
     lang_code: &'static str,
     lang_score: f64,
+    alpha: f64,
     size: u64,
     strlen: u64,
     modified: u64,
@@ -219,20 +220,20 @@ impl SyncCommand {
             documents.into_par_iter().progress_with(pbar).map(
                 |(name, mut document)| {
                     let remote = config.remotes.get(name).unwrap();
-                    let (lang_code, lang_score) =
-                        document.lang().unwrap();
+                    let language = document.lang().unwrap();
 
                     Row {
                         remote: name.into(),
                         idn: document.idn(),
                         kind: document.kind(),
                         path: document.relpath(remote),
+                        lang_code: language.0,
+                        lang_score: language.1,
+                        alpha: document.alpha().unwrap(),
                         size: document.size(),
                         strlen: document.strlen().unwrap() as u64,
                         modified: document.modified(),
                         hash: document.hash(8).unwrap(),
-                        lang_code,
-                        lang_score,
                     }
                 },
             ),
@@ -245,6 +246,7 @@ impl SyncCommand {
         let mut path = vec![];
         let mut lang_code = vec![];
         let mut lang_score = vec![];
+        let mut alpha = vec![];
         let mut size = vec![];
         let mut strlen = vec![];
         let mut mtime = vec![];
@@ -258,6 +260,7 @@ impl SyncCommand {
             path.push(record.path);
             lang_code.push(record.lang_code);
             lang_score.push(record.lang_score);
+            alpha.push(record.alpha);
             size.push(record.size);
             strlen.push(record.strlen);
             mtime.push(record.modified);
@@ -272,6 +275,7 @@ impl SyncCommand {
             Series::new("path", path),
             Series::new("lang_code", lang_code).cast(&CATEGORICAL)?,
             Series::new("lang_score", lang_score),
+            Series::new("alpha", alpha),
             Series::new("size", size),
             Series::new("strlen", strlen),
             Series::new("mtime", mtime),
