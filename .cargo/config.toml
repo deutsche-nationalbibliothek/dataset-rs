@@ -1,4 +1,5 @@
 [build]
+rustdocflags = ["--html-in-header", "docs/partials/katex.html"]
 rustflags = [
     # rust
     "-D", "warnings",

@@ -14,6 +14,9 @@ build:
 clean:
 	$(CARGO) clean
 
+docs:
+	$(CARGO) doc --no-deps
+
 check:
 	$(CARGO) check
 
@@ -38,4 +41,5 @@ install:
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/dataset
 
-.PHONY: build clean check test clippy check-fmt release install uninstall
+.PHONY: build clean docs check test clippy check-fmt release install uninstall
+
