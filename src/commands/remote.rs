@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -10,7 +11,7 @@ use url::Url;
 use super::verify::VerifyMode;
 use crate::dataset::Dataset;
 use crate::document::{Document, DocumentKind};
-use crate::error::DatasetError;
+use crate::error::{DatasetError, DatasetResult};
 use crate::progress::ProgressBarBuilder;
 
 const CATEGORICAL: DataType =
@@ -188,9 +189,52 @@ impl SyncCommand {
         }
     }
 
+    fn doc_ids(
+        &self,
+        dataset: &Dataset,
+    ) -> DatasetResult<HashMap<String, u32>> {
+        let mut map = HashMap::new();
+
+        let path = match self.output {
+            None => dataset.data_dir().join(Dataset::REMOTES_INDEX),
+            Some(ref path) => path.to_path_buf(),
+        };
+
+        if let Ok(fh) = File::open(path) {
+            let df = IpcReader::new(fh).memory_mapped(None).finish()?;
+
+            let temp = &df.column("remote")?.cast(&DataType::String)?;
+            let remote = temp.str()?;
+
+            let temp = &df.column("kind")?.cast(&DataType::String)?;
+            let kind = temp.str()?;
+
+            let doc_id = df.column("doc_id")?.u32()?;
+            let idn = df.column("idn")?.str()?;
+
+            for row in 0..df.height() {
+                map.insert(
+                    format!(
+                        "{}-{}-{}",
+                        remote.get(row).unwrap(),
+                        idn.get(row).unwrap(),
+                        kind.get(row).unwrap(),
+                    ),
+                    doc_id.get(row).unwrap(),
+                );
+            }
+        }
+
+        Ok(map)
+    }
+
     pub(crate) fn execute(self) -> Result<(), DatasetError> {
         let dataset = Dataset::discover()?;
         let config = dataset.config()?;
+
+        let doc_ids = self.doc_ids(&dataset)?;
+        let doc_id_max = doc_ids.values().max().unwrap_or(&0);
+
         let mut documents: Vec<(&str, Document)> = vec![];
         let mut records: Vec<Row> = vec![];
 
@@ -252,8 +296,19 @@ impl SyncCommand {
         let mut mtime = vec![];
         let mut hash = vec![];
 
-        for (id, record) in records.into_iter().enumerate() {
-            doc_id.push(id as u32 + 1);
+        let mut offset = 0;
+
+        for record in records.into_iter() {
+            let key = format!(
+                "{}-{}-{}",
+                record.remote, record.idn, record.kind,
+            );
+
+            doc_id.push(doc_ids.get(&key).copied().unwrap_or({
+                offset += 1;
+                doc_id_max + offset
+            }));
+
             remote.push(record.remote);
             idn.push(record.idn);
             kind.push(record.kind.to_string());
