@@ -28,7 +28,7 @@ features = ["german", "english"]
 default-features = false
 
 [dependencies.polars]
-version = "0.39.2"
+version = "0.40"
 features = ["ipc", "dtype-categorical", "dtype-struct"]
 
 [features]

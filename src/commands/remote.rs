@@ -350,7 +350,7 @@ impl VerifyCommand {
         };
 
         let df = IpcReader::new(File::open(path)?)
-            .memory_mapped(false)
+            .memory_mapped(None)
             .finish()?;
 
         let temp = &df.column("remote")?.cast(&DataType::String)?;
