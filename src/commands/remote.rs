@@ -1,18 +1,24 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::Parser;
 use indicatif::ParallelProgressIterator;
+use pica_matcher::RecordMatcher;
+use pica_path::PathExt;
+use pica_record::io::{ReaderBuilder, RecordsIterator};
 use polars::prelude::*;
 use rayon::prelude::*;
 use url::Url;
 
+use super::update::Update;
 use super::verify::VerifyMode;
 use crate::dataset::Dataset;
 use crate::document::{Document, DocumentKind};
 use crate::error::{DatasetError, DatasetResult};
 use crate::progress::ProgressBarBuilder;
+use crate::remote::Refinement;
 
 const CATEGORICAL: DataType =
     DataType::Categorical(None, CategoricalOrdering::Lexical);
@@ -64,6 +70,22 @@ pub(crate) enum Command {
         suffix: String,
     },
 
+    RefineKind {
+        /// The name of the remote.
+        name: String,
+
+        // The source document kind.
+        #[clap(value_parser(DocumentKind::from_str))]
+        from: DocumentKind,
+
+        // The destination document kind.
+        #[clap(value_parser(DocumentKind::from_str))]
+        to: DocumentKind,
+
+        /// The record matcher
+        filter: String,
+    },
+
     /// Update the document index based on the remote config.
     Sync(SyncCommand),
 
@@ -88,10 +110,9 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
                 )));
             }
 
-            let remote = Remote::new(url, suffix)?;
+            let remote = Remote::new(url, suffix, Default::default())?;
             config.remotes.insert(name, remote);
         }
-
         Command::Remove { name } => {
             if !config.remotes.contains_key(&name) {
                 return Err(DatasetError::Remote(format!(
@@ -101,12 +122,19 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
 
             config.remotes.remove(&name);
         }
-
         Command::SetUrl { name, url } => {
             if let Some(remote) = config.remotes.get_mut(&name) {
                 match remote {
-                    Remote::Local { suffix, .. } => {
-                        *remote = Remote::new(url, suffix.to_string())?;
+                    Remote::Local {
+                        suffix,
+                        refinements,
+                        ..
+                    } => {
+                        *remote = Remote::new(
+                            url,
+                            suffix.to_string(),
+                            refinements.clone(),
+                        )?;
                     }
                 }
             } else {
@@ -115,15 +143,36 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
                 )));
             }
         }
-
         Command::SetSuffix { name, suffix } => {
+            let new_suffix = suffix;
+
             if let Some(remote) = config.remotes.get_mut(&name) {
                 match remote {
-                    Remote::Local { path, .. } => {
-                        *remote = Remote::Local {
-                            path: path.to_path_buf(),
-                            suffix,
-                        }
+                    Remote::Local { ref mut suffix, .. } => {
+                        *suffix = new_suffix;
+                    }
+                }
+            } else {
+                return Err(DatasetError::Remote(format!(
+                    "remote with name '{name}' does not exists.",
+                )));
+            }
+        }
+        Command::RefineKind {
+            name,
+            from,
+            to,
+            filter,
+        } => {
+            if let Some(remote) = config.remotes.get_mut(&name) {
+                let refinement = Refinement { from, to, filter };
+
+                match remote {
+                    Remote::Local {
+                        ref mut refinements,
+                        ..
+                    } => {
+                        refinements.push(refinement);
                     }
                 }
             } else {
@@ -155,6 +204,9 @@ pub(crate) struct SyncCommand {
     /// be written to the internal data directory.
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
+
+    /// The path to the PICA+ dump
+    path: PathBuf,
 }
 
 #[derive(Debug)]
@@ -172,6 +224,10 @@ struct Row {
     hash: String,
 }
 
+const PBAR_KINDS: &str =
+    "remote: Preparing kind mapping: {human_pos} | \
+        elapsed: {elapsed_precise}{msg}";
+
 const PBAR_COLLECT: &str =
     "remote: Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
@@ -181,10 +237,11 @@ const PBAR_INDEX: &str =
         elapsed: {elapsed_precise}{msg}";
 
 impl SyncCommand {
-    pub(crate) fn new(quiet: bool, verbose: bool) -> Self {
+    pub(crate) fn new(args: &Update) -> Self {
         Self {
-            quiet,
-            verbose,
+            quiet: args.quiet,
+            verbose: args.verbose,
+            path: args.path.clone(),
             ..Default::default()
         }
     }
@@ -228,12 +285,76 @@ impl SyncCommand {
         Ok(map)
     }
 
-    pub(crate) fn execute(self) -> Result<(), DatasetError> {
+    fn kind_refinements(
+        &self,
+        dataset: &Dataset,
+    ) -> DatasetResult<
+        HashMap<(String, DocumentKind, String), DocumentKind>,
+    > {
+        let config = dataset.config()?;
+        let mut refinements = HashMap::new();
+        let mut matchers = HashMap::new();
+
+        for (name, remote) in config.remotes.iter() {
+            for refinement in remote.refinements() {
+                let matcher =
+                    RecordMatcher::from_str(&refinement.filter)
+                        .map_err(|_| {
+                            DatasetError::Other(format!(
+                                "invalid record matcher: '{}'",
+                                &refinement.filter
+                            ))
+                        })?;
+
+                let key = (
+                    name.to_string(),
+                    refinement.from.clone(),
+                    refinement.to.clone(),
+                );
+
+                let _ = matchers.insert(key, matcher);
+            }
+        }
+
+        let pbar =
+            ProgressBarBuilder::new(PBAR_KINDS, self.quiet).build();
+
+        let mut reader = ReaderBuilder::new().from_path(&self.path)?;
+        'outer: while let Some(result) = reader.next() {
+            pbar.inc(1);
+
+            if let Ok(record) = result {
+                for ((name, from, to), matcher) in matchers.iter() {
+                    if matcher.is_match(&record, &Default::default()) {
+                        let idn = record
+                            .idn()
+                            .unwrap_or_default()
+                            .to_string();
+
+                        let key = (
+                            name.to_string(),
+                            from.clone(),
+                            idn.clone(),
+                        );
+
+                        let _ = refinements.insert(key, to.clone());
+                        continue 'outer;
+                    }
+                }
+            }
+        }
+
+        pbar.finish_using_style();
+        Ok(refinements)
+    }
+
+    pub(crate) fn execute(self) -> DatasetResult<()> {
         let dataset = Dataset::discover()?;
         let config = dataset.config()?;
 
         let doc_ids = self.doc_ids(&dataset)?;
         let doc_id_max = doc_ids.values().max().unwrap_or(&0);
+        let refinements = self.kind_refinements(&dataset)?;
 
         let mut documents: Vec<(&str, Document)> = vec![];
         let mut records: Vec<Row> = vec![];
@@ -266,10 +387,21 @@ impl SyncCommand {
                     let remote = config.remotes.get(name).unwrap();
                     let language = document.lang().unwrap();
 
+                    let idn = document.idn();
+                    let kind = document.kind();
+                    let kind = refinements
+                        .get(&(
+                            name.to_string(),
+                            kind.clone(),
+                            idn.clone(),
+                        ))
+                        .unwrap_or(&kind)
+                        .to_owned();
+
                     Row {
                         remote: name.into(),
-                        idn: document.idn(),
-                        kind: document.kind(),
+                        idn,
+                        kind,
                         path: document.relpath(remote),
                         lang_code: language.0,
                         lang_score: language.1,

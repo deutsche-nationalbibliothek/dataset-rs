@@ -37,7 +37,6 @@ pub(crate) struct Config {
     /// use crate::config::Config;
     ///
     /// let config = Config {
-    ///     num_jobs: Some(23),
     ///     ..Default::default()
     /// };
     /// ```

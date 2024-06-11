@@ -5,13 +5,15 @@ use std::str::FromStr;
 use std::time::UNIX_EPOCH;
 
 use lingua::Language;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::{DatasetError, DatasetResult};
 use crate::lang::{lang_to_639_2b, language_detector};
 use crate::remote::Remote;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Hash, Clone)]
+#[serde(rename_all = "lowercase")]
 pub(crate) enum DocumentKind {
     Article,
     Blurb,
@@ -37,7 +39,7 @@ impl Display for DocumentKind {
 }
 
 impl FromStr for DocumentKind {
-    type Err = ();
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -48,7 +50,7 @@ impl FromStr for DocumentKind {
             "title" => Ok(Self::Title),
             "toc" => Ok(Self::Toc),
             "wp" => Ok(Self::Wp),
-            _ => Err(()),
+            _ => Err(format!("invalid document kind '{s}'")),
         }
     }
 }

@@ -5,7 +5,7 @@ use glob::{glob_with, MatchOptions};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::document::Document;
+use crate::document::{Document, DocumentKind};
 use crate::error::DatasetError;
 
 /// A remote is a data source, which allows access to documents.
@@ -13,7 +13,19 @@ use crate::error::DatasetError;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub(crate) enum Remote {
-    Local { path: PathBuf, suffix: String },
+    Local {
+        path: PathBuf,
+        suffix: String,
+        #[serde(skip_serializing_if = "Vec::is_empty", default)]
+        refinements: Vec<Refinement>,
+    },
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub(crate) struct Refinement {
+    pub(crate) from: DocumentKind,
+    pub(crate) to: DocumentKind,
+    pub(crate) filter: String,
 }
 
 impl Remote {
@@ -21,6 +33,7 @@ impl Remote {
     pub(crate) fn new<U, S>(
         url: U,
         suffix: S,
+        refinements: Vec<Refinement>,
     ) -> Result<Self, DatasetError>
     where
         U: Into<Url>,
@@ -49,7 +62,18 @@ impl Remote {
             )));
         }
 
-        Ok(Self::Local { path, suffix })
+        Ok(Self::Local {
+            path,
+            suffix,
+            refinements,
+        })
+    }
+
+    /// Returns the list of kind refinements
+    pub(crate) fn refinements(&self) -> &Vec<Refinement> {
+        match self {
+            Self::Local { refinements, .. } => refinements,
+        }
     }
 
     /// Returns a document relative to the base path of a remote.
@@ -69,7 +93,7 @@ impl Remote {
         &self,
     ) -> Box<dyn Iterator<Item = Result<Document, DatasetError>>> {
         match self {
-            Self::Local { path, suffix } => {
+            Self::Local { path, suffix, .. } => {
                 let path_str = path.to_str().unwrap();
                 let pattern = format!("{path_str}/**/*{suffix}");
                 let options = MatchOptions::default();

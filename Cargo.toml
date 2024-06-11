@@ -31,6 +31,20 @@ default-features = false
 version = "0.40"
 features = ["ipc", "dtype-categorical", "dtype-struct"]
 
+[dependencies.pica-path]
+git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
+features = ["serde"]
+version = "0.25.0"
+
+[dependencies.pica-matcher]
+git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
+features = ["serde"]
+version = "0.25.0"
+
+[dependencies.pica-record]
+git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
+version = "0.25.0"
+
 [features]
 performant = ["polars/performant", "polars/nightly", "polars/cse"]
 

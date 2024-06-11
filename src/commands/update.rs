@@ -11,18 +11,18 @@ pub(crate) struct Update {
     /// standard error stream. This option conflicts with the
     /// `--quiet` option.
     #[arg(short, long, conflicts_with = "quiet")]
-    verbose: bool,
+    pub(crate) verbose: bool,
 
     /// Operate quietly; do not show progress. This option conflicts
     /// with the `--verbose` option.
     #[arg(short, long, conflicts_with = "verbose")]
-    quiet: bool,
+    pub(crate) quiet: bool,
 
     /// The path to the PICA+ dump
-    path: PathBuf,
+    pub(crate) path: PathBuf,
 }
 
 pub(crate) fn execute(args: Update) -> Result<(), DatasetError> {
-    remote::SyncCommand::new(args.quiet, args.verbose).execute()?;
+    remote::SyncCommand::new(&args).execute()?;
     Ok(())
 }
