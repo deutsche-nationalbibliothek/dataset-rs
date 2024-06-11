@@ -1,13 +1,15 @@
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::fs::File;
+use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use clap::Parser;
 use indicatif::ParallelProgressIterator;
 use pica_matcher::RecordMatcher;
-use pica_path::PathExt;
+use pica_path::{Path, PathExt};
 use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_record::ByteRecord;
 use polars::prelude::*;
 use rayon::prelude::*;
 use url::Url;
@@ -18,7 +20,6 @@ use crate::dataset::Dataset;
 use crate::document::{Document, DocumentKind};
 use crate::error::{DatasetError, DatasetResult};
 use crate::progress::ProgressBarBuilder;
-use crate::remote::Refinement;
 
 const CATEGORICAL: DataType =
     DataType::Categorical(None, CategoricalOrdering::Lexical);
@@ -68,22 +69,6 @@ pub(crate) enum Command {
 
         /// The suffix of the documents.
         suffix: String,
-    },
-
-    RefineKind {
-        /// The name of the remote.
-        name: String,
-
-        // The source document kind.
-        #[clap(value_parser(DocumentKind::from_str))]
-        from: DocumentKind,
-
-        // The destination document kind.
-        #[clap(value_parser(DocumentKind::from_str))]
-        to: DocumentKind,
-
-        /// The record matcher
-        filter: String,
     },
 
     /// Update the document index based on the remote config.
@@ -158,29 +143,6 @@ pub(crate) fn execute(args: Remote) -> Result<(), DatasetError> {
                 )));
             }
         }
-        Command::RefineKind {
-            name,
-            from,
-            to,
-            filter,
-        } => {
-            if let Some(remote) = config.remotes.get_mut(&name) {
-                let refinement = Refinement { from, to, filter };
-
-                match remote {
-                    Remote::Local {
-                        ref mut refinements,
-                        ..
-                    } => {
-                        refinements.push(refinement);
-                    }
-                }
-            } else {
-                return Err(DatasetError::Remote(format!(
-                    "remote with name '{name}' does not exists.",
-                )));
-            }
-        }
     }
 
     config.save()?;
@@ -209,11 +171,150 @@ pub(crate) struct SyncCommand {
     path: PathBuf,
 }
 
+#[derive(Debug, Default)]
+pub(crate) struct KindRefinements {
+    refinements: HashMap<(String, DocumentKind, String), DocumentKind>,
+    matchers:
+        HashMap<(String, DocumentKind, DocumentKind), RecordMatcher>,
+}
+
+impl Deref for KindRefinements {
+    type Target = HashMap<(String, DocumentKind, String), DocumentKind>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.refinements
+    }
+}
+
+impl DerefMut for KindRefinements {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.refinements
+    }
+}
+
+impl KindRefinements {
+    pub(crate) fn new(dataset: &Dataset) -> DatasetResult<Self> {
+        let config = dataset.config()?;
+        let mut matchers = HashMap::new();
+
+        for (name, remote) in config.remotes.iter() {
+            for refinement in remote.refinements() {
+                let matcher =
+                    RecordMatcher::from_str(&refinement.filter)
+                        .map_err(|_| {
+                            DatasetError::Other(format!(
+                                "invalid record matcher: '{}'",
+                                &refinement.filter
+                            ))
+                        })?;
+
+                let key = (
+                    name.to_string(),
+                    refinement.from.clone(),
+                    refinement.to.clone(),
+                );
+
+                let _ = matchers.insert(key, matcher);
+            }
+        }
+
+        Ok(Self {
+            matchers,
+            ..Default::default()
+        })
+    }
+
+    pub(crate) fn process_record(&mut self, record: &ByteRecord) {
+        for ((name, from, to), matcher) in self.matchers.iter() {
+            if matcher.is_match(record, &Default::default()) {
+                let idn = record.idn().unwrap_or_default().to_string();
+                let key = (name.to_string(), from.clone(), idn.clone());
+                let _ = self.refinements.insert(key, to.clone());
+                return;
+            }
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct SubjectCategoryMap {
+    paths: Vec<Path>,
+    allow_list: BTreeSet<String>,
+    map: HashMap<String, String>,
+}
+
+impl Deref for SubjectCategoryMap {
+    type Target = HashMap<String, String>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.map
+    }
+}
+
+impl DerefMut for SubjectCategoryMap {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.map
+    }
+}
+
+impl SubjectCategoryMap {
+    pub(crate) fn new(_dataset: &Dataset) -> DatasetResult<Self> {
+        let paths = vec![
+            r#"045E{ e | (!E? || E == "i")}"#,
+            r#"045E{e | E == "a" && H in ["dnb", "dnb-pa"]}"#,
+            r#"045E{e | E == "m" && H in ["aepsg", "emasg"]}"#,
+        ];
+
+        let allow_list = BTreeSet::from_iter(
+            [
+                "000", "004", "010", "020", "030", "050", "060", "070",
+                "080", "090", "100", "130", "150", "200", "220", "230",
+                "290", "300", "310", "320", "330", "333.7", "340",
+                "350", "355", "360", "370", "380", "390", "400", "420",
+                "430", "439", "440", "450", "460", "470", "480", "490",
+                "491.8", "500", "510", "520", "530", "540", "550",
+                "560", "570", "580", "590", "600", "610", "620",
+                "621.3", "624", "630", "640", "650", "660", "670",
+                "690", "700", "710", "720", "730", "740", "741.5",
+                "750", "760", "770", "780", "790", "791", "792", "793",
+                "796", "800", "810", "820", "830", "839", "840", "850",
+                "860", "870", "880", "890", "891.8", "900", "910",
+                "914.3", "920", "930", "940", "943", "950", "960",
+                "970", "980", "990", "B", "K", "S",
+            ]
+            .map(String::from),
+        );
+
+        Ok(Self {
+            paths: paths.into_iter().map(Path::new).collect(),
+            allow_list,
+            ..Default::default()
+        })
+    }
+
+    pub(crate) fn process_record(&mut self, record: &ByteRecord) {
+        for path in self.paths.iter() {
+            if let Some(ddc_sc) =
+                record.path(path, &Default::default()).first()
+            {
+                let idn = record.idn().unwrap().to_string();
+                let ddc_sc = ddc_sc.to_string();
+
+                if self.allow_list.contains(&ddc_sc) {
+                    self.insert(idn, ddc_sc);
+                    return;
+                }
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 struct Row {
     remote: String,
     idn: String,
     kind: DocumentKind,
+    sc: Option<String>,
     path: String,
     lang_code: &'static str,
     lang_score: f64,
@@ -224,8 +325,8 @@ struct Row {
     hash: String,
 }
 
-const PBAR_KINDS: &str =
-    "remote: Preparing kind mapping: {human_pos} | \
+const PBAR_METADATA: &str =
+    "remote: Collecting metadata: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
 const PBAR_COLLECT: &str =
@@ -285,76 +386,30 @@ impl SyncCommand {
         Ok(map)
     }
 
-    fn kind_refinements(
-        &self,
-        dataset: &Dataset,
-    ) -> DatasetResult<
-        HashMap<(String, DocumentKind, String), DocumentKind>,
-    > {
-        let config = dataset.config()?;
-        let mut refinements = HashMap::new();
-        let mut matchers = HashMap::new();
-
-        for (name, remote) in config.remotes.iter() {
-            for refinement in remote.refinements() {
-                let matcher =
-                    RecordMatcher::from_str(&refinement.filter)
-                        .map_err(|_| {
-                            DatasetError::Other(format!(
-                                "invalid record matcher: '{}'",
-                                &refinement.filter
-                            ))
-                        })?;
-
-                let key = (
-                    name.to_string(),
-                    refinement.from.clone(),
-                    refinement.to.clone(),
-                );
-
-                let _ = matchers.insert(key, matcher);
-            }
-        }
-
-        let pbar =
-            ProgressBarBuilder::new(PBAR_KINDS, self.quiet).build();
-
-        let mut reader = ReaderBuilder::new().from_path(&self.path)?;
-        'outer: while let Some(result) = reader.next() {
-            pbar.inc(1);
-
-            if let Ok(record) = result {
-                for ((name, from, to), matcher) in matchers.iter() {
-                    if matcher.is_match(&record, &Default::default()) {
-                        let idn = record
-                            .idn()
-                            .unwrap_or_default()
-                            .to_string();
-
-                        let key = (
-                            name.to_string(),
-                            from.clone(),
-                            idn.clone(),
-                        );
-
-                        let _ = refinements.insert(key, to.clone());
-                        continue 'outer;
-                    }
-                }
-            }
-        }
-
-        pbar.finish_using_style();
-        Ok(refinements)
-    }
-
     pub(crate) fn execute(self) -> DatasetResult<()> {
         let dataset = Dataset::discover()?;
         let config = dataset.config()?;
 
         let doc_ids = self.doc_ids(&dataset)?;
         let doc_id_max = doc_ids.values().max().unwrap_or(&0);
-        let refinements = self.kind_refinements(&dataset)?;
+
+        let mut kind_refinements = KindRefinements::new(&dataset)?;
+        let mut subject_categories = SubjectCategoryMap::new(&dataset)?;
+
+        let pbar =
+            ProgressBarBuilder::new(PBAR_METADATA, self.quiet).build();
+
+        let mut reader = ReaderBuilder::new().from_path(&self.path)?;
+        while let Some(result) = reader.next() {
+            pbar.inc(1);
+
+            if let Ok(record) = result {
+                subject_categories.process_record(&record);
+                kind_refinements.process_record(&record);
+            }
+        }
+
+        pbar.finish_using_style();
 
         let mut documents: Vec<(&str, Document)> = vec![];
         let mut records: Vec<Row> = vec![];
@@ -388,8 +443,9 @@ impl SyncCommand {
                     let language = document.lang().unwrap();
 
                     let idn = document.idn();
+                    let sc = subject_categories.get(&idn).cloned();
                     let kind = document.kind();
-                    let kind = refinements
+                    let kind = kind_refinements
                         .get(&(
                             name.to_string(),
                             kind.clone(),
@@ -402,6 +458,7 @@ impl SyncCommand {
                         remote: name.into(),
                         idn,
                         kind,
+                        sc,
                         path: document.relpath(remote),
                         lang_code: language.0,
                         lang_score: language.1,
@@ -419,6 +476,7 @@ impl SyncCommand {
         let mut idn = vec![];
         let mut remote = vec![];
         let mut kind = vec![];
+        let mut ddc_sc = vec![];
         let mut path = vec![];
         let mut lang_code = vec![];
         let mut lang_score = vec![];
@@ -444,6 +502,7 @@ impl SyncCommand {
             remote.push(record.remote);
             idn.push(record.idn);
             kind.push(record.kind.to_string());
+            ddc_sc.push(record.sc);
             path.push(record.path);
             lang_code.push(record.lang_code);
             lang_score.push(record.lang_score);
@@ -459,6 +518,7 @@ impl SyncCommand {
             Series::new("idn", idn),
             Series::new("remote", remote).cast(&CATEGORICAL)?,
             Series::new("kind", kind).cast(&CATEGORICAL)?,
+            Series::new("ddc_sc", ddc_sc).cast(&CATEGORICAL)?,
             Series::new("path", path),
             Series::new("lang_code", lang_code).cast(&CATEGORICAL)?,
             Series::new("lang_score", lang_score),
