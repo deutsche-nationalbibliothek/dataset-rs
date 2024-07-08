@@ -7,4 +7,9 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+clap.workspace = true
 dataset = { path = "../../" }
+semver.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+toml.workspace = true
