@@ -14,6 +14,7 @@ mod error;
 fn run(args: Args) -> DatapodResult<()> {
     match args.cmd {
         Command::Init(args) => commands::init::execute(args),
+        Command::Version(args) => commands::version::execute(args),
     }
 }
 
