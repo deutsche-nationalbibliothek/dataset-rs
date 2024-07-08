@@ -1,0 +1,12 @@
+[package]
+name = "dataset"
+version = "0.1.0"
+edition = "2021"
+license = "EUPL-1.2"
+rust-version = "1.79.0"
+
+[[bin]]
+name = "dataset"
+path = "src/bin/main.rs"
+
+[dependencies]
