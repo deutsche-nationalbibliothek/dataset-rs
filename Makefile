@@ -30,13 +30,19 @@ check-fmt:
 	$(CARGO) fmt --all -- --check
 
 release:
-	$(CARGO) build --features performant --release
+	$(CARGO) build --release --workspace
+
+dev-install:
+	$(CARGO) install --debug -q --path crates/datapod --bin datapod
+	$(CARGO) install --debug -q --path . --bin dataset
 
 install:
 	install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
+	install -Dm755 target/release/datapod $(DESTDIR)$(BINDIR)/datapod
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/dataset
+	rm -f $(DESTDIR)$(BINDIR)/datapod
 
 .PHONY: build clean docs check test clippy check-fmt release install uninstall
 

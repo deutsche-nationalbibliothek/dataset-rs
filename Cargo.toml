@@ -1,12 +1,25 @@
 [package]
 name = "dataset"
-version = "0.1.0"
+authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "EUPL-1.2"
 rust-version = "1.79.0"
+version = "0.1.0"
 
 [[bin]]
 name = "dataset"
 path = "src/bin/main.rs"
 
 [dependencies]
+
+[workspace]
+members = ["crates/datapod"]
+resolver = "2"
+
+[workspace.package]
+authors = ["Nico Wagner <n.wagner@dnb.de>"]
+edition = "2021"
+license = "EUPL-1.2"
+rust-version = "1.79.0"
+
+[workspace.dependencies]
