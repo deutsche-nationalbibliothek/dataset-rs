@@ -1,0 +1,46 @@
+name: Daily
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * *'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    needs:
+      - deny
+      - outdated
+    steps:
+      - run: exit 0
+
+  deny:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        checks:
+          - bans licenses sources
+          - advisories
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+    steps:
+    - uses: actions/checkout@v4
+    - uses: EmbarkStudios/cargo-deny-action@v1
+      with:
+        command: check ${{ matrix.checks }}
+        command-arguments: -c .deny.toml
+        rust-version: stable
+
+  outdated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/install@cargo-outdated
+      - run: cargo update
+      - run: cargo outdated --workspace --exit-code 1
