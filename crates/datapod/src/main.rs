@@ -9,11 +9,13 @@ mod cli;
 mod commands;
 mod config;
 mod datapod;
+#[macro_use]
 mod error;
 
 fn run(args: Args) -> DatapodResult<()> {
     match args.cmd {
         Command::Init(args) => commands::init::execute(args),
+        Command::Config(args) => commands::config::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }
