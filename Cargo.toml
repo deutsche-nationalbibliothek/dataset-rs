@@ -21,6 +21,7 @@ license = "EUPL-1.2"
 rust-version = "1.79.0"
 
 [workspace.dependencies]
+rayon = { version = "1.10.0" }
 semver = { version = "1.0.23", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 thiserror = { version = "1.0" }
@@ -29,4 +30,3 @@ toml = { version = "0.8.14", features = ["preserve_order"] }
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]
 version = "4.5"
-
