@@ -41,8 +41,6 @@ fn run(args: Args) -> DatapodResult<()> {
 fn main() {
     let args = Args::parse();
 
-    eprintln!("num_threads = {:?}", num_threads(&args));
-
     ThreadPoolBuilder::new()
         .num_threads(num_threads(&args))
         .build_global()
