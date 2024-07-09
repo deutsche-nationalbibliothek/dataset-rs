@@ -66,6 +66,16 @@ pub(crate) fn execute(args: Config) -> DatapodResult<()> {
                 bail!("unknown or unsupported config option `{key}`");
             }
         }
+    } else if args.unset {
+        match key {
+            "runtime.num_jobs" => {
+                config.runtime = None;
+                config.save()?;
+            }
+            _ => {
+                bail!("unknown or unsupported config option `{key}`");
+            }
+        }
     } else if args.get || (!args.unset && !args.set) {
         match key {
             "runtime.num_jobs" => {
@@ -73,16 +83,6 @@ pub(crate) fn execute(args: Config) -> DatapodResult<()> {
                     key,
                     config.runtime.and_then(|rt| rt.num_jobs),
                 );
-            }
-            _ => {
-                bail!("unknown or unsupported config option `{key}`");
-            }
-        }
-    } else if args.unset {
-        match key {
-            "runtime.num_jobs" => {
-                config.runtime = None;
-                config.save()?;
             }
             _ => {
                 bail!("unknown or unsupported config option `{key}`");
