@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 
+use crate::commands::config::Config;
 use crate::commands::init::Init;
 use crate::commands::version::Version;
 
@@ -13,5 +14,6 @@ pub(crate) struct Args {
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
     Init(Init),
+    Config(Config),
     Version(Version),
 }
