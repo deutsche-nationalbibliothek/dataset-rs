@@ -39,9 +39,21 @@ impl Datapod {
         Ok(Self { root_dir })
     }
 
-    /// Returns the manifest associated with the data pod.
+    /// Returns the config associated with the datapod.
     #[inline]
     pub(crate) fn config(&self) -> DatapodResult<Config> {
         Config::from_path(self.root_dir.join(Self::CONFIG))
+    }
+
+    /// Returns the base directory of the datapod.
+    #[inline]
+    pub(crate) fn base_dir(&self) -> &PathBuf {
+        &self.root_dir
+    }
+
+    /// Returns the data directory of the datapod.
+    #[inline]
+    pub(crate) fn data_dir(&self) -> PathBuf {
+        self.root_dir.join(Self::DATA_DIR)
     }
 }

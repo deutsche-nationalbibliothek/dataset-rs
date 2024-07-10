@@ -11,8 +11,10 @@ mod cli;
 mod commands;
 mod config;
 mod datapod;
-#[macro_use]
+mod document;
 mod error;
+mod progress;
+mod utils;
 
 fn num_threads(args: &Args) -> usize {
     if let Some(num_threads) = args.num_jobs {
@@ -34,6 +36,7 @@ fn run(args: Args) -> DatapodResult<()> {
     match args.cmd {
         Command::Init(args) => commands::init::execute(args),
         Command::Config(args) => commands::config::execute(args),
+        Command::Index(args) => commands::index::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }
