@@ -10,6 +10,8 @@ version = "0.1.0"
 name = "dataset"
 path = "src/bin/main.rs"
 
+[dependencies]
+
 [workspace]
 members = ["crates/datapod"]
 resolver = "2"
@@ -21,12 +23,19 @@ license = "EUPL-1.2"
 rust-version = "1.79.0"
 
 [workspace.dependencies]
-rayon = { version = "1.10.0" }
+bstr = { version = "1.9.1", features = ["unicode"] }
+glob = "0.3.1"
+indicatif = { version = "0.17.8", features = ["rayon"] }
+rayon = "1.10.0"
 semver = { version = "1.0.23", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
-thiserror = { version = "1.0" }
+thiserror = "1.0"
 toml = { version = "0.8.14", features = ["preserve_order"] }
 
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]
 version = "4.5"
+
+[workspace.dependencies.polars]
+version = "0.41.3"
+features = ["ipc", "dtype-categorical"]
