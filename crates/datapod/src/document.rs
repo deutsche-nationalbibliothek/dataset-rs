@@ -40,7 +40,7 @@ impl Document {
 
     /// Returns the length of the document in bytes.
     #[inline]
-    pub(crate) fn len(&self) -> u64 {
+    pub(crate) fn size(&self) -> u64 {
         self.buf.len() as u64
     }
 

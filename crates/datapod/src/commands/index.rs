@@ -42,7 +42,7 @@ pub(crate) struct Index {
 struct Row {
     idn: String,
     path: PathBuf,
-    len: u64,
+    size: u64,
     mtime: u64,
     hash: String,
 }
@@ -55,7 +55,7 @@ impl TryFrom<&PathBuf> for Row {
         Ok(Row {
             idn: doc.idn(),
             path: path.into(),
-            len: doc.len(),
+            size: doc.size(),
             mtime: doc.modified(),
             hash: doc.hash(),
         })
@@ -92,7 +92,7 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
     let mut idn: Vec<String> = vec![];
     let mut remote: Vec<&str> = vec![];
     let mut path: Vec<String> = vec![];
-    let mut len: Vec<u64> = vec![];
+    let mut size: Vec<u64> = vec![];
     let mut mtime: Vec<u64> = vec![];
     let mut hash: Vec<String> = vec![];
 
@@ -100,7 +100,7 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
         idn.push(row.idn);
         remote.push(&config.metadata.name);
         path.push(relpath(&row.path, base_dir));
-        len.push(row.len);
+        size.push(row.size);
         mtime.push(row.mtime);
         hash.push(row.hash[0..8].to_string());
     }
@@ -109,7 +109,7 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
         Series::new("idn", idn),
         Series::new("remote", remote),
         Series::new("path", path),
-        Series::new("len", len),
+        Series::new("size", size),
         Series::new("mtime", mtime),
         Series::new("hash", hash),
     ])?;
