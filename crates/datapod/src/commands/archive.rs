@@ -87,6 +87,10 @@ pub(crate) fn execute(args: Archive) -> DatapodResult<()> {
         File::open(datapod.base_dir().join(Datapod::INDEX))?;
     archive.append_file("index.ipc", &mut index)?;
 
+    let mut config =
+        File::open(datapod.base_dir().join(Datapod::CONFIG))?;
+    archive.append_file(Datapod::CONFIG, &mut config)?;
+
     archive.finish()?;
     Ok(())
 }
