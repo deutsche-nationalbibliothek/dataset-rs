@@ -39,6 +39,7 @@ fn run(args: Args) -> DatapodResult<()> {
         Command::Index(args) => commands::index::execute(args),
         Command::Verify(args) => commands::verify::execute(args),
         Command::Archive(args) => commands::archive::execute(args),
+        Command::Restore(args) => commands::restore::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }

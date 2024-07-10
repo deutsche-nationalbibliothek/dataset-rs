@@ -4,6 +4,7 @@ use crate::commands::archive::Archive;
 use crate::commands::config::Config;
 use crate::commands::index::Index;
 use crate::commands::init::Init;
+use crate::commands::restore::Restore;
 use crate::commands::verify::Verify;
 use crate::commands::version::Version;
 
@@ -32,5 +33,6 @@ pub(crate) enum Command {
     Index(Index),
     Verify(Verify),
     Archive(Archive),
+    Restore(Restore),
     Version(Version),
 }
