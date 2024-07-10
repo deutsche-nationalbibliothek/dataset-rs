@@ -1,3 +1,4 @@
+pub(crate) mod archive;
 pub(crate) mod config;
 pub(crate) mod index;
 pub(crate) mod init;

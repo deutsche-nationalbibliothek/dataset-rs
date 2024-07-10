@@ -1,5 +1,8 @@
+use std::fs::File;
 use std::path::PathBuf;
 use std::{env, fs};
+
+use polars::prelude::*;
 
 use crate::config::Config;
 use crate::error::{DatapodError, DatapodResult};
@@ -56,5 +59,15 @@ impl Datapod {
     #[inline]
     pub(crate) fn data_dir(&self) -> PathBuf {
         self.root_dir.join(Self::DATA_DIR)
+    }
+
+    /// Returns the index associated with the datapod.
+    #[inline]
+    pub(crate) fn index(&self) -> DatapodResult<DataFrame> {
+        Ok(IpcReader::new(File::open(
+            self.base_dir().join(Self::INDEX),
+        )?)
+        .memory_mapped(None)
+        .finish()?)
     }
 }
