@@ -70,7 +70,7 @@ pub(crate) fn execute(args: Verify) -> DatapodResult<()> {
     let path = df.column("path")?.str()?;
     let hash = df.column("hash")?.str()?;
     let mtime = df.column("mtime")?.u64()?;
-    let size = df.column("len")?.u64()?;
+    let size = df.column("size")?.u64()?;
 
     let pbar = ProgressBarBuilder::new(PBAR_VERIFY, args.quiet)
         .len(df.height() as u64)
@@ -110,7 +110,7 @@ pub(crate) fn execute(args: Verify) -> DatapodResult<()> {
             }
 
             if args.mode >= VerifyMode::Pedantic
-                && doc.len() != size.get(idx).unwrap()
+                && doc.size() != size.get(idx).unwrap()
             {
                 bail!( "verification failed: size mismatch (path = {path:?})");
             }
