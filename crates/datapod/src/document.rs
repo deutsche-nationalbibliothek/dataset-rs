@@ -1,8 +1,10 @@
+use std::fmt::Write;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use bstr::BString;
+use sha2::{Digest, Sha256};
 
 use crate::error::DatapodResult;
 
@@ -33,15 +35,20 @@ impl Document {
     }
 
     /// Returns the length of the document in bytes.
-    ///
-    /// ```rust
-    /// use document_stats::Document;
-    ///
-    /// let doc = Document::new("a ∉ ℕ");
-    /// assert_eq!(doc.len(), 9);
-    /// ```
     #[inline]
     pub(crate) fn len(&self) -> u64 {
         self.buf.len() as u64
+    }
+
+    /// Returns the SHA256 digest of the document.
+    pub(crate) fn hash(&self) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(&self.buf);
+
+        let hash = hasher.finalize();
+        hash.iter().fold(String::new(), |mut out, b| {
+            let _ = write!(out, "{b:02x}");
+            out
+        })
     }
 }
