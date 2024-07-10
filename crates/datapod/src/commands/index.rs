@@ -43,6 +43,7 @@ struct Row {
     idn: String,
     path: PathBuf,
     len: u64,
+    hash: String,
 }
 
 impl TryFrom<&PathBuf> for Row {
@@ -54,6 +55,7 @@ impl TryFrom<&PathBuf> for Row {
             idn: doc.idn(),
             path: path.into(),
             len: doc.len(),
+            hash: doc.hash(),
         })
     }
 }
@@ -89,12 +91,14 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
     let mut remote: Vec<&str> = vec![];
     let mut path: Vec<String> = vec![];
     let mut len: Vec<u64> = vec![];
+    let mut hash: Vec<String> = vec![];
 
     for row in rows.into_iter() {
         idn.push(row.idn);
         remote.push(&config.metadata.name);
         path.push(relpath(&row.path, base_dir));
         len.push(row.len);
+        hash.push(row.hash[0..12].to_string());
     }
 
     let mut df = DataFrame::new(vec![
@@ -102,6 +106,7 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
         Series::new("remote", remote),
         Series::new("path", path),
         Series::new("len", len),
+        Series::new("hash", hash),
     ])?;
 
     match args.output {
