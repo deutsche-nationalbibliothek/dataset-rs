@@ -1,9 +1,7 @@
-use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use clap::{Parser, ValueEnum};
 use indicatif::ParallelProgressIterator;
-use polars::prelude::*;
 use rayon::prelude::*;
 
 use crate::datapod::Datapod;
@@ -48,35 +46,22 @@ pub(crate) struct Verify {
         hide_default_value = true
     )]
     mode: VerifyMode,
-
-    /// Read the index from `filename`. By default, the index will
-    /// be read from the internal data directory.
-    #[arg(value_name = "filename")]
-    path: Option<PathBuf>,
 }
 
 pub(crate) fn execute(args: Verify) -> DatapodResult<()> {
     let datapod = Datapod::discover()?;
+    let index = datapod.index()?;
 
-    let path = match args.path {
-        None => datapod.data_dir().join(Datapod::INDEX),
-        Some(path) => path,
-    };
-
-    let df = IpcReader::new(File::open(path)?)
-        .memory_mapped(None)
-        .finish()?;
-
-    let path = df.column("path")?.str()?;
-    let hash = df.column("hash")?.str()?;
-    let mtime = df.column("mtime")?.u64()?;
-    let size = df.column("size")?.u64()?;
+    let path = index.column("path")?.str()?;
+    let hash = index.column("hash")?.str()?;
+    let mtime = index.column("mtime")?.u64()?;
+    let size = index.column("size")?.u64()?;
 
     let pbar = ProgressBarBuilder::new(PBAR_VERIFY, args.quiet)
-        .len(df.height() as u64)
+        .len(index.height() as u64)
         .build();
 
-    (0..df.height())
+    (0..index.height())
         .into_par_iter()
         .progress_with(pbar)
         .try_for_each(|idx| -> Result<(), DatapodError> {
