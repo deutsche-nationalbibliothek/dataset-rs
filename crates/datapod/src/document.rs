@@ -1,16 +1,18 @@
 use std::fmt::Write;
-use std::fs::File;
+use std::fs::{File, Metadata};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::time::UNIX_EPOCH;
 
 use bstr::BString;
 use sha2::{Digest, Sha256};
 
 use crate::error::DatapodResult;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub(crate) struct Document {
     path: PathBuf,
+    metadata: Metadata,
     buf: BString,
 }
 
@@ -19,6 +21,7 @@ impl Document {
         path: P,
     ) -> DatapodResult<Self> {
         let path = path.as_ref().to_path_buf();
+        let metadata = path.metadata()?;
         let mut file = File::open(&path)?;
         let mut buf = Vec::new();
 
@@ -26,6 +29,7 @@ impl Document {
 
         Ok(Self {
             path,
+            metadata,
             buf: BString::from(buf),
         })
     }
@@ -38,6 +42,21 @@ impl Document {
     #[inline]
     pub(crate) fn len(&self) -> u64 {
         self.buf.len() as u64
+    }
+
+    /// Returns the last modification time of the document.
+    ///
+    /// # Panics
+    ///
+    /// This function panics, if the platform doesn't support the mtime
+    /// field.
+    pub(crate) fn modified(&self) -> u64 {
+        self.metadata
+            .modified()
+            .ok()
+            .and_then(|x| x.duration_since(UNIX_EPOCH).ok())
+            .map(|x| x.as_secs())
+            .expect("valid mtime")
     }
 
     /// Returns the SHA256 digest of the document.
