@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 use crate::commands::config::Config;
 use crate::commands::index::Index;
 use crate::commands::init::Init;
+use crate::commands::verify::Verify;
 use crate::commands::version::Version;
 
 #[derive(Debug, Parser)]
@@ -28,5 +29,6 @@ pub(crate) enum Command {
     Init(Init),
     Config(Config),
     Index(Index),
+    Verify(Verify),
     Version(Version),
 }

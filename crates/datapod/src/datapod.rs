@@ -11,6 +11,7 @@ pub(crate) struct Datapod {
 
 impl Datapod {
     pub(crate) const CONFIG: &'static str = "datapod.toml";
+    pub(crate) const INDEX: &'static str = "index.ipc";
     pub(crate) const DATA_DIR: &'static str = "data";
 
     /// Discovers the root of the data pod.
