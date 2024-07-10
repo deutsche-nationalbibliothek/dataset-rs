@@ -18,6 +18,7 @@ const PBAR_INDEX: &str =
     "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
+/// Creates an index of all available documents.
 #[derive(Debug, Default, Parser)]
 pub(crate) struct Index {
     /// Run verbosely. Print additional progress information to the
