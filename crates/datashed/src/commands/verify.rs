@@ -4,9 +4,9 @@ use clap::{Parser, ValueEnum};
 use indicatif::ParallelProgressIterator;
 use rayon::prelude::*;
 
-use crate::datapod::Datapod;
+use crate::datashed::Datashed;
 use crate::document::Document;
-use crate::error::{bail, DatapodError, DatapodResult};
+use crate::error::{bail, DatashedError, DatashedResult};
 use crate::progress::ProgressBarBuilder;
 
 const PBAR_VERIFY: &str =
@@ -48,9 +48,9 @@ pub(crate) struct Verify {
     mode: VerifyMode,
 }
 
-pub(crate) fn execute(args: Verify) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let index = datapod.index()?;
+pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let index = datashed.index()?;
 
     let path = index.column("path")?.str()?;
     let hash = index.column("hash")?.str()?;
@@ -64,7 +64,7 @@ pub(crate) fn execute(args: Verify) -> DatapodResult<()> {
     (0..index.height())
         .into_par_iter()
         .progress_with(pbar)
-        .try_for_each(|idx| -> Result<(), DatapodError> {
+        .try_for_each(|idx| -> Result<(), DatashedError> {
             let path = path.get(idx).unwrap();
             if !Path::new(path).is_file() {
                 bail!(

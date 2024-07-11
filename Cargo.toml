@@ -13,7 +13,7 @@ path = "src/bin/main.rs"
 [dependencies]
 
 [workspace]
-members = ["crates/datapod"]
+members = ["crates/datashed"]
 resolver = "2"
 
 [workspace.package]

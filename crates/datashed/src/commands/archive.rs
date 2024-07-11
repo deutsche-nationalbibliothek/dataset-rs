@@ -7,8 +7,8 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 use indicatif::ProgressIterator;
 
-use crate::datapod::Datapod;
-use crate::error::{DatapodError, DatapodResult};
+use crate::datashed::Datashed;
+use crate::error::{DatashedError, DatashedResult};
 use crate::progress::ProgressBarBuilder;
 
 const PBAR_ARCHIVE: &str =
@@ -48,9 +48,9 @@ pub(crate) struct Archive {
     output: Option<PathBuf>,
 }
 
-pub(crate) fn execute(args: Archive) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let index = datapod.index()?;
+pub(crate) fn execute(args: Archive) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let index = datashed.index()?;
     let paths = index.column("path")?.str()?;
 
     let level = if args.fast {
@@ -77,19 +77,19 @@ pub(crate) fn execute(args: Archive) -> DatapodResult<()> {
         let path = path.unwrap();
 
         let mut file =
-            File::open(datapod.base_dir().join(path)).unwrap();
+            File::open(datashed.base_dir().join(path)).unwrap();
         archive.append_file(path, &mut file).unwrap();
 
-        Ok::<(), DatapodError>(())
+        Ok::<(), DatashedError>(())
     })?;
 
     let mut index =
-        File::open(datapod.base_dir().join(Datapod::INDEX))?;
+        File::open(datashed.base_dir().join(Datashed::INDEX))?;
     archive.append_file("index.ipc", &mut index)?;
 
     let mut config =
-        File::open(datapod.base_dir().join(Datapod::CONFIG))?;
-    archive.append_file(Datapod::CONFIG, &mut config)?;
+        File::open(datashed.base_dir().join(Datashed::CONFIG))?;
+    archive.append_file(Datashed::CONFIG, &mut config)?;
 
     archive.finish()?;
     Ok(())

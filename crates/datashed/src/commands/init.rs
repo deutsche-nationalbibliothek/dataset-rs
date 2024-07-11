@@ -7,10 +7,10 @@ use clap::{Parser, ValueEnum};
 use semver::Version;
 
 use crate::config::Config;
-use crate::datapod::Datapod;
-use crate::error::{DatapodError, DatapodResult};
+use crate::datashed::Datashed;
+use crate::error::{DatashedError, DatashedResult};
 
-const GITIGNORE: &str = "# Datapod\n/data\n/index.ipc\n";
+const GITIGNORE: &str = "# Datashed\n/data\n/index.ipc\n";
 const DATA_DIR: &str = "data";
 
 /// Initialize a new or re-initialize an existing data pod.
@@ -89,10 +89,10 @@ fn git_init(path: &PathBuf) -> bool {
         .unwrap_or(false)
 }
 
-pub(crate) fn execute(args: Init) -> DatapodResult<()> {
+pub(crate) fn execute(args: Init) -> DatashedResult<()> {
     let root_dir = env::current_dir()?.join(args.path);
-    let data_dir = root_dir.join(Datapod::DATA_DIR);
-    let config = root_dir.join(Datapod::CONFIG);
+    let data_dir = root_dir.join(Datashed::DATA_DIR);
+    let config = root_dir.join(Datashed::CONFIG);
 
     if !root_dir.exists() {
         fs::create_dir_all(&root_dir)?;
@@ -110,7 +110,7 @@ pub(crate) fn execute(args: Init) -> DatapodResult<()> {
 
     if args.vcs == Vcs::Git {
         if !is_inside_git_work_tree(&root_dir) && !git_init(&root_dir) {
-            return Err(DatapodError::Other(
+            return Err(DatashedError::Other(
                 "Failed to initialize Git repository".into(),
             ));
         }

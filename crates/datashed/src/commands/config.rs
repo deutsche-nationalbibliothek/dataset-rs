@@ -1,8 +1,8 @@
 use clap::Parser;
 
 use crate::config::Runtime;
-use crate::datapod::Datapod;
-use crate::error::{bail, DatapodError, DatapodResult};
+use crate::datashed::Datashed;
+use crate::error::{bail, DatashedError, DatashedResult};
 
 /// Get and set dataset options.
 #[derive(Debug, Parser)]
@@ -39,9 +39,9 @@ where
     );
 }
 
-pub(crate) fn execute(args: Config) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let mut config = datapod.config()?;
+pub(crate) fn execute(args: Config) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let mut config = datashed.config()?;
     let key = args.key.as_str();
 
     if args.value.is_some() {

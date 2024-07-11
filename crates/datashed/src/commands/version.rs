@@ -1,7 +1,7 @@
 use clap::Parser;
 
-use crate::datapod::Datapod;
-use crate::error::{DatapodError, DatapodResult};
+use crate::datashed::Datashed;
+use crate::error::{DatashedError, DatashedResult};
 
 /// Get or set the version of the data pod.
 #[derive(Debug, Parser)]
@@ -15,13 +15,13 @@ pub(crate) struct Version {
     version: Option<semver::Version>,
 }
 
-pub(crate) fn execute(args: Version) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let mut config = datapod.config()?;
+pub(crate) fn execute(args: Version) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let mut config = datashed.config()?;
 
     if let Some(version) = args.version {
         if !args.force && version <= config.metadata.version {
-            return Err(DatapodError::Other(format!(
+            return Err(DatashedError::Other(format!(
                 "{} must be greater than {}",
                 version, config.metadata.version
             )));

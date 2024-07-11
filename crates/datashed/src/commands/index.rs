@@ -8,9 +8,9 @@ use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::datapod::Datapod;
+use crate::datashed::Datashed;
 use crate::document::Document;
-use crate::error::{DatapodError, DatapodResult};
+use crate::error::{DatashedError, DatashedResult};
 use crate::progress::ProgressBarBuilder;
 use crate::utils::relpath;
 
@@ -48,7 +48,7 @@ struct Row {
 }
 
 impl TryFrom<&PathBuf> for Row {
-    type Error = DatapodError;
+    type Error = DatashedError;
 
     fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
         let doc = Document::from_path(path)?;
@@ -62,17 +62,17 @@ impl TryFrom<&PathBuf> for Row {
     }
 }
 
-pub(crate) fn execute(args: Index) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let config = datapod.config()?;
-    let data_dir = datapod.data_dir();
-    let base_dir = datapod.base_dir();
+pub(crate) fn execute(args: Index) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let config = datashed.config()?;
+    let data_dir = datashed.data_dir();
+    let base_dir = datashed.base_dir();
 
     let pattern = format!("{}/**/*.txt", data_dir.display());
     let options = MatchOptions::default();
 
     let files: Vec<_> = glob_with(&pattern, options)
-        .map_err(|e| DatapodError::Other(e.to_string()))?
+        .map_err(|e| DatashedError::Other(e.to_string()))?
         .filter_map(Result::ok)
         .collect();
 
@@ -86,7 +86,7 @@ pub(crate) fn execute(args: Index) -> DatapodResult<()> {
         .map(Row::try_from)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|_| {
-            DatapodError::Other("unable to index documents!".into())
+            DatashedError::Other("unable to index documents!".into())
         })?;
 
     let mut idn: Vec<String> = vec![];

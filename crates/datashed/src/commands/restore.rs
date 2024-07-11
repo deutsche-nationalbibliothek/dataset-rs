@@ -5,9 +5,9 @@ use clap::Parser;
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::error::DatapodResult;
+use crate::error::DatashedResult;
 
-/// Restore a datapod archive (tar.gz).
+/// Restore a datashed archive (tar.gz).
 #[derive(Debug, Default, Parser)]
 pub(crate) struct Restore {
     /// Run verbosely. Print additional progress information to the
@@ -25,11 +25,11 @@ pub(crate) struct Restore {
     #[arg(short = 'C', long = "directory", default_value = ".")]
     dest: PathBuf,
 
-    /// The datapod archive to be restored.
+    /// The datashed archive to be restored.
     archive: PathBuf,
 }
 
-pub(crate) fn execute(args: Restore) -> DatapodResult<()> {
+pub(crate) fn execute(args: Restore) -> DatashedResult<()> {
     if !args.dest.is_dir() {
         create_dir(&args.dest)?;
     }

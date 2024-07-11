@@ -429,7 +429,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "datapod"
+name = "dataset"
+version = "0.1.0"
+
+[[package]]
+name = "datashed"
 version = "0.1.0"
 dependencies = [
  "bstr",
@@ -448,10 +452,6 @@ dependencies = [
  "thiserror",
  "toml",
 ]
-
-[[package]]
-name = "dataset"
-version = "0.1.0"
 
 [[package]]
 name = "digest"
