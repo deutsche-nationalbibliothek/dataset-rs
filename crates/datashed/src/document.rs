@@ -7,7 +7,7 @@ use std::time::UNIX_EPOCH;
 use bstr::BString;
 use sha2::{Digest, Sha256};
 
-use crate::error::DatapodResult;
+use crate::error::DatashedResult;
 
 #[derive(Debug)]
 pub(crate) struct Document {
@@ -19,7 +19,7 @@ pub(crate) struct Document {
 impl Document {
     pub(crate) fn from_path<P: AsRef<Path>>(
         path: P,
-    ) -> DatapodResult<Self> {
+    ) -> DatashedResult<Self> {
         let path = path.as_ref().to_path_buf();
         let metadata = path.metadata()?;
         let mut file = File::open(&path)?;

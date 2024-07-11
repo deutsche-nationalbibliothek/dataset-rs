@@ -1,22 +1,21 @@
 use std::collections::BTreeSet;
 use std::env::current_dir;
-// use std::env::current_dir;
 use std::path::PathBuf;
 
 use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use glob::{glob_with, MatchOptions};
 
-use crate::datapod::Datapod;
+use crate::datashed::Datashed;
 use crate::document::Document;
-use crate::error::{DatapodError, DatapodResult};
+use crate::error::{DatashedError, DatashedResult};
 use crate::utils::relpath;
 
 const PBAR_COLLECT: &str =
     "Collecting documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
-/// Show the datapod status
+/// Show the datashed status
 #[derive(Debug, Default, Parser)]
 pub(crate) struct Status {
     /// Run verbosely. Print additional progress information to the
@@ -39,13 +38,13 @@ enum DocumentStatus {
     Untracked,
 }
 
-pub(crate) fn execute(_args: Status) -> DatapodResult<()> {
-    let datapod = Datapod::discover()?;
-    let data_dir = datapod.data_dir();
-    let base_dir = datapod.base_dir();
+pub(crate) fn execute(_args: Status) -> DatashedResult<()> {
+    let datashed = Datashed::discover()?;
+    let data_dir = datashed.data_dir();
+    let base_dir = datashed.base_dir();
     let current_dir = current_dir()?;
-    let config = datapod.config()?;
-    let index = datapod.index()?;
+    let config = datashed.config()?;
+    let index = datashed.index()?;
 
     let mut table = Table::new();
     table.set_header(Row::from(vec![
@@ -57,7 +56,7 @@ pub(crate) fn execute(_args: Status) -> DatapodResult<()> {
     let options = MatchOptions::default();
 
     let mut files: BTreeSet<_> = glob_with(&pattern, options)
-        .map_err(|e| DatapodError::Other(e.to_string()))?
+        .map_err(|e| DatashedError::Other(e.to_string()))?
         .filter_map(Result::ok)
         .map(|path| relpath(path, base_dir))
         .collect();
@@ -117,7 +116,7 @@ pub(crate) fn execute(_args: Status) -> DatapodResult<()> {
     }
 
     eprintln!(
-        "datapod '{}', version {}.\n",
+        "datashed '{}', version {}.\n",
         config.metadata.name, config.metadata.version
     );
 

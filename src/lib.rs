@@ -12,10 +12,10 @@
 //!
 //! This project provides the following tools:
 //!
-//! ## Datapod
+//! ## datashed
 //!
-//! The `datapod` tool creates and manages a _datapod_ that can later be
-//! used in a dataset as an data source. It offers an index of the
+//! The `datashed` tool creates and manages a _datashed_ that can later
+//! be used in a dataset as an data source. It offers an index of the
 //! managed documents, which contains various metrics for determining
 //! the quality of a document.
 //!

@@ -1,15 +1,15 @@
-pub(crate) type DatapodResult<T> = Result<T, DatapodError>;
+pub(crate) type DatashedResult<T> = Result<T, DatashedError>;
 
 macro_rules! bail {
     ($($arg:tt)*) => {{
-        return Err(DatapodError::Other(format!($($arg)*)));
+        return Err(DatashedError::Other(format!($($arg)*)));
     }};
 }
 
 pub(crate) use bail;
 
 #[derive(Debug, thiserror::Error)]
-pub(crate) enum DatapodError {
+pub(crate) enum DatashedError {
     #[error(transparent)]
     IO(#[from] std::io::Error),
 

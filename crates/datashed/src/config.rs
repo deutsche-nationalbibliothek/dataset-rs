@@ -5,16 +5,16 @@ use std::path::{Path, PathBuf};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
-use crate::error::DatapodResult;
+use crate::error::DatashedResult;
 
-/// Datapod config.
+/// Datashed config.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub(crate) struct Config {
     /// The path of the config.
     #[serde(skip)]
     path: PathBuf,
 
-    /// Datapod metadata.
+    /// Datashed metadata.
     pub(crate) metadata: Metadata,
 
     /// Runtime options.
@@ -73,7 +73,7 @@ pub(crate) struct Runtime {
 
 impl Config {
     /// Creates a new default config and sets the file location.
-    pub(crate) fn create<P>(path: P) -> DatapodResult<Self>
+    pub(crate) fn create<P>(path: P) -> DatashedResult<Self>
     where
         P: AsRef<Path>,
     {
@@ -84,7 +84,7 @@ impl Config {
     }
 
     /// Loads an existing config from a path.
-    pub(crate) fn from_path<P>(path: P) -> DatapodResult<Self>
+    pub(crate) fn from_path<P>(path: P) -> DatashedResult<Self>
     where
         P: AsRef<Path>,
     {
@@ -97,7 +97,7 @@ impl Config {
     }
 
     /// Saves the config.
-    pub(crate) fn save(&self) -> DatapodResult<()> {
+    pub(crate) fn save(&self) -> DatashedResult<()> {
         let content = toml::to_string(self).expect("valid toml");
         let mut out = File::create(&self.path)?;
         out.write_all(content.as_bytes())?;
