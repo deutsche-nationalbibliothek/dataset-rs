@@ -59,7 +59,7 @@ pub(crate) fn execute(_args: Status) -> DatapodResult<()> {
     let mut files: BTreeSet<_> = glob_with(&pattern, options)
         .map_err(|e| DatapodError::Other(e.to_string()))?
         .filter_map(Result::ok)
-        .map(|path| relpath(&path, base_dir))
+        .map(|path| relpath(path, base_dir))
         .collect();
 
     let path = index.column("path")?.str()?;
