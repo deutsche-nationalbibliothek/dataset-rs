@@ -42,6 +42,7 @@ fn run(args: Args) -> DatashedResult<()> {
         Command::Archive(args) => commands::archive::execute(args),
         Command::Restore(args) => commands::restore::execute(args),
         Command::Status(args) => commands::status::execute(args),
+        Command::Clean(args) => commands::clean::execute(args),
         Command::Version(args) => commands::version::execute(args),
     }
 }

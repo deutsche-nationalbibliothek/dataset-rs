@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 use crate::commands::archive::Archive;
+use crate::commands::clean::Clean;
 use crate::commands::config::Config;
 use crate::commands::index::Index;
 use crate::commands::init::Init;
@@ -36,5 +37,6 @@ pub(crate) enum Command {
     Archive(Archive),
     Restore(Restore),
     Status(Status),
+    Clean(Clean),
     Version(Version),
 }

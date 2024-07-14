@@ -11,6 +11,7 @@ bstr = { workspace = true }
 clap = { workspace = true }
 comfy-table = { version = "7.1.1" }
 dataset = { workspace = true }
+dialoguer = { version = "0.11.0" }
 flate2 = { version = "1.0.30" }
 glob = { workspace = true }
 indicatif = { workspace = true }
