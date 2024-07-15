@@ -1,6 +1,5 @@
 use std::collections::BTreeSet;
 use std::env::current_dir;
-use std::path::PathBuf;
 
 use clap::Parser;
 use comfy_table::{presets, Row, Table};
@@ -26,14 +25,6 @@ pub(crate) struct Status {
     /// with the `--verbose` option.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
-
-    /// Write the archive to `filename` instead of stdout.
-    #[arg(short, long, value_name = "filename")]
-    output: Option<PathBuf>,
-}
-
-enum DocumentStatus {
-    Untracked,
 }
 
 impl Status {
@@ -123,7 +114,7 @@ impl Status {
         );
 
         if table.is_empty() {
-            println!("OK, index and inventory are consistent.");
+            println!("OK, index and documents are consistent.");
         } else {
             eprintln!("Status:\n{table}");
         }
