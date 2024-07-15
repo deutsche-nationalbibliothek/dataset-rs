@@ -5,7 +5,7 @@ use std::{env, fs};
 use polars::prelude::*;
 
 use crate::config::Config;
-use crate::error::{DatashedError, DatashedResult};
+use crate::error::{bail, DatashedError, DatashedResult};
 
 pub(crate) struct Datashed {
     /// The root directory of the data pod.
@@ -34,9 +34,7 @@ impl Datashed {
             }
 
             if !root_dir.pop() {
-                return Err(DatashedError::Other(
-                    "not a data pod (or any parent directory)".into(),
-                ));
+                bail!("not a data pod (or any parent directory)");
             }
         }
 

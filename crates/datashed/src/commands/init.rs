@@ -111,9 +111,7 @@ impl Init {
             if !is_inside_git_work_tree(&root_dir)
                 && !git_init(&root_dir)
             {
-                return Err(DatashedError::Other(
-                    "Failed to initialize Git repository".into(),
-                ));
+                bail!("Failed to initialize Git repository");
             }
 
             if !root_dir.join(".gitignore").is_file() {

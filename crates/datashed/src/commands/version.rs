@@ -21,10 +21,11 @@ impl Version {
 
         if let Some(version) = self.version {
             if !self.force && version <= config.metadata.version {
-                return Err(DatashedError::Other(format!(
+                bail!(
                     "{} must be greater than {}",
-                    version, config.metadata.version
-                )));
+                    version,
+                    config.metadata.version
+                );
             }
 
             config.metadata.version = version;
