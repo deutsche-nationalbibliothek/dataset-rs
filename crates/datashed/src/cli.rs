@@ -11,7 +11,7 @@ pub(crate) struct Args {
     #[clap(
         short = 'j',
         long,
-        env = "DATASET_NUM_JOBS",
+        env = "DATASHED_NUM_JOBS",
         hide_env_values = true
     )]
     pub(crate) num_jobs: Option<usize>,
