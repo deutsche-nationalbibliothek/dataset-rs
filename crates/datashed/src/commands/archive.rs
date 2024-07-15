@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{stdout, Write};
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use indicatif::ProgressIterator;
@@ -13,15 +13,11 @@ const PBAR_ARCHIVE: &str =
     "Archive documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Default, ValueEnum)]
-pub(crate) enum VerifyMode {
-    Permissive,
-    #[default]
-    Strict,
-    Pedantic,
-}
-
-/// Create an archive (tar.gz) of the index and all documents.
+/// Create an archive (tar.gz) of the index, config and all documents.
+///
+/// By default, the compression is biased towards high compression ratio
+/// at expense of speed. To change this setting, use the `--fast` or
+/// `--best` flag.
 #[derive(Debug, Default, Parser)]
 pub(crate) struct Archive {
     /// Run verbosely. Print additional progress information to the
@@ -35,9 +31,11 @@ pub(crate) struct Archive {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
+    /// Uses the lowest compression at the highest speed.
     #[arg(long, conflicts_with = "best")]
     fast: bool,
 
+    /// Uses the best compression at the lowest speed.
     #[arg(long, conflicts_with = "fast")]
     best: bool,
 
@@ -84,7 +82,7 @@ impl Archive {
 
         let mut index =
             File::open(datashed.base_dir().join(Datashed::INDEX))?;
-        archive.append_file("index.ipc", &mut index)?;
+        archive.append_file(Datashed::INDEX, &mut index)?;
 
         let mut config =
             File::open(datashed.base_dir().join(Datashed::CONFIG))?;
