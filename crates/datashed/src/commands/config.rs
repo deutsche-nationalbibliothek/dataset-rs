@@ -39,58 +39,66 @@ where
     );
 }
 
-pub(crate) fn execute(args: Config) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let mut config = datashed.config()?;
-    let key = args.key.as_str();
+impl Config {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let mut config = datashed.config()?;
+        let key = self.key.as_str();
 
-    if args.value.is_some() {
-        let value = args.value.unwrap();
-        match key {
-            "runtime.num_jobs" => {
-                if let Ok(value) = value.parse::<usize>() {
-                    if let Some(ref mut runtime) = config.runtime {
-                        runtime.num_jobs = Some(value);
+        if self.value.is_some() {
+            let value = self.value.unwrap();
+            match key {
+                "runtime.num_jobs" => {
+                    if let Ok(value) = value.parse::<usize>() {
+                        if let Some(ref mut runtime) = config.runtime {
+                            runtime.num_jobs = Some(value);
+                        } else {
+                            config.runtime = Some(Runtime {
+                                num_jobs: Some(value),
+                            });
+                        }
+
+                        config.save()?;
                     } else {
-                        config.runtime = Some(Runtime {
-                            num_jobs: Some(value),
-                        });
+                        bail!("invalid value `{value}`");
                     }
-
-                    config.save()?;
-                } else {
-                    bail!("invalid value `{value}`");
+                }
+                _ => {
+                    bail!(
+                        "unknown or unsupported config option `{key}`"
+                    );
                 }
             }
-            _ => {
-                bail!("unknown or unsupported config option `{key}`");
+        } else if self.unset {
+            match key {
+                "runtime.num_jobs" => {
+                    config.runtime = None;
+                    config.save()?;
+                }
+                _ => {
+                    bail!(
+                        "unknown or unsupported config option `{key}`"
+                    );
+                }
             }
+        } else if self.get || (!self.unset && !self.set) {
+            match key {
+                "runtime.num_jobs" => {
+                    print_option(
+                        key,
+                        config.runtime.and_then(|rt| rt.num_jobs),
+                    );
+                }
+                _ => {
+                    bail!(
+                        "unknown or unsupported config option `{key}`"
+                    );
+                }
+            }
+        } else {
+            unreachable!()
         }
-    } else if args.unset {
-        match key {
-            "runtime.num_jobs" => {
-                config.runtime = None;
-                config.save()?;
-            }
-            _ => {
-                bail!("unknown or unsupported config option `{key}`");
-            }
-        }
-    } else if args.get || (!args.unset && !args.set) {
-        match key {
-            "runtime.num_jobs" => {
-                print_option(
-                    key,
-                    config.runtime.and_then(|rt| rt.num_jobs),
-                );
-            }
-            _ => {
-                bail!("unknown or unsupported config option `{key}`");
-            }
-        }
-    } else {
-        unreachable!()
-    }
 
-    Ok(())
+        Ok(())
+    }
 }

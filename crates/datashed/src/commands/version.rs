@@ -15,23 +15,25 @@ pub(crate) struct Version {
     version: Option<semver::Version>,
 }
 
-pub(crate) fn execute(args: Version) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let mut config = datashed.config()?;
+impl Version {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let mut config = datashed.config()?;
 
-    if let Some(version) = args.version {
-        if !args.force && version <= config.metadata.version {
-            return Err(DatashedError::Other(format!(
-                "{} must be greater than {}",
-                version, config.metadata.version
-            )));
+        if let Some(version) = self.version {
+            if !self.force && version <= config.metadata.version {
+                return Err(DatashedError::Other(format!(
+                    "{} must be greater than {}",
+                    version, config.metadata.version
+                )));
+            }
+
+            config.metadata.version = version;
+            config.save()?;
+        } else {
+            println!("{}", config.metadata.version);
         }
 
-        config.metadata.version = version;
-        config.save()?;
-    } else {
-        println!("{}", config.metadata.version);
+        Ok(())
     }
-
-    Ok(())
 }

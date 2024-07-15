@@ -62,69 +62,73 @@ impl TryFrom<&PathBuf> for Row {
     }
 }
 
-pub(crate) fn execute(args: Index) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let config = datashed.config()?;
-    let data_dir = datashed.data_dir();
-    let base_dir = datashed.base_dir();
+impl Index {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let config = datashed.config()?;
+        let data_dir = datashed.data_dir();
+        let base_dir = datashed.base_dir();
 
-    let pattern = format!("{}/**/*.txt", data_dir.display());
-    let options = MatchOptions::default();
+        let pattern = format!("{}/**/*.txt", data_dir.display());
+        let options = MatchOptions::default();
 
-    let files: Vec<_> = glob_with(&pattern, options)
-        .map_err(|e| DatashedError::Other(e.to_string()))?
-        .filter_map(Result::ok)
-        .collect();
+        let files: Vec<_> = glob_with(&pattern, options)
+            .map_err(|e| DatashedError::Other(e.to_string()))?
+            .filter_map(Result::ok)
+            .collect();
 
-    let pbar = ProgressBarBuilder::new(PBAR_INDEX, args.quiet)
-        .len(files.len() as u64)
-        .build();
+        let pbar = ProgressBarBuilder::new(PBAR_INDEX, self.quiet)
+            .len(files.len() as u64)
+            .build();
 
-    let rows = files
-        .par_iter()
-        .progress_with(pbar)
-        .map(Row::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|_| {
-            DatashedError::Other("unable to index documents!".into())
-        })?;
+        let rows = files
+            .par_iter()
+            .progress_with(pbar)
+            .map(Row::try_from)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| {
+                DatashedError::Other(
+                    "unable to index documents!".into(),
+                )
+            })?;
 
-    let mut idn: Vec<String> = vec![];
-    let mut remote: Vec<&str> = vec![];
-    let mut path: Vec<String> = vec![];
-    let mut size: Vec<u64> = vec![];
-    let mut mtime: Vec<u64> = vec![];
-    let mut hash: Vec<String> = vec![];
+        let mut idn: Vec<String> = vec![];
+        let mut remote: Vec<&str> = vec![];
+        let mut path: Vec<String> = vec![];
+        let mut size: Vec<u64> = vec![];
+        let mut mtime: Vec<u64> = vec![];
+        let mut hash: Vec<String> = vec![];
 
-    for row in rows.into_iter() {
-        idn.push(row.idn);
-        remote.push(&config.metadata.name);
-        path.push(relpath(&row.path, base_dir));
-        size.push(row.size);
-        mtime.push(row.mtime);
-        hash.push(row.hash[0..8].to_string());
-    }
-
-    let mut df = DataFrame::new(vec![
-        Series::new("idn", idn),
-        Series::new("remote", remote),
-        Series::new("path", path),
-        Series::new("size", size),
-        Series::new("mtime", mtime),
-        Series::new("hash", hash),
-    ])?;
-
-    match args.output {
-        None => {
-            let mut writer = CsvWriter::new(stdout().lock());
-            writer.finish(&mut df)?;
+        for row in rows.into_iter() {
+            idn.push(row.idn);
+            remote.push(&config.metadata.name);
+            path.push(relpath(&row.path, base_dir));
+            size.push(row.size);
+            mtime.push(row.mtime);
+            hash.push(row.hash[0..8].to_string());
         }
-        Some(path) => {
-            let mut writer = IpcWriter::new(File::create(path)?)
-                .with_compression(Some(IpcCompression::ZSTD));
-            writer.finish(&mut df)?;
-        }
-    }
 
-    Ok(())
+        let mut df = DataFrame::new(vec![
+            Series::new("idn", idn),
+            Series::new("remote", remote),
+            Series::new("path", path),
+            Series::new("size", size),
+            Series::new("mtime", mtime),
+            Series::new("hash", hash),
+        ])?;
+
+        match self.output {
+            None => {
+                let mut writer = CsvWriter::new(stdout().lock());
+                writer.finish(&mut df)?;
+            }
+            Some(path) => {
+                let mut writer = IpcWriter::new(File::create(path)?)
+                    .with_compression(Some(IpcCompression::ZSTD));
+                writer.finish(&mut df)?;
+            }
+        }
+
+        Ok(())
+    }
 }
