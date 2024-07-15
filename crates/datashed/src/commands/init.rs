@@ -17,7 +17,7 @@ const DATA_DIR: &str = "data";
 #[derive(Debug, Parser)]
 pub(crate) struct Init {
     /// The name of the data pod.
-    #[arg(long)]
+    #[arg(short, long)]
     name: Option<String>,
 
     /// The version of the data pod.
@@ -25,12 +25,12 @@ pub(crate) struct Init {
     version: Version,
 
     /// A short blurb about the data pod.
-    #[arg(long)]
+    #[arg(short, long)]
     description: Option<String>,
 
     /// A list of people or organizations, which are considered as the
     /// authors of the data pod.
-    #[arg(long = "author")]
+    #[arg(short, long = "author")]
     authors: Vec<String>,
 
     /// Initialize the data pod for the given version control system
