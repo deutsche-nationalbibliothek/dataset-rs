@@ -48,20 +48,21 @@ pub(crate) struct Verify {
     mode: VerifyMode,
 }
 
-pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let index = datashed.index()?;
+impl Verify {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let index = datashed.index()?;
 
-    let path = index.column("path")?.str()?;
-    let hash = index.column("hash")?.str()?;
-    let mtime = index.column("mtime")?.u64()?;
-    let size = index.column("size")?.u64()?;
+        let path = index.column("path")?.str()?;
+        let hash = index.column("hash")?.str()?;
+        let mtime = index.column("mtime")?.u64()?;
+        let size = index.column("size")?.u64()?;
 
-    let pbar = ProgressBarBuilder::new(PBAR_VERIFY, args.quiet)
-        .len(index.height() as u64)
-        .build();
+        let pbar = ProgressBarBuilder::new(PBAR_VERIFY, self.quiet)
+            .len(index.height() as u64)
+            .build();
 
-    (0..index.height())
+        (0..index.height())
         .into_par_iter()
         .progress_with(pbar)
         .try_for_each(|idx| -> Result<(), DatashedError> {
@@ -85,7 +86,7 @@ pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
                 );
             }
 
-            if args.mode >= VerifyMode::Strict
+            if self.mode >= VerifyMode::Strict
                 && doc.modified() != mtime.get(idx).unwrap()
             {
                 bail!(
@@ -94,7 +95,7 @@ pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
                 );
             }
 
-            if args.mode >= VerifyMode::Pedantic
+            if self.mode >= VerifyMode::Pedantic
                 && doc.size() != size.get(idx).unwrap()
             {
                 bail!( "verification failed: size mismatch (path = {path:?})");
@@ -102,4 +103,5 @@ pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
 
             Ok(())
         })
+    }
 }

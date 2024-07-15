@@ -89,52 +89,56 @@ fn git_init(path: &PathBuf) -> bool {
         .unwrap_or(false)
 }
 
-pub(crate) fn execute(args: Init) -> DatashedResult<()> {
-    let root_dir = env::current_dir()?.join(args.path);
-    let data_dir = root_dir.join(Datashed::DATA_DIR);
-    let config = root_dir.join(Datashed::CONFIG);
+impl Init {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let root_dir = env::current_dir()?.join(self.path);
+        let data_dir = root_dir.join(Datashed::DATA_DIR);
+        let config = root_dir.join(Datashed::CONFIG);
 
-    if !root_dir.exists() {
-        fs::create_dir_all(&root_dir)?;
+        if !root_dir.exists() {
+            fs::create_dir_all(&root_dir)?;
 
-        if args.verbose {
-            eprintln!("Initialize new data pod in {root_dir:?}");
-        }
-    } else if args.verbose {
-        eprintln!("Re-Initialize exiting data pod in {root_dir:?}");
-    }
-
-    if !data_dir.exists() {
-        fs::create_dir_all(&data_dir)?;
-    }
-
-    if args.vcs == Vcs::Git {
-        if !is_inside_git_work_tree(&root_dir) && !git_init(&root_dir) {
-            return Err(DatashedError::Other(
-                "Failed to initialize Git repository".into(),
-            ));
+            if self.verbose {
+                eprintln!("Initialize new data pod in {root_dir:?}");
+            }
+        } else if self.verbose {
+            eprintln!("Re-Initialize exiting data pod in {root_dir:?}");
         }
 
-        if !root_dir.join(".gitignore").is_file() {
-            fs::write(root_dir.join(".gitignore"), GITIGNORE)?;
+        if !data_dir.exists() {
+            fs::create_dir_all(&data_dir)?;
         }
+
+        if self.vcs == Vcs::Git {
+            if !is_inside_git_work_tree(&root_dir)
+                && !git_init(&root_dir)
+            {
+                return Err(DatashedError::Other(
+                    "Failed to initialize Git repository".into(),
+                ));
+            }
+
+            if !root_dir.join(".gitignore").is_file() {
+                fs::write(root_dir.join(".gitignore"), GITIGNORE)?;
+            }
+        }
+
+        if !config.exists() || self.force {
+            let mut config = Config::create(config)?;
+            config.metadata.description = self.description;
+            config.metadata.authors = self.authors;
+            config.metadata.version = self.version;
+            config.metadata.name = self.name.unwrap_or(
+                root_dir
+                    .file_name()
+                    .and_then(OsStr::to_str)
+                    .unwrap_or_default()
+                    .to_string(),
+            );
+
+            config.save()?;
+        }
+
+        Ok(())
     }
-
-    if !config.exists() || args.force {
-        let mut config = Config::create(config)?;
-        config.metadata.description = args.description;
-        config.metadata.authors = args.authors;
-        config.metadata.version = args.version;
-        config.metadata.name = args.name.unwrap_or(
-            root_dir
-                .file_name()
-                .and_then(OsStr::to_str)
-                .unwrap_or_default()
-                .to_string(),
-        );
-
-        config.save()?;
-    }
-
-    Ok(())
 }

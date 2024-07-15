@@ -29,14 +29,16 @@ pub(crate) struct Restore {
     archive: PathBuf,
 }
 
-pub(crate) fn execute(args: Restore) -> DatashedResult<()> {
-    if !args.dest.is_dir() {
-        create_dir(&args.dest)?;
+impl Restore {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        if !self.dest.is_dir() {
+            create_dir(&self.dest)?;
+        }
+
+        let reader = GzDecoder::new(File::open(self.archive)?);
+        let mut archive = Archive::new(reader);
+        archive.unpack(&self.dest)?;
+
+        Ok(())
     }
-
-    let reader = GzDecoder::new(File::open(args.archive)?);
-    let mut archive = Archive::new(reader);
-    archive.unpack(&args.dest)?;
-
-    Ok(())
 }

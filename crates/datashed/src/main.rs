@@ -35,14 +35,14 @@ fn num_threads(args: &Args) -> usize {
 
 fn run(args: Args) -> DatashedResult<()> {
     match args.cmd {
-        Command::Init(args) => commands::init::execute(args),
-        Command::Config(args) => commands::config::execute(args),
-        Command::Index(args) => commands::index::execute(args),
-        Command::Verify(args) => commands::verify::execute(args),
-        Command::Archive(args) => commands::archive::execute(args),
-        Command::Restore(args) => commands::restore::execute(args),
-        Command::Status(args) => commands::status::execute(args),
-        Command::Version(args) => commands::version::execute(args),
+        Command::Archive(cmd) => cmd.execute(),
+        Command::Config(cmd) => cmd.execute(),
+        Command::Index(cmd) => cmd.execute(),
+        Command::Init(cmd) => cmd.execute(),
+        Command::Restore(cmd) => cmd.execute(),
+        Command::Status(cmd) => cmd.execute(),
+        Command::Verify(cmd) => cmd.execute(),
+        Command::Version(cmd) => cmd.execute(),
     }
 }
 
