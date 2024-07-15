@@ -5,7 +5,7 @@ use clap::Parser;
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::error::DatashedResult;
+use crate::prelude::*;
 
 /// Restore a datashed archive (tar.gz).
 #[derive(Debug, Default, Parser)]

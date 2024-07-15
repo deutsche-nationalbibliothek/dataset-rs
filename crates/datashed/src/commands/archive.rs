@@ -7,9 +7,7 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 use indicatif::ProgressIterator;
 
-use crate::datashed::Datashed;
-use crate::error::{DatashedError, DatashedResult};
-use crate::progress::ProgressBarBuilder;
+use crate::prelude::*;
 
 const PBAR_ARCHIVE: &str =
     "Archive documents: {human_pos} ({percent}%) | \

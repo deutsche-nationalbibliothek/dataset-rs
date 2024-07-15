@@ -6,9 +6,7 @@ use std::{env, fs, process};
 use clap::{Parser, ValueEnum};
 use semver::Version;
 
-use crate::config::Config;
-use crate::datashed::Datashed;
-use crate::error::{DatashedError, DatashedResult};
+use crate::prelude::*;
 
 const GITIGNORE: &str = "# Datashed\n/data\n/index.ipc\n";
 const DATA_DIR: &str = "data";

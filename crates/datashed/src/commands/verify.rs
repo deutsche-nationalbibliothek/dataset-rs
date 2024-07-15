@@ -4,10 +4,7 @@ use clap::{Parser, ValueEnum};
 use indicatif::ParallelProgressIterator;
 use rayon::prelude::*;
 
-use crate::datashed::Datashed;
-use crate::document::Document;
-use crate::error::{bail, DatashedError, DatashedResult};
-use crate::progress::ProgressBarBuilder;
+use crate::prelude::*;
 
 const PBAR_VERIFY: &str =
     "Verifying documents: {human_pos} ({percent}%) | \
