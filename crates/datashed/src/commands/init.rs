@@ -27,7 +27,8 @@ pub(crate) struct Init {
     description: Option<String>,
 
     /// A list of people or organizations, which are considered as the
-    /// authors of the data pod.
+    /// authors of the datashed. By default the list is populated with
+    /// the git identity (if available).
     #[arg(short, long = "author")]
     authors: Vec<String>,
 
@@ -87,8 +88,46 @@ fn git_init(path: &PathBuf) -> bool {
         .unwrap_or(false)
 }
 
+fn git_user(path: &PathBuf) -> Option<String> {
+    let mut user = String::new();
+
+    let result = process::Command::new("git")
+        .arg("config")
+        .arg("--get")
+        .arg("user.name")
+        .current_dir(path)
+        .stdout(Stdio::piped())
+        .output();
+
+    if let Ok(output) = result {
+        if let Ok(name) = std::str::from_utf8(&output.stdout) {
+            user.push_str(name.trim_end());
+        }
+    }
+
+    if user.is_empty() {
+        return None;
+    }
+
+    let result = process::Command::new("git")
+        .arg("config")
+        .arg("--get")
+        .arg("user.email")
+        .current_dir(path)
+        .stdout(Stdio::piped())
+        .output();
+
+    if let Ok(output) = result {
+        if let Ok(email) = std::str::from_utf8(&output.stdout) {
+            user.push_str(&format!(" <{}>", email.trim_end()));
+        }
+    }
+
+    Some(user)
+}
+
 impl Init {
-    pub(crate) fn execute(self) -> DatashedResult<()> {
+    pub(crate) fn execute(mut self) -> DatashedResult<()> {
         let root_dir = env::current_dir()?.join(self.path);
         let data_dir = root_dir.join(Datashed::DATA_DIR);
         let config = root_dir.join(Datashed::CONFIG);
@@ -116,6 +155,12 @@ impl Init {
 
             if !root_dir.join(".gitignore").is_file() {
                 fs::write(root_dir.join(".gitignore"), GITIGNORE)?;
+            }
+        }
+
+        if self.authors.is_empty() {
+            if let Some(author) = git_user(&root_dir) {
+                self.authors.push(author)
             }
         }
 
