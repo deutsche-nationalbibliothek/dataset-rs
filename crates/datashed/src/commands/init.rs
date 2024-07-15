@@ -168,8 +168,7 @@ impl Init {
                 if let Some(author) = git_user(&root_dir) {
                     if self.verbose {
                         eprintln!(
-                            "Set authors to Git identity '{}'.",
-                            author
+                            "Set authors to Git identity '{author}'."
                         );
                     }
 
