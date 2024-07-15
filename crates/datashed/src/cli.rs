@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 use crate::commands::*;
 
 #[derive(Debug, Parser)]
-#[command(version, about, long_about = None)]
+#[command(version, about, long_about = None, max_term_width = 72)]
 pub(crate) struct Args {
     /// Number of threads to use. If this options isn't set or a value
     /// of "0" is chosen, the maximum number of available threads
