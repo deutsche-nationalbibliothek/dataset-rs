@@ -1,13 +1,6 @@
 use clap::{Parser, Subcommand};
 
-use crate::commands::archive::Archive;
-use crate::commands::config::Config;
-use crate::commands::index::Index;
-use crate::commands::init::Init;
-use crate::commands::restore::Restore;
-use crate::commands::status::Status;
-use crate::commands::verify::Verify;
-use crate::commands::version::Version;
+use crate::commands::*;
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about = None)]

@@ -8,10 +8,7 @@ use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::datashed::Datashed;
-use crate::document::Document;
-use crate::error::{DatashedError, DatashedResult};
-use crate::progress::ProgressBarBuilder;
+use crate::prelude::*;
 use crate::utils::relpath;
 
 const PBAR_INDEX: &str =

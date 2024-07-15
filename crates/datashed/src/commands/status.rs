@@ -6,9 +6,7 @@ use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use glob::{glob_with, MatchOptions};
 
-use crate::datashed::Datashed;
-use crate::document::Document;
-use crate::error::{DatashedError, DatashedResult};
+use crate::prelude::*;
 use crate::utils::relpath;
 
 const PBAR_COLLECT: &str =
