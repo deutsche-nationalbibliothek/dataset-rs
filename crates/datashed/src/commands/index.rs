@@ -29,8 +29,14 @@ pub(crate) struct Index {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// Write the index into `filename`. By default, the index will
-    /// be written to stdout in CSV format.
+    /// If set, the index will be written in CSV format to the standard
+    /// output (stdout).
+    #[arg(long, conflicts_with = "output")]
+    stdout: bool,
+
+    /// Write the index into `filename`. By default (if `--stdout`
+    /// isn't set), the index will be written to `index.ipc` into
+    /// the root directory.
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
 }
@@ -111,13 +117,20 @@ impl Index {
         ])?;
 
         match self.output {
-            None => {
-                let mut writer = CsvWriter::new(stdout().lock());
-                writer.finish(&mut df)?;
-            }
             Some(path) => {
                 let mut writer = IpcWriter::new(File::create(path)?)
                     .with_compression(Some(IpcCompression::ZSTD));
+                writer.finish(&mut df)?;
+            }
+            None if self.stdout => {
+                let mut writer = CsvWriter::new(stdout().lock());
+                writer.finish(&mut df)?;
+            }
+            None => {
+                let mut writer = IpcWriter::new(File::create(
+                    base_dir.join(Datashed::INDEX),
+                )?)
+                .with_compression(Some(IpcCompression::ZSTD));
                 writer.finish(&mut df)?;
             }
         }
