@@ -5,8 +5,8 @@ use clap::Parser;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Confirm;
 use glob::{glob_with, MatchOptions};
-use polars::prelude::*;
 
+// use polars::prelude::*;
 use crate::datashed::Datashed;
 use crate::error::{DatashedError, DatashedResult};
 use crate::utils::relpath;
@@ -75,15 +75,15 @@ pub(crate) fn execute(_args: Clean) -> DatashedResult<()> {
     if !missing.is_empty() {
         println!("{}", index);
 
-        let missing = Series::from_iter(missing);
+        // let missing = Series::from_iter(missing);
 
-        println!(
-            "{:?}",
-            index
-                .lazy()
-                .filter(col("path").is_in(lit(missing)))
-                .collect()
-        );
+        // println!(
+        //     "{:?}",
+        //     index
+        //         .lazy()
+        //         .filter(col("path").is_in(lit(missing)))
+        //         .collect()
+        // );
     }
 
     Ok(())
