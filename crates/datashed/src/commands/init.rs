@@ -8,10 +8,9 @@ use semver::Version;
 
 use crate::prelude::*;
 
-const GITIGNORE: &str = "# Datashed\n/data\n/index.ipc\n";
-const DATA_DIR: &str = "data";
+const GITIGNORE: &str = "# datashed\n/data\n/index.ipc\n";
 
-/// Initialize a new or re-initialize an existing data pod.
+/// Initialize a new or re-initialize an existing datashed.
 #[derive(Debug, Parser)]
 pub(crate) struct Init {
     /// The name of the data pod.
@@ -136,10 +135,16 @@ impl Init {
             fs::create_dir_all(&root_dir)?;
 
             if self.verbose {
-                eprintln!("Initialize new data pod in {root_dir:?}");
+                eprintln!(
+                    "Initialize new data pod in {}",
+                    root_dir.display()
+                );
             }
         } else if self.verbose {
-            eprintln!("Re-Initialize exiting data pod in {root_dir:?}");
+            eprintln!(
+                "Re-Initialize exiting data pod in {}",
+                root_dir.display()
+            );
         }
 
         if !data_dir.exists() {
@@ -158,13 +163,20 @@ impl Init {
             }
         }
 
-        if self.authors.is_empty() {
-            if let Some(author) = git_user(&root_dir) {
-                self.authors.push(author)
-            }
-        }
-
         if !config.exists() || self.force {
+            if self.authors.is_empty() {
+                if let Some(author) = git_user(&root_dir) {
+                    if self.verbose {
+                        eprintln!(
+                            "Set authors to Git identity '{}'.",
+                            author
+                        );
+                    }
+
+                    self.authors.push(author)
+                }
+            }
+
             let mut config = Config::create(config)?;
             config.metadata.description = self.description;
             config.metadata.authors = self.authors;
