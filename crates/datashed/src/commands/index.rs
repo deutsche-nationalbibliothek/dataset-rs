@@ -3,7 +3,7 @@ use std::io::stdout;
 use std::path::PathBuf;
 
 use clap::Parser;
-use glob::{glob_with, MatchOptions};
+use glob::glob_with;
 use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -62,14 +62,12 @@ impl TryFrom<&PathBuf> for Row {
 impl Index {
     pub(crate) fn execute(self) -> DatashedResult<()> {
         let datashed = Datashed::discover()?;
-        let config = datashed.config()?;
         let data_dir = datashed.data_dir();
         let base_dir = datashed.base_dir();
+        let config = datashed.config()?;
 
         let pattern = format!("{}/**/*.txt", data_dir.display());
-        let options = MatchOptions::default();
-
-        let files: Vec<_> = glob_with(&pattern, options)
+        let files: Vec<_> = glob_with(&pattern, Default::default())
             .map_err(|e| DatashedError::Other(e.to_string()))?
             .filter_map(Result::ok)
             .collect();
@@ -84,9 +82,7 @@ impl Index {
             .map(Row::try_from)
             .collect::<Result<Vec<_>, _>>()
             .map_err(|_| {
-                DatashedError::Other(
-                    "unable to index documents!".into(),
-                )
+                DatashedError::other("unable to index documents!")
             })?;
 
         let mut idn: Vec<String> = vec![];
