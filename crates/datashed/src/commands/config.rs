@@ -2,7 +2,7 @@ use clap::Parser;
 
 use crate::prelude::*;
 
-/// Get and set dataset options.
+/// Get and set datashed config options.
 #[derive(Debug, Parser)]
 pub(crate) struct Config {
     /// Get the value for the given key.
@@ -17,8 +17,10 @@ pub(crate) struct Config {
     #[arg(long, requires = "value", conflicts_with_all = ["get", "unset"])]
     set: bool,
 
-    key: String,
+    /// The name of the config option.
+    name: String,
 
+    /// The (new) value of the config option.
     #[arg(conflicts_with_all = ["get", "unset"])]
     value: Option<String>,
 }
@@ -41,11 +43,17 @@ impl Config {
     pub(crate) fn execute(self) -> DatashedResult<()> {
         let datashed = Datashed::discover()?;
         let mut config = datashed.config()?;
-        let key = self.key.as_str();
+
+        let name = match self.name.as_str() {
+            name if name == "runtime.num_jobs" => name,
+            name => {
+                bail!("unknown config option `{name}`");
+            }
+        };
 
         if self.value.is_some() {
             let value = self.value.unwrap();
-            match key {
+            match name {
                 "runtime.num_jobs" => {
                     if let Ok(value) = value.parse::<usize>() {
                         if let Some(ref mut runtime) = config.runtime {
@@ -61,37 +69,25 @@ impl Config {
                         bail!("invalid value `{value}`");
                     }
                 }
-                _ => {
-                    bail!(
-                        "unknown or unsupported config option `{key}`"
-                    );
-                }
+                _ => unreachable!(),
             }
         } else if self.unset {
-            match key {
+            match name {
                 "runtime.num_jobs" => {
                     config.runtime = None;
                     config.save()?;
                 }
-                _ => {
-                    bail!(
-                        "unknown or unsupported config option `{key}`"
-                    );
-                }
+                _ => unreachable!(),
             }
         } else if self.get || (!self.unset && !self.set) {
-            match key {
+            match name {
                 "runtime.num_jobs" => {
                     print_option(
-                        key,
+                        name,
                         config.runtime.and_then(|rt| rt.num_jobs),
                     );
                 }
-                _ => {
-                    bail!(
-                        "unknown or unsupported config option `{key}`"
-                    );
-                }
+                _ => unreachable!(),
             }
         } else {
             unreachable!()
