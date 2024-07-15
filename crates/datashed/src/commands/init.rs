@@ -1,4 +1,6 @@
 use std::ffi::OsStr;
+use std::fs::{read_to_string, OpenOptions};
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::{env, fs, process};
@@ -158,8 +160,17 @@ impl Init {
                 bail!("Failed to initialize Git repository");
             }
 
+            let gitignore = root_dir.join(".gitignore");
             if !root_dir.join(".gitignore").is_file() {
-                fs::write(root_dir.join(".gitignore"), GITIGNORE)?;
+                fs::write(&gitignore, GITIGNORE)?;
+            } else {
+                let content = read_to_string(&gitignore)?;
+                if !content.contains("# datashed") {
+                    let mut file = OpenOptions::new()
+                        .append(true)
+                        .open(&gitignore)?;
+                    file.write_all(GITIGNORE.as_bytes())?;
+                }
             }
         }
 
