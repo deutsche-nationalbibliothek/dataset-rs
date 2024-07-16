@@ -22,3 +22,10 @@ pub(crate) enum DatashedError {
     #[error("{0}")]
     Other(String),
 }
+
+impl DatashedError {
+    #[inline]
+    pub(crate) fn other<T: ToString>(s: T) -> Self {
+        Self::Other(s.to_string())
+    }
+}

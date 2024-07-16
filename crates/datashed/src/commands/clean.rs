@@ -25,66 +25,69 @@ pub(crate) struct Clean {
     quiet: bool,
 }
 
-pub(crate) fn execute(_args: Clean) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let data_dir = datashed.data_dir();
-    let base_dir = datashed.base_dir();
+impl Clean {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let data_dir = datashed.data_dir();
+        let base_dir = datashed.base_dir();
 
-    let pattern = format!("{}/**/*.txt", data_dir.display());
-    let options = MatchOptions::default();
+        let pattern = format!("{}/**/*.txt", data_dir.display());
+        let options = MatchOptions::default();
 
-    let mut missing: Vec<_> = vec![];
-    let mut untracked: BTreeSet<_> = glob_with(&pattern, options)
-        .map_err(|e| DatashedError::Other(e.to_string()))?
-        .filter_map(Result::ok)
-        .map(|path| relpath(path, base_dir))
-        .collect();
+        let mut missing: Vec<_> = vec![];
+        let mut untracked: BTreeSet<_> = glob_with(&pattern, options)
+            .map_err(|e| DatashedError::Other(e.to_string()))?
+            .filter_map(Result::ok)
+            .map(|path| relpath(path, base_dir))
+            .collect();
 
-    let index = datashed.index()?;
-    let path = index.column("path")?.str()?;
+        let index = datashed.index()?;
+        let path = index.column("path")?.str()?;
 
-    for idx in 0..index.height() {
-        let index_path = path.get(idx).unwrap();
+        for idx in 0..index.height() {
+            let index_path = path.get(idx).unwrap();
 
-        if untracked.remove(index_path) {
-            continue;
-        } else {
-            missing.push(index_path);
+            if untracked.remove(index_path) {
+                continue;
+            } else {
+                missing.push(index_path);
+            }
         }
-    }
 
-    if !untracked.is_empty() {
-        let confirm = Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt(format!(
-                "Delete {} untracked document(s))?",
-                untracked.len()
-            ))
-            .default(true)
-            .show_default(true)
-            .interact()
-            .unwrap();
+        if !untracked.is_empty() {
+            let confirm =
+                Confirm::with_theme(&ColorfulTheme::default())
+                    .with_prompt(format!(
+                        "Delete {} untracked document(s))?",
+                        untracked.len()
+                    ))
+                    .default(true)
+                    .show_default(true)
+                    .interact()
+                    .unwrap();
 
-        if confirm {
-            untracked.into_iter().try_for_each(|relpath| {
-                remove_file(base_dir.join(relpath))?;
-                Ok::<_, DatashedError>(())
-            })?;
+            if confirm {
+                untracked.into_iter().try_for_each(|relpath| {
+                    remove_file(base_dir.join(relpath))?;
+                    Ok::<_, DatashedError>(())
+                })?;
+            }
         }
+
+        if !missing.is_empty() {
+            println!("{}", index);
+
+            // let missing = Series::from_iter(missing);
+
+            // println!(
+            //     "{:?}",
+            //     index
+            //         .lazy()
+            //         .filter(col("path").is_in(lit(missing)))
+            //         .collect()
+            // );
+        }
+
+        Ok(())
     }
-
-    if !missing.is_empty() {
-        println!("{}", index);
-
-        // let missing = Series::from_iter(missing);
-
-        // println!(
-        //     "{:?}",
-        //     index
-        //         .lazy()
-        //         .filter(col("path").is_in(lit(missing)))
-        //         .collect()
-        // );
-    }
-
-    Ok(())
 }

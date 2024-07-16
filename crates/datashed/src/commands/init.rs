@@ -1,4 +1,6 @@
 use std::ffi::OsStr;
+use std::fs::{read_to_string, OpenOptions};
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::{env, fs, process};
@@ -6,18 +8,15 @@ use std::{env, fs, process};
 use clap::{Parser, ValueEnum};
 use semver::Version;
 
-use crate::config::Config;
-use crate::datashed::Datashed;
-use crate::error::{DatashedError, DatashedResult};
+use crate::prelude::*;
 
-const GITIGNORE: &str = "# Datashed\n/data\n/index.ipc\n";
-const DATA_DIR: &str = "data";
+const GITIGNORE: &str = "# datashed\n/data\n/index.ipc\n";
 
-/// Initialize a new or re-initialize an existing data pod.
+/// Initialize a new or re-initialize an existing datashed.
 #[derive(Debug, Parser)]
 pub(crate) struct Init {
     /// The name of the data pod.
-    #[arg(long)]
+    #[arg(short, long)]
     name: Option<String>,
 
     /// The version of the data pod.
@@ -25,12 +24,13 @@ pub(crate) struct Init {
     version: Version,
 
     /// A short blurb about the data pod.
-    #[arg(long)]
+    #[arg(short, long)]
     description: Option<String>,
 
     /// A list of people or organizations, which are considered as the
-    /// authors of the data pod.
-    #[arg(long = "author")]
+    /// authors of the datashed. By default the list is populated with
+    /// the git identity (if available).
+    #[arg(short, long = "author")]
     authors: Vec<String>,
 
     /// Initialize the data pod for the given version control system
@@ -89,52 +89,119 @@ fn git_init(path: &PathBuf) -> bool {
         .unwrap_or(false)
 }
 
-pub(crate) fn execute(args: Init) -> DatashedResult<()> {
-    let root_dir = env::current_dir()?.join(args.path);
-    let data_dir = root_dir.join(Datashed::DATA_DIR);
-    let config = root_dir.join(Datashed::CONFIG);
+fn git_user(path: &PathBuf) -> Option<String> {
+    let mut user = String::new();
 
-    if !root_dir.exists() {
-        fs::create_dir_all(&root_dir)?;
+    let result = process::Command::new("git")
+        .arg("config")
+        .arg("--get")
+        .arg("user.name")
+        .current_dir(path)
+        .stdout(Stdio::piped())
+        .output();
 
-        if args.verbose {
-            eprintln!("Initialize new data pod in {root_dir:?}");
-        }
-    } else if args.verbose {
-        eprintln!("Re-Initialize exiting data pod in {root_dir:?}");
-    }
-
-    if !data_dir.exists() {
-        fs::create_dir_all(&data_dir)?;
-    }
-
-    if args.vcs == Vcs::Git {
-        if !is_inside_git_work_tree(&root_dir) && !git_init(&root_dir) {
-            return Err(DatashedError::Other(
-                "Failed to initialize Git repository".into(),
-            ));
-        }
-
-        if !root_dir.join(".gitignore").is_file() {
-            fs::write(root_dir.join(".gitignore"), GITIGNORE)?;
+    if let Ok(output) = result {
+        if let Ok(name) = std::str::from_utf8(&output.stdout) {
+            user.push_str(name.trim_end());
         }
     }
 
-    if !config.exists() || args.force {
-        let mut config = Config::create(config)?;
-        config.metadata.description = args.description;
-        config.metadata.authors = args.authors;
-        config.metadata.version = args.version;
-        config.metadata.name = args.name.unwrap_or(
-            root_dir
-                .file_name()
-                .and_then(OsStr::to_str)
-                .unwrap_or_default()
-                .to_string(),
-        );
-
-        config.save()?;
+    if user.is_empty() {
+        return None;
     }
 
-    Ok(())
+    let result = process::Command::new("git")
+        .arg("config")
+        .arg("--get")
+        .arg("user.email")
+        .current_dir(path)
+        .stdout(Stdio::piped())
+        .output();
+
+    if let Ok(output) = result {
+        if let Ok(email) = std::str::from_utf8(&output.stdout) {
+            user.push_str(&format!(" <{}>", email.trim_end()));
+        }
+    }
+
+    Some(user)
+}
+
+impl Init {
+    pub(crate) fn execute(mut self) -> DatashedResult<()> {
+        let root_dir = env::current_dir()?.join(self.path);
+        let data_dir = root_dir.join(Datashed::DATA_DIR);
+        let config = root_dir.join(Datashed::CONFIG);
+
+        if !root_dir.exists() {
+            fs::create_dir_all(&root_dir)?;
+
+            if self.verbose {
+                eprintln!(
+                    "Initialize new data pod in {}",
+                    root_dir.display()
+                );
+            }
+        } else if self.verbose {
+            eprintln!(
+                "Re-Initialize exiting data pod in {}",
+                root_dir.display()
+            );
+        }
+
+        if !data_dir.exists() {
+            fs::create_dir_all(&data_dir)?;
+        }
+
+        if self.vcs == Vcs::Git {
+            if !is_inside_git_work_tree(&root_dir)
+                && !git_init(&root_dir)
+            {
+                bail!("Failed to initialize Git repository");
+            }
+
+            let gitignore = root_dir.join(".gitignore");
+            if !root_dir.join(".gitignore").is_file() {
+                fs::write(&gitignore, GITIGNORE)?;
+            } else {
+                let content = read_to_string(&gitignore)?;
+                if !content.contains("# datashed") {
+                    let mut file = OpenOptions::new()
+                        .append(true)
+                        .open(&gitignore)?;
+                    file.write_all(GITIGNORE.as_bytes())?;
+                }
+            }
+        }
+
+        if !config.exists() || self.force {
+            if self.authors.is_empty() {
+                if let Some(author) = git_user(&root_dir) {
+                    if self.verbose {
+                        eprintln!(
+                            "Set authors to Git identity '{author}'."
+                        );
+                    }
+
+                    self.authors.push(author)
+                }
+            }
+
+            let mut config = Config::create(config)?;
+            config.metadata.description = self.description;
+            config.metadata.authors = self.authors;
+            config.metadata.version = self.version;
+            config.metadata.name = self.name.unwrap_or(
+                root_dir
+                    .file_name()
+                    .and_then(OsStr::to_str)
+                    .unwrap_or_default()
+                    .to_string(),
+            );
+
+            config.save()?;
+        }
+
+        Ok(())
+    }
 }

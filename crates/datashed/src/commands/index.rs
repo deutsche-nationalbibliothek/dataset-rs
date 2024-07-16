@@ -3,15 +3,12 @@ use std::io::stdout;
 use std::path::PathBuf;
 
 use clap::Parser;
-use glob::{glob_with, MatchOptions};
+use glob::glob_with;
 use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::datashed::Datashed;
-use crate::document::Document;
-use crate::error::{DatashedError, DatashedResult};
-use crate::progress::ProgressBarBuilder;
+use crate::prelude::*;
 use crate::utils::relpath;
 
 const PBAR_INDEX: &str =
@@ -32,8 +29,14 @@ pub(crate) struct Index {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// Write the index into `filename`. By default, the index will
-    /// be written to stdout in CSV format.
+    /// If set, the index will be written in CSV format to the standard
+    /// output (stdout).
+    #[arg(long, conflicts_with = "output")]
+    stdout: bool,
+
+    /// Write the index into `filename`. By default (if `--stdout`
+    /// isn't set), the index will be written to `index.ipc` into
+    /// the root directory.
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
 }
@@ -62,69 +65,76 @@ impl TryFrom<&PathBuf> for Row {
     }
 }
 
-pub(crate) fn execute(args: Index) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let config = datashed.config()?;
-    let data_dir = datashed.data_dir();
-    let base_dir = datashed.base_dir();
+impl Index {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let data_dir = datashed.data_dir();
+        let base_dir = datashed.base_dir();
+        let config = datashed.config()?;
 
-    let pattern = format!("{}/**/*.txt", data_dir.display());
-    let options = MatchOptions::default();
+        let pattern = format!("{}/**/*.txt", data_dir.display());
+        let files: Vec<_> = glob_with(&pattern, Default::default())
+            .map_err(|e| DatashedError::Other(e.to_string()))?
+            .filter_map(Result::ok)
+            .collect();
 
-    let files: Vec<_> = glob_with(&pattern, options)
-        .map_err(|e| DatashedError::Other(e.to_string()))?
-        .filter_map(Result::ok)
-        .collect();
+        let pbar = ProgressBarBuilder::new(PBAR_INDEX, self.quiet)
+            .len(files.len() as u64)
+            .build();
 
-    let pbar = ProgressBarBuilder::new(PBAR_INDEX, args.quiet)
-        .len(files.len() as u64)
-        .build();
+        let rows = files
+            .par_iter()
+            .progress_with(pbar)
+            .map(Row::try_from)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|_| {
+                DatashedError::other("unable to index documents!")
+            })?;
 
-    let rows = files
-        .par_iter()
-        .progress_with(pbar)
-        .map(Row::try_from)
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|_| {
-            DatashedError::Other("unable to index documents!".into())
-        })?;
+        let mut idn: Vec<String> = vec![];
+        let mut remote: Vec<&str> = vec![];
+        let mut path: Vec<String> = vec![];
+        let mut size: Vec<u64> = vec![];
+        let mut mtime: Vec<u64> = vec![];
+        let mut hash: Vec<String> = vec![];
 
-    let mut idn: Vec<String> = vec![];
-    let mut remote: Vec<&str> = vec![];
-    let mut path: Vec<String> = vec![];
-    let mut size: Vec<u64> = vec![];
-    let mut mtime: Vec<u64> = vec![];
-    let mut hash: Vec<String> = vec![];
-
-    for row in rows.into_iter() {
-        idn.push(row.idn);
-        remote.push(&config.metadata.name);
-        path.push(relpath(&row.path, base_dir));
-        size.push(row.size);
-        mtime.push(row.mtime);
-        hash.push(row.hash[0..8].to_string());
-    }
-
-    let mut df = DataFrame::new(vec![
-        Series::new("idn", idn),
-        Series::new("remote", remote),
-        Series::new("path", path),
-        Series::new("size", size),
-        Series::new("mtime", mtime),
-        Series::new("hash", hash),
-    ])?;
-
-    match args.output {
-        None => {
-            let mut writer = CsvWriter::new(stdout().lock());
-            writer.finish(&mut df)?;
+        for row in rows.into_iter() {
+            idn.push(row.idn);
+            remote.push(&config.metadata.name);
+            path.push(relpath(&row.path, base_dir));
+            size.push(row.size);
+            mtime.push(row.mtime);
+            hash.push(row.hash[0..8].to_string());
         }
-        Some(path) => {
-            let mut writer = IpcWriter::new(File::create(path)?)
+
+        let mut df = DataFrame::new(vec![
+            Series::new("idn", idn),
+            Series::new("remote", remote),
+            Series::new("path", path),
+            Series::new("size", size),
+            Series::new("mtime", mtime),
+            Series::new("hash", hash),
+        ])?;
+
+        match self.output {
+            Some(path) => {
+                let mut writer = IpcWriter::new(File::create(path)?)
+                    .with_compression(Some(IpcCompression::ZSTD));
+                writer.finish(&mut df)?;
+            }
+            None if self.stdout => {
+                let mut writer = CsvWriter::new(stdout().lock());
+                writer.finish(&mut df)?;
+            }
+            None => {
+                let mut writer = IpcWriter::new(File::create(
+                    base_dir.join(Datashed::INDEX),
+                )?)
                 .with_compression(Some(IpcCompression::ZSTD));
-            writer.finish(&mut df)?;
+                writer.finish(&mut df)?;
+            }
         }
-    }
 
-    Ok(())
+        Ok(())
+    }
 }

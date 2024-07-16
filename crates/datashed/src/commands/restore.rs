@@ -5,7 +5,7 @@ use clap::Parser;
 use flate2::read::GzDecoder;
 use tar::Archive;
 
-use crate::error::DatashedResult;
+use crate::prelude::*;
 
 /// Restore a datashed archive (tar.gz).
 #[derive(Debug, Default, Parser)]
@@ -29,14 +29,42 @@ pub(crate) struct Restore {
     archive: PathBuf,
 }
 
-pub(crate) fn execute(args: Restore) -> DatashedResult<()> {
-    if !args.dest.is_dir() {
-        create_dir(&args.dest)?;
+impl Restore {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        if !self.dest.is_dir() {
+            create_dir(&self.dest)?;
+
+            if self.verbose {
+                eprintln!(
+                    "created destination directory '{}'.",
+                    self.dest.display()
+                )
+            }
+        }
+
+        let reader = GzDecoder::new(File::open(self.archive)?);
+        let mut archive = Archive::new(reader);
+        archive.unpack(&self.dest)?;
+
+        if !self.dest.join(Datashed::DATA_DIR).is_dir() {
+            bail!("corrupt archive: missing data dir!");
+        }
+
+        if !self.dest.join(Datashed::INDEX).is_file() {
+            bail!("corrupt archive: missing index!");
+        }
+
+        if !self.dest.join(Datashed::CONFIG).is_file() {
+            bail!("corrupt archive: missing config!");
+        }
+
+        if !self.quiet {
+            eprintln!(
+                "Successfully restored archive. \
+                Verify consistency with `datashed verify`."
+            )
+        }
+
+        Ok(())
     }
-
-    let reader = GzDecoder::new(File::open(args.archive)?);
-    let mut archive = Archive::new(reader);
-    archive.unpack(&args.dest)?;
-
-    Ok(())
 }

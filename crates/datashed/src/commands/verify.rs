@@ -4,10 +4,7 @@ use clap::{Parser, ValueEnum};
 use indicatif::ParallelProgressIterator;
 use rayon::prelude::*;
 
-use crate::datashed::Datashed;
-use crate::document::Document;
-use crate::error::{bail, DatashedError, DatashedResult};
-use crate::progress::ProgressBarBuilder;
+use crate::prelude::*;
 
 const PBAR_VERIFY: &str =
     "Verifying documents: {human_pos} ({percent}%) | \
@@ -48,58 +45,63 @@ pub(crate) struct Verify {
     mode: VerifyMode,
 }
 
-pub(crate) fn execute(args: Verify) -> DatashedResult<()> {
-    let datashed = Datashed::discover()?;
-    let index = datashed.index()?;
+impl Verify {
+    pub(crate) fn execute(self) -> DatashedResult<()> {
+        let datashed = Datashed::discover()?;
+        let index = datashed.index()?;
 
-    let path = index.column("path")?.str()?;
-    let hash = index.column("hash")?.str()?;
-    let mtime = index.column("mtime")?.u64()?;
-    let size = index.column("size")?.u64()?;
+        let path = index.column("path")?.str()?;
+        let hash = index.column("hash")?.str()?;
+        let mtime = index.column("mtime")?.u64()?;
+        let size = index.column("size")?.u64()?;
 
-    let pbar = ProgressBarBuilder::new(PBAR_VERIFY, args.quiet)
-        .len(index.height() as u64)
-        .build();
+        let pbar = ProgressBarBuilder::new(PBAR_VERIFY, self.quiet)
+            .len(index.height() as u64)
+            .build();
 
-    (0..index.height())
-        .into_par_iter()
-        .progress_with(pbar)
-        .try_for_each(|idx| -> Result<(), DatashedError> {
-            let path = path.get(idx).unwrap();
-            if !Path::new(path).is_file() {
-                bail!(
-                    "verification failed: document not found \
-                    (path = {path:?})"
-                );
-            }
+        (0..index.height())
+            .into_par_iter()
+            .progress_with(pbar)
+            .try_for_each(|idx| -> Result<(), DatashedError> {
+                let path = path.get(idx).unwrap();
+                if !Path::new(path).is_file() {
+                    bail!(
+                        "verification failed: file not found \
+                            (path = {path})."
+                    );
+                }
 
-            let doc = Document::from_path(path)?;
-            let actual = doc.hash();
-            let expected = hash.get(idx).unwrap();
+                let doc = Document::from_path(path)?;
+                let expected = hash.get(idx).unwrap();
+                let actual = doc.hash();
 
-            if !actual.starts_with(expected) {
-                bail!(
-                    "verification failed: hash mismatch \
-                        (expected '{actual}' to starts with \
-                        '{expected}', path = {path:?})"
-                );
-            }
+                if !actual.starts_with(expected) {
+                    bail!(
+                        "verification failed: hash mismatch \
+                            (expected '{actual}' to starts with \
+                            '{expected}', path = {path})."
+                    );
+                }
 
-            if args.mode >= VerifyMode::Strict
-                && doc.modified() != mtime.get(idx).unwrap()
-            {
-                bail!(
-                    "verification failed: mtime mismatch \
-                        (path = {path:?})"
-                );
-            }
+                if self.mode >= VerifyMode::Strict
+                    && doc.modified() != mtime.get(idx).unwrap()
+                {
+                    bail!(
+                        "verification failed: mtime mismatch \
+                            (path = {path:?})."
+                    );
+                }
 
-            if args.mode >= VerifyMode::Pedantic
-                && doc.size() != size.get(idx).unwrap()
-            {
-                bail!( "verification failed: size mismatch (path = {path:?})");
-            }
+                if self.mode >= VerifyMode::Pedantic
+                    && doc.size() != size.get(idx).unwrap()
+                {
+                    bail!(
+                        "verification failed: size mismatch \
+                            (path = {path})"
+                    );
+                }
 
-            Ok(())
-        })
+                Ok(())
+            })
+    }
 }
