@@ -1,4 +1,5 @@
 pub(crate) use archive::Archive;
+pub(crate) use clean::Clean;
 pub(crate) use config::Config;
 pub(crate) use index::Index;
 pub(crate) use init::Init;
@@ -8,6 +9,7 @@ pub(crate) use verify::Verify;
 pub(crate) use version::Version;
 
 mod archive;
+mod clean;
 mod config;
 mod index;
 mod init;

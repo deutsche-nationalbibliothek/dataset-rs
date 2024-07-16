@@ -23,6 +23,7 @@ pub(crate) struct Args {
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
     Archive(Archive),
+    Clean(Clean),
     Config(Config),
     Index(Index),
     #[clap(alias = "new")]
