@@ -4,12 +4,15 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use glob::glob_with;
-use indicatif::ParallelProgressIterator;
+use indicatif::{ParallelProgressIterator, ProgressIterator};
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::prelude::*;
 use crate::utils::relpath;
+
+const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
+        elapsed: {elapsed_precise}{msg}";
 
 const PBAR_INDEX: &str =
     "Indexing documents: {human_pos} ({percent}%) | \
@@ -73,8 +76,12 @@ impl Index {
         let config = datashed.config()?;
 
         let pattern = format!("{}/**/*.txt", data_dir.display());
+        let pbar =
+            ProgressBarBuilder::new(PBAR_COLLECT, self.quiet).build();
+
         let files: Vec<_> = glob_with(&pattern, Default::default())
             .map_err(|e| DatashedError::Other(e.to_string()))?
+            .progress_with(pbar)
             .filter_map(Result::ok)
             .collect();
 
