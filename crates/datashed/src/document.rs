@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-use bstr::BString;
+use bstr::{BString, ByteSlice};
 use sha2::{Digest, Sha256};
 
 use crate::error::DatashedResult;
@@ -42,6 +42,12 @@ impl Document {
     #[inline]
     pub(crate) fn size(&self) -> u64 {
         self.buf.len() as u64
+    }
+
+    /// Returns the number of characters in the document
+    #[inline]
+    pub(crate) fn strlen(&self) -> u64 {
+        self.buf.chars().count() as u64
     }
 
     /// Returns the last modification time of the document.

@@ -49,6 +49,7 @@ struct Row {
     idn: String,
     path: PathBuf,
     size: u64,
+    strlen: u64,
     mtime: u64,
     hash: String,
 }
@@ -62,6 +63,7 @@ impl TryFrom<&PathBuf> for Row {
             idn: doc.idn(),
             path: path.into(),
             size: doc.size(),
+            strlen: doc.strlen(),
             mtime: doc.modified(),
             hash: doc.hash(),
         })
@@ -102,6 +104,7 @@ impl Index {
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
         let mut size: Vec<u64> = vec![];
+        let mut strlen: Vec<u64> = vec![];
         let mut mtime: Vec<u64> = vec![];
         let mut hash: Vec<String> = vec![];
 
@@ -110,6 +113,7 @@ impl Index {
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
             size.push(row.size);
+            strlen.push(row.strlen);
             mtime.push(row.mtime);
             hash.push(row.hash[0..8].to_string());
         }
@@ -119,6 +123,7 @@ impl Index {
             Series::new("remote", remote),
             Series::new("path", path),
             Series::new("size", size),
+            Series::new("strlen", strlen),
             Series::new("mtime", mtime),
             Series::new("hash", hash),
         ])?;
