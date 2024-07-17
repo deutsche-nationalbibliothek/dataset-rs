@@ -76,4 +76,46 @@ impl Document {
             out
         })
     }
+
+    /// Returns the ratio of alphabetic characters to the total number
+    /// of characters in the document.
+    ///
+    /// ## Description
+    ///
+    /// The `alpha` score of a document is the ratio of alphabetic
+    /// characters to the total number of characters. An alphabetic
+    /// character is a character which satisfy the _Alphabetic_ property
+    /// of the [Unicode Standard] described in Chapter 4 (Character
+    /// Properties). The score is defined as
+    ///
+    /// $$
+    /// alpha \triangleq \frac{1}{N}\sum_{i = 1}^{N} \mathbf{1}_A(c_i)
+    /// $$
+    ///
+    /// where $N$ is total number of characters of the document, $c_i$
+    /// is the i-th character of the document, $A$ is the subset of all
+    /// characters, which satisfy the _Alphabetic_ property and
+    /// $\mathbf{1}_A$ is the indicator function, which returns 1 if
+    /// the i-th character is alphabetic and otherwise 0.
+    ///
+    /// ## Note
+    ///
+    /// The range of the function is $[0, 1]$ and the score of an empty
+    /// document is defined to $0.0$.
+    ///
+    /// [Unicode Standard]: https://www.unicode.org/versions/latest/
+    pub(crate) fn alpha(&self) -> f64 {
+        let total = self.buf.chars().count() as f64;
+        if total <= 0.0 {
+            return 0.0;
+        }
+
+        let alpha = self
+            .buf
+            .chars()
+            .filter(|c: &char| c.is_alphabetic())
+            .count() as f64;
+
+        alpha / total
+    }
 }
