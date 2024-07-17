@@ -48,6 +48,7 @@ pub(crate) struct Index {
 struct Row {
     idn: String,
     path: PathBuf,
+    alpha: f64,
     size: u64,
     strlen: u64,
     mtime: u64,
@@ -62,6 +63,7 @@ impl TryFrom<&PathBuf> for Row {
         Ok(Row {
             idn: doc.idn(),
             path: path.into(),
+            alpha: doc.alpha(),
             size: doc.size(),
             strlen: doc.strlen(),
             mtime: doc.modified(),
@@ -103,6 +105,7 @@ impl Index {
         let mut idn: Vec<String> = vec![];
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
+        let mut alpha: Vec<f64> = vec![];
         let mut size: Vec<u64> = vec![];
         let mut strlen: Vec<u64> = vec![];
         let mut mtime: Vec<u64> = vec![];
@@ -112,6 +115,7 @@ impl Index {
             idn.push(row.idn);
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
+            alpha.push(row.alpha);
             size.push(row.size);
             strlen.push(row.strlen);
             mtime.push(row.mtime);
@@ -122,6 +126,7 @@ impl Index {
             Series::new("idn", idn),
             Series::new("remote", remote),
             Series::new("path", path),
+            Series::new("alpha", alpha),
             Series::new("size", size),
             Series::new("strlen", strlen),
             Series::new("mtime", mtime),
