@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt::Write;
 use std::fs::{File, Metadata};
 use std::io::Read;
@@ -117,5 +118,27 @@ impl Document {
             .count() as f64;
 
         alpha / total
+    }
+
+    /// Returns the type-token ratio (TTR) of the document.
+    ///
+    /// The TTR is the ratio of unique words (types) to the total number
+    /// of words (tokens).
+    ///
+    /// ## Note
+    ///
+    /// The range of the function is $[0, 1]$ and the score of an empty
+    /// document is defined to $0.0$.
+    pub(crate) fn type_token_ratio(&self) -> f64 {
+        let total = self.buf.words().count() as f64;
+        if total == 0.0 {
+            return 0.0;
+        }
+
+        let iter = self.buf.words().map(str::to_lowercase);
+        let words = HashSet::<String>::from_iter(iter);
+        let unique = words.len() as f64;
+
+        unique / total
     }
 }
