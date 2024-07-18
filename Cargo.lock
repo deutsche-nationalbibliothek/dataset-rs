@@ -444,6 +444,9 @@ dependencies = [
  "flate2",
  "glob",
  "indicatif",
+ "pica-matcher",
+ "pica-path",
+ "pica-record",
  "polars",
  "rayon",
  "semver",
@@ -955,6 +958,55 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90fcb95eef784c2ac79119d1dd819e162b5da872ce6f3c3abe1e8ca1c082f72b"
 dependencies = [
  "siphasher",
+]
+
+[[package]]
+name = "pica-matcher"
+version = "0.25.0"
+source = "git+https://github.com/deutsche-nationalbibliothek/pica-rs.git#f4821b3c62deeedd2c6e3f1938550157006cbca1"
+dependencies = [
+ "bstr",
+ "pica-record",
+ "pica-utils",
+ "regex",
+ "serde",
+ "strsim",
+ "thiserror",
+ "winnow",
+]
+
+[[package]]
+name = "pica-path"
+version = "0.25.0"
+source = "git+https://github.com/deutsche-nationalbibliothek/pica-rs.git#f4821b3c62deeedd2c6e3f1938550157006cbca1"
+dependencies = [
+ "bstr",
+ "pica-matcher",
+ "pica-record",
+ "serde",
+ "thiserror",
+ "winnow",
+]
+
+[[package]]
+name = "pica-record"
+version = "0.25.0"
+source = "git+https://github.com/deutsche-nationalbibliothek/pica-rs.git#f4821b3c62deeedd2c6e3f1938550157006cbca1"
+dependencies = [
+ "bstr",
+ "flate2",
+ "sha2",
+ "thiserror",
+ "winnow",
+]
+
+[[package]]
+name = "pica-utils"
+version = "0.25.0"
+source = "git+https://github.com/deutsche-nationalbibliothek/pica-rs.git#f4821b3c62deeedd2c6e3f1938550157006cbca1"
+dependencies = [
+ "serde",
+ "unicode-normalization",
 ]
 
 [[package]]
@@ -1839,6 +1891,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "tinyvec"
+version = "1.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "445e881f4f6d382d5f27c034e25eb92edd7c784ceab92a0937db7f2e9471b938"
+dependencies = [
+ "tinyvec_macros",
+]
+
+[[package]]
+name = "tinyvec_macros"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+
+[[package]]
 name = "toml"
 version = "0.8.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1884,6 +1951,15 @@ name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+
+[[package]]
+name = "unicode-normalization"
+version = "0.1.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a56d1686db2308d901306f92a263857ef59ea39678a5458e7cb17f01415101f5"
+dependencies = [
+ "tinyvec",
+]
 
 [[package]]
 name = "unicode-reverse"

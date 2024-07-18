@@ -19,6 +19,9 @@ pub(crate) enum DatashedError {
     #[error(transparent)]
     Polars(#[from] polars::error::PolarsError),
 
+    #[error(transparent)]
+    ReadPica(#[from] pica_record::io::ReadPicaError),
+
     #[error("{0}")]
     Other(String),
 }

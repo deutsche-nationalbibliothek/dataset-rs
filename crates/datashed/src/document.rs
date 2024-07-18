@@ -14,7 +14,16 @@ use crate::error::DatashedResult;
 use crate::prelude::{bail, DatashedError};
 
 #[derive(
-    Debug, Default, PartialEq, Eq, Serialize, Deserialize, Hash, Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    Hash,
+    Clone,
+    PartialOrd,
+    Ord,
 )]
 #[serde(rename_all = "lowercase")]
 pub(crate) enum DocumentKind {
