@@ -8,6 +8,7 @@ use indicatif::{ParallelProgressIterator, ProgressIterator};
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
+use crate::document::DocumentKind;
 use crate::prelude::*;
 use crate::utils::relpath;
 
@@ -47,6 +48,7 @@ pub(crate) struct Index {
 #[derive(Debug, Default)]
 struct Row {
     idn: String,
+    kind: DocumentKind,
     path: PathBuf,
     alpha: f64,
     ttr: f64,
@@ -63,6 +65,7 @@ impl TryFrom<&PathBuf> for Row {
         let doc = Document::from_path(path)?;
         Ok(Row {
             idn: doc.idn(),
+            kind: doc.kind(),
             path: path.into(),
             alpha: doc.alpha(),
             ttr: doc.type_token_ratio(),
@@ -105,6 +108,7 @@ impl Index {
             })?;
 
         let mut idn: Vec<String> = vec![];
+        let mut kind: Vec<String> = vec![];
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
         let mut alpha: Vec<f64> = vec![];
@@ -116,6 +120,7 @@ impl Index {
 
         for row in rows.into_iter() {
             idn.push(row.idn);
+            kind.push(row.kind.to_string());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
             alpha.push(row.alpha);
@@ -127,8 +132,9 @@ impl Index {
         }
 
         let mut df = DataFrame::new(vec![
-            Series::new("idn", idn),
             Series::new("remote", remote),
+            Series::new("idn", idn),
+            Series::new("kind", kind),
             Series::new("path", path),
             Series::new("alpha", alpha),
             Series::new("ttr", ttr),
