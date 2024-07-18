@@ -52,8 +52,8 @@ impl KindMap {
                 let filter = &refinement.filter;
                 let to = &refinement.target;
 
-                let matcher = RecordMatcher::from_str(&filter)
-                    .map_err(|_| {
+                let matcher =
+                    RecordMatcher::from_str(filter).map_err(|_| {
                         DatashedError::other(format!(
                             "Invalid record matcher '{filter}'"
                         ))
