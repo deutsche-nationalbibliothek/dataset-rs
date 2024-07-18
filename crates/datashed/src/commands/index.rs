@@ -5,12 +5,17 @@ use std::path::PathBuf;
 use clap::Parser;
 use glob::glob_with;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
+use pica_record::io::{ReaderBuilder, RecordsIterator};
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::document::DocumentKind;
+use crate::kindmap::KindMap;
 use crate::prelude::*;
 use crate::utils::relpath;
+
+const PBAR_METADATA: &str = "Collecting metadata: {human_pos} | \
+        elapsed: {elapsed_precise}{msg}";
 
 const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
@@ -43,6 +48,9 @@ pub(crate) struct Index {
     /// the root directory.
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
+
+    /// The path to the PICA+ dump
+    path: PathBuf,
 }
 
 #[derive(Debug, Default)]
@@ -84,6 +92,21 @@ impl Index {
         let base_dir = datashed.base_dir();
         let config = datashed.config()?;
 
+        let mut kind_map = KindMap::from_config(&config)?;
+        let pbar =
+            ProgressBarBuilder::new(PBAR_METADATA, self.quiet).build();
+
+        let mut reader = ReaderBuilder::new().from_path(&self.path)?;
+        while let Some(result) = reader.next() {
+            if let Ok(record) = result {
+                kind_map.process_record(&record);
+            }
+
+            pbar.inc(1);
+        }
+
+        pbar.finish_using_style();
+
         let pattern = format!("{}/**/*.txt", data_dir.display());
         let pbar =
             ProgressBarBuilder::new(PBAR_COLLECT, self.quiet).build();
@@ -119,8 +142,13 @@ impl Index {
         let mut hash: Vec<String> = vec![];
 
         for row in rows.into_iter() {
+            let new_kind = kind_map
+                .get(&(row.idn.clone(), row.kind.clone()))
+                .unwrap_or(&row.kind)
+                .to_owned();
+
             idn.push(row.idn);
-            kind.push(row.kind.to_string());
+            kind.push(new_kind.to_string());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
             alpha.push(row.alpha);

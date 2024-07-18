@@ -23,6 +23,7 @@ mod config;
 mod datashed;
 mod document;
 mod error;
+mod kindmap;
 mod progress;
 mod utils;
 

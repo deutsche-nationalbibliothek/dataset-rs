@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -5,6 +6,7 @@ use std::path::{Path, PathBuf};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
+use crate::document::DocumentKind;
 use crate::error::DatashedResult;
 
 /// Datashed config.
@@ -19,6 +21,10 @@ pub(crate) struct Config {
 
     /// Runtime options.
     pub(crate) runtime: Option<Runtime>,
+
+    /// A set of document kind refinements.
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
+    pub(crate) kinds: HashMap<DocumentKind, KindSpec>,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:
@@ -69,6 +75,18 @@ pub(crate) struct Runtime {
     /// of "0" is chosen, the maximum number of available threads
     /// is used.
     pub(crate) num_jobs: Option<usize>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Hash)]
+pub(crate) struct KindSpec {
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub(crate) refinements: Vec<Refinement>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+pub(crate) struct Refinement {
+    pub(crate) target: DocumentKind,
+    pub(crate) filter: String,
 }
 
 impl Config {
