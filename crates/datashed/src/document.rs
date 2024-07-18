@@ -1,14 +1,57 @@
 use std::collections::HashSet;
-use std::fmt::Write;
+use std::fmt::{self, Display, Write};
 use std::fs::{File, Metadata};
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
+use std::str::FromStr;
 use std::time::UNIX_EPOCH;
 
 use bstr::{BString, ByteSlice};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::DatashedResult;
+use crate::prelude::{bail, DatashedError};
+
+#[derive(
+    Debug, Default, PartialEq, Eq, Serialize, Deserialize, Hash, Clone,
+)]
+#[serde(rename_all = "lowercase")]
+pub(crate) enum DocumentKind {
+    Article,
+    Blurb,
+    Book,
+    #[default]
+    Other,
+    Toc,
+}
+
+impl Display for DocumentKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Article => write!(f, "article"),
+            Self::Blurb => write!(f, "blurb"),
+            Self::Book => write!(f, "book"),
+            Self::Other => write!(f, "other"),
+            Self::Toc => write!(f, "toc"),
+        }
+    }
+}
+
+impl FromStr for DocumentKind {
+    type Err = DatashedError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "article" => Ok(Self::Article),
+            "blurb" => Ok(Self::Blurb),
+            "book" => Ok(Self::Book),
+            "other" | "ft" => Ok(Self::Other),
+            "toc" => Ok(Self::Toc),
+            _ => bail!("invalid document kind '{s}'"),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct Document {
@@ -37,6 +80,26 @@ impl Document {
 
     pub(crate) fn idn(&self) -> String {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
+    }
+
+    /// Returns the kind of the document.
+    ///
+    /// # Note
+    ///
+    /// If the kind can be derived by multiple path components, the
+    /// function chooses the broadest.
+    pub(crate) fn kind(&self) -> DocumentKind {
+        self.path
+            .components()
+            .filter_map(|component| {
+                if let Component::Normal(s) = component {
+                    s.to_str()
+                } else {
+                    None
+                }
+            })
+            .find_map(|s| DocumentKind::from_str(s).ok())
+            .unwrap_or_default()
     }
 
     /// Returns the length of the document in bytes.
