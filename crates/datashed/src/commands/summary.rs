@@ -24,7 +24,8 @@ pub(crate) struct Summary {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// Write summary to <filename> instead of <stdout>.
+    /// Write summary in JSON format to `filename` instead of standard
+    /// output (stdout).
     #[arg(short, long, value_name = "filename")]
     output: Option<PathBuf>,
 }
