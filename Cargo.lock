@@ -452,6 +452,7 @@ dependencies = [
  "rayon",
  "semver",
  "serde",
+ "serde_json",
  "sha2",
  "tar",
  "thiserror",
@@ -1671,6 +1672,7 @@ version = "1.0.120"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e0d21c9a8cae1235ad58a00c11cb40d4b1e5c784f1ef2c537876ed6ffd8b7c5"
 dependencies = [
+ "indexmap",
  "itoa",
  "ryu",
  "serde",

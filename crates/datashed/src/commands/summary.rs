@@ -1,9 +1,12 @@
+use std::fs::{self};
+use std::path::PathBuf;
+
 use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use humansize::{make_format, BINARY};
-use polars::datatypes::DataType;
 use polars::lazy::dsl::col;
-use polars::prelude::IntoLazy;
+use polars::prelude::{IntoLazy, SortMultipleOptions};
+use serde_json::{json, Map};
 
 use crate::prelude::*;
 
@@ -20,6 +23,10 @@ pub(crate) struct Summary {
     /// with the `--verbose` option.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
+
+    /// Write summary to <filename> instead of <stdout>.
+    #[arg(short, long, value_name = "filename")]
+    output: Option<PathBuf>,
 }
 
 impl Summary {
@@ -38,43 +45,69 @@ impl Summary {
             .select([
                 col("remote"),
                 col("kind"),
-                col("docs").cast(DataType::UInt64),
-                col("size").cast(DataType::UInt64),
-                col("unique").cast(DataType::UInt64),
+                col("docs"),
+                col("size"),
+                col("dups"),
             ])
+            .sort(["kind"], SortMultipleOptions::default())
             .collect()?;
 
-        let remotes = df.column("remote")?.str()?;
         let kinds = df.column("kind")?.str()?;
-        let docs = df.column("docs")?.u64()?;
+        let docs = df.column("docs")?.u32()?;
         let sizes = df.column("size")?.u64()?;
-        let uniques = df.column("unique")?.u64()?;
+        let dups = df.column("dups")?.u32()?;
 
-        let formatter = make_format(BINARY);
+        if let Some(path) = self.output {
+            let mut map = Map::new();
 
-        let mut table = Table::new();
-        table.load_preset(presets::UTF8_FULL_CONDENSED);
-        table.set_header(Row::from(vec![
-            "remote", "kind", "docs", "size", "unique",
-        ]));
+            for idx in 0..df.height() {
+                let kind = kinds.get(idx).unwrap();
+                let docs = docs.get(idx).unwrap();
+                let size = sizes.get(idx).unwrap();
+                let dups = dups.get(idx).unwrap();
 
-        for idx in 0..df.height() {
-            let remote = remotes.get(idx).unwrap();
-            let kind = kinds.get(idx).unwrap();
-            let docs = docs.get(idx).unwrap();
-            let size = sizes.get(idx).unwrap();
-            let unique = uniques.get(idx).unwrap();
+                map.insert(
+                    kind.to_string(),
+                    json!({
+                        "docs": docs.to_string(),
+                        "size": size,
+                        "duplicates": dups,
 
-            table.add_row([
-                remote.to_string(),
-                kind.to_string(),
-                docs.to_string(),
-                formatter(size),
-                unique.to_string(),
-            ]);
+                    }),
+                );
+            }
+
+            let value: serde_json::Value = map.into();
+            fs::write(path, value.to_string())?;
+        } else {
+            let formatter = make_format(BINARY);
+
+            let mut table = Table::new();
+            table.load_preset(presets::UTF8_FULL_CONDENSED);
+            table.set_header(Row::from(vec![
+                "kind",
+                "docs",
+                "size",
+                "duplicates",
+            ]));
+
+            for idx in 0..df.height() {
+                let kind = kinds.get(idx).unwrap();
+                let docs = docs.get(idx).unwrap();
+                let size = sizes.get(idx).unwrap();
+                let dups = dups.get(idx).unwrap();
+
+                table.add_row([
+                    kind.to_string(),
+                    docs.to_string(),
+                    formatter(size),
+                    dups.to_string(),
+                ]);
+            }
+
+            println!("{table}");
         }
 
-        println!("{table}");
         Ok(())
     }
 }
