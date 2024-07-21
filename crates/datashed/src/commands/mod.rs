@@ -5,6 +5,7 @@ pub(crate) use index::Index;
 pub(crate) use init::Init;
 pub(crate) use restore::Restore;
 pub(crate) use status::Status;
+pub(crate) use summary::Summary;
 pub(crate) use verify::Verify;
 pub(crate) use version::Version;
 
@@ -15,5 +16,6 @@ mod index;
 mod init;
 mod restore;
 mod status;
+mod summary;
 mod verify;
 mod version;

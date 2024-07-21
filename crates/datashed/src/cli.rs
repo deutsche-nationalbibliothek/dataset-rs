@@ -30,6 +30,7 @@ pub(crate) enum Command {
     Init(Init),
     Restore(Restore),
     Status(Status),
+    Summary(Summary),
     Verify(Verify),
     Version(Version),
 }
