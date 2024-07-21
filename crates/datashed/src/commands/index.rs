@@ -50,7 +50,7 @@ pub(crate) struct Index {
     output: Option<PathBuf>,
 
     /// The path to the PICA+ dump
-    path: PathBuf,
+    path: Option<PathBuf>,
 }
 
 #[derive(Debug, Default)]
@@ -93,19 +93,22 @@ impl Index {
         let config = datashed.config()?;
 
         let mut kind_map = KindMap::from_config(&config)?;
-        let pbar =
-            ProgressBarBuilder::new(PBAR_METADATA, self.quiet).build();
+        if let Some(path) = self.path {
+            let pbar =
+                ProgressBarBuilder::new(PBAR_METADATA, self.quiet)
+                    .build();
 
-        let mut reader = ReaderBuilder::new().from_path(&self.path)?;
-        while let Some(result) = reader.next() {
-            if let Ok(record) = result {
-                kind_map.process_record(&record);
+            let mut reader = ReaderBuilder::new().from_path(path)?;
+            while let Some(result) = reader.next() {
+                if let Ok(record) = result {
+                    kind_map.process_record(&record);
+                }
+
+                pbar.inc(1);
             }
 
-            pbar.inc(1);
+            pbar.finish_using_style();
         }
-
-        pbar.finish_using_style();
 
         let pattern = format!("{}/**/*.txt", data_dir.display());
         let pbar =
