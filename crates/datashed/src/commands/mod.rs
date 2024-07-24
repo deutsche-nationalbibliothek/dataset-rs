@@ -1,4 +1,5 @@
 pub(crate) use archive::Archive;
+pub(crate) use bibrefs::BibRefs;
 pub(crate) use clean::Clean;
 pub(crate) use config::Config;
 pub(crate) use index::Index;
@@ -10,6 +11,7 @@ pub(crate) use verify::Verify;
 pub(crate) use version::Version;
 
 mod archive;
+mod bibrefs;
 mod clean;
 mod config;
 mod index;

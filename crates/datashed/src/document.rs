@@ -69,6 +69,12 @@ pub(crate) struct Document {
     buf: BString,
 }
 
+impl AsRef<[u8]> for Document {
+    fn as_ref(&self) -> &[u8] {
+        self.buf.as_ref()
+    }
+}
+
 impl Document {
     pub(crate) fn from_path<P: AsRef<Path>>(
         path: P,
