@@ -16,6 +16,7 @@ flate2 = { version = "1.0.30" }
 glob = { workspace = true }
 humansize = { version = "2.1.3" }
 indicatif = { workspace = true }
+lingua = { version = "1.6.2" }
 polars = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }

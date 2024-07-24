@@ -4,14 +4,23 @@ use std::fs::{File, Metadata};
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 use std::str::FromStr;
+use std::sync::OnceLock;
 use std::time::UNIX_EPOCH;
 
 use bstr::{BString, ByteSlice};
+use lingua::{Language, LanguageDetector, LanguageDetectorBuilder};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::DatashedResult;
 use crate::prelude::{bail, DatashedError};
+
+fn language_detector() -> &'static LanguageDetector {
+    static DETECTOR: OnceLock<LanguageDetector> = OnceLock::new();
+    DETECTOR.get_or_init(|| {
+        LanguageDetectorBuilder::from_all_languages().build()
+    })
+}
 
 #[derive(
     Debug,
@@ -67,6 +76,7 @@ pub(crate) struct Document {
     path: PathBuf,
     metadata: Metadata,
     buf: BString,
+    _lang: Option<(Language, f64)>,
 }
 
 impl AsRef<[u8]> for Document {
@@ -90,6 +100,7 @@ impl Document {
             path,
             metadata,
             buf: BString::from(buf),
+            _lang: None,
         })
     }
 
@@ -154,6 +165,24 @@ impl Document {
             let _ = write!(out, "{b:02x}");
             out
         })
+    }
+
+    /// Returns the most probable language and its confidence value.
+    ///
+    /// # Note
+    ///
+    /// If the language detection fails, the function returns `None`.
+    pub(crate) fn lang(&mut self) -> Option<(String, f64)> {
+        self._lang = language_detector()
+            .compute_language_confidence_values(self.buf.to_string())
+            .into_iter()
+            .next();
+
+        if let Some((code, score)) = self._lang {
+            Some((code.iso_code_639_3().to_string(), score))
+        } else {
+            None
+        }
     }
 
     /// Returns the ratio of alphabetic characters to the total number
