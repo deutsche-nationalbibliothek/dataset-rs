@@ -58,6 +58,7 @@ struct Row {
     idn: String,
     kind: DocumentKind,
     path: PathBuf,
+    lang: Option<(String, f64)>,
     alpha: f64,
     ttr: f64,
     size: u64,
@@ -70,11 +71,12 @@ impl TryFrom<&PathBuf> for Row {
     type Error = DatashedError;
 
     fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
-        let doc = Document::from_path(path)?;
+        let mut doc = Document::from_path(path)?;
         Ok(Row {
             idn: doc.idn(),
             kind: doc.kind(),
             path: path.into(),
+            lang: doc.lang(),
             alpha: doc.alpha(),
             ttr: doc.type_token_ratio(),
             size: doc.size(),
@@ -137,6 +139,8 @@ impl Index {
         let mut kind: Vec<String> = vec![];
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
+        let mut lang_code: Vec<Option<String>> = vec![];
+        let mut lang_score: Vec<Option<f64>> = vec![];
         let mut alpha: Vec<f64> = vec![];
         let mut ttr: Vec<f64> = vec![];
         let mut size: Vec<u64> = vec![];
@@ -160,6 +164,14 @@ impl Index {
             strlen.push(row.strlen);
             mtime.push(row.mtime);
             hash.push(row.hash[0..8].to_string());
+
+            if let Some((code, score)) = row.lang {
+                lang_code.push(Some(code));
+                lang_score.push(Some(score));
+            } else {
+                lang_code.push(None);
+                lang_score.push(None);
+            }
         }
 
         let mut df = DataFrame::new(vec![
@@ -167,6 +179,12 @@ impl Index {
             Series::new("idn", idn),
             Series::new("kind", kind),
             Series::new("path", path),
+            DataFrame::new(vec![
+                Series::new("lang_code", lang_code),
+                Series::new("lang_score", lang_score),
+            ])?
+            .into_struct("lang")
+            .into_series(),
             Series::new("alpha", alpha),
             Series::new("ttr", ttr),
             Series::new("size", size),
