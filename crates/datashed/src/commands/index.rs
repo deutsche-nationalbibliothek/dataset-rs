@@ -207,6 +207,10 @@ impl Index {
                 writer.finish(&mut df)?;
             }
             None if self.stdout => {
+                // The lang column must be unnested, because CSV
+                // doesn't support nested columns.
+                let mut df = df.unnest(["lang"])?;
+
                 let mut writer = CsvWriter::new(stdout().lock());
                 writer.finish(&mut df)?;
             }
