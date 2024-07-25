@@ -33,7 +33,7 @@ release:
 	$(CARGO) build --release --workspace
 
 dev-install:
-	$(CARGO) install --debug -q --path crates/datashed --bin datashed
+	$(CARGO) install -q --path crates/datashed --bin datashed
 	# $(CARGO) install --debug -q --path . --bin dataset
 
 install:
