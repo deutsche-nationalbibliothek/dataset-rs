@@ -59,6 +59,7 @@ struct Row {
     kind: DocumentKind,
     path: PathBuf,
     lang: Option<(String, f64)>,
+    lfreq: Option<f64>,
     alpha: f64,
     ttr: f64,
     size: u64,
@@ -72,17 +73,20 @@ impl TryFrom<&PathBuf> for Row {
 
     fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
         let mut doc = Document::from_path(path)?;
+        let lang = doc.lang();
+
         Ok(Row {
             idn: doc.idn(),
             kind: doc.kind(),
             path: path.into(),
-            lang: doc.lang(),
+            lfreq: doc.lfreq(),
             alpha: doc.alpha(),
             ttr: doc.type_token_ratio(),
             size: doc.size(),
             strlen: doc.strlen(),
             mtime: doc.modified(),
             hash: doc.hash(),
+            lang,
         })
     }
 }
@@ -141,6 +145,7 @@ impl Index {
         let mut path: Vec<String> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
         let mut lang_score: Vec<Option<f64>> = vec![];
+        let mut lfreq: Vec<Option<f64>> = vec![];
         let mut alpha: Vec<f64> = vec![];
         let mut ttr: Vec<f64> = vec![];
         let mut size: Vec<u64> = vec![];
@@ -158,6 +163,7 @@ impl Index {
             kind.push(new_kind.to_string());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
+            lfreq.push(row.lfreq);
             alpha.push(row.alpha);
             ttr.push(row.ttr);
             size.push(row.size);
@@ -185,6 +191,7 @@ impl Index {
             ])?
             .into_struct("lang")
             .into_series(),
+            Series::new("lfreq", lfreq),
             Series::new("alpha", alpha),
             Series::new("ttr", ttr),
             Series::new("size", size),

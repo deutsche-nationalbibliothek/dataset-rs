@@ -24,6 +24,7 @@ mod datashed;
 mod document;
 mod error;
 mod kindmap;
+mod lfreq;
 mod progress;
 mod utils;
 
