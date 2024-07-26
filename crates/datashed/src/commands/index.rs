@@ -11,6 +11,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::document::DocumentKind;
 use crate::kindmap::KindMap;
+use crate::mscmap::MscMap;
 use crate::prelude::*;
 use crate::utils::relpath;
 
@@ -57,6 +58,7 @@ pub(crate) struct Index {
 struct Row {
     idn: String,
     kind: DocumentKind,
+    msc: Option<String>,
     path: PathBuf,
     lang: Option<(String, f64)>,
     lfreq: Option<f64>,
@@ -87,6 +89,7 @@ impl TryFrom<&PathBuf> for Row {
             mtime: doc.modified(),
             hash: doc.hash(),
             lang,
+            ..Default::default()
         })
     }
 }
@@ -99,6 +102,8 @@ impl Index {
         let config = datashed.config()?;
 
         let mut kind_map = KindMap::from_config(&config)?;
+        let mut msc_map = MscMap::from_config(&config)?;
+
         if let Some(path) = self.path {
             let pbar =
                 ProgressBarBuilder::new(PBAR_METADATA, self.quiet)
@@ -108,6 +113,7 @@ impl Index {
             while let Some(result) = reader.next() {
                 if let Ok(record) = result {
                     kind_map.process_record(&record);
+                    msc_map.process_record(&record);
                 }
 
                 pbar.inc(1);
@@ -141,6 +147,7 @@ impl Index {
 
         let mut idn: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
+        let mut msc: Vec<Option<String>> = vec![];
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
@@ -159,8 +166,8 @@ impl Index {
                 .unwrap_or(&row.kind)
                 .to_owned();
 
-            idn.push(row.idn);
             kind.push(new_kind.to_string());
+            msc.push(msc_map.get(&row.idn).cloned());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
             lfreq.push(row.lfreq);
@@ -170,6 +177,7 @@ impl Index {
             strlen.push(row.strlen);
             mtime.push(row.mtime);
             hash.push(row.hash[0..8].to_string());
+            idn.push(row.idn);
 
             if let Some((code, score)) = row.lang {
                 lang_code.push(Some(code));
@@ -184,6 +192,7 @@ impl Index {
             Series::new("remote", remote),
             Series::new("idn", idn),
             Series::new("kind", kind),
+            Series::new("msc", msc),
             Series::new("path", path),
             DataFrame::new(vec![
                 Series::new("code", lang_code),
