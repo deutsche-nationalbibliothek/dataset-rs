@@ -527,6 +527,7 @@ dependencies = [
  "dialoguer",
  "flate2",
  "glob",
+ "hashbrown 0.14.5",
  "humansize",
  "indicatif",
  "lingua",

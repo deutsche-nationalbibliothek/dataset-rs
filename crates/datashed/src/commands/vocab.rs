@@ -1,10 +1,10 @@
-use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::stdout;
 use std::path::PathBuf;
 
 use bstr::ByteSlice;
 use clap::Parser;
+use hashbrown::HashMap;
 use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use polars::sql::SQLContext;
@@ -44,7 +44,7 @@ pub(crate) struct Vocab {
     predicate: Option<String>,
 }
 
-type VocabMap = BTreeMap<String, u64>;
+type VocabMap = HashMap<String, u64>;
 
 impl Vocab {
     pub(crate) fn execute(self) -> DatashedResult<()> {
@@ -96,8 +96,8 @@ impl Vocab {
                 acc
             });
 
-        let mut tokens = vec![];
-        let mut counts = vec![];
+        let mut tokens = Vec::with_capacity(vocab.len());
+        let mut counts = Vec::with_capacity(vocab.len());
 
         for (token, count) in vocab.into_iter() {
             tokens.push(token);

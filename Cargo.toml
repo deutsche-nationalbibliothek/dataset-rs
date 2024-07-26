@@ -25,6 +25,7 @@ rust-version = "1.80.0"
 [workspace.dependencies]
 bstr = { version = "1.9.1", features = ["unicode"] }
 glob = { version = "0.3.1" }
+hashbrown = { version = "0.14.5" }
 indicatif = { version = "0.17.8", features = ["rayon"] }
 ndarray = { version = "0.15.6" }
 ndarray-stats = { version = "0.5.1" }
