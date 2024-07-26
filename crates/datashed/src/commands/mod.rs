@@ -9,6 +9,7 @@ pub(crate) use status::Status;
 pub(crate) use summary::Summary;
 pub(crate) use verify::Verify;
 pub(crate) use version::Version;
+pub(crate) use vocab::Vocab;
 
 mod archive;
 mod bibrefs;
@@ -21,3 +22,4 @@ mod status;
 mod summary;
 mod verify;
 mod version;
+mod vocab;

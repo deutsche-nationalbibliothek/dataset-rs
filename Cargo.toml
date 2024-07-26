@@ -43,4 +43,11 @@ version = "4.5"
 
 [workspace.dependencies.polars]
 version = "0.41.3"
-features = ["ipc", "dtype-categorical", "dtype-struct", "lazy", "is_in"]
+features = [
+    "dtype-categorical",
+    "dtype-struct",
+    "ipc",
+    "is_in",
+    "lazy",
+    "sql",
+]

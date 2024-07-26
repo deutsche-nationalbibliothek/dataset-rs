@@ -34,4 +34,5 @@ pub(crate) enum Command {
     Summary(Summary),
     Verify(Verify),
     Version(Version),
+    Vocab(Vocab),
 }
