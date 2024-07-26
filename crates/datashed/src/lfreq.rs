@@ -22,7 +22,7 @@ fn frequencies(buf: &BString, alphabet: &[char]) -> HashMap<char, u64> {
         })
 }
 
-pub(crate) fn lfreq_deu(buf: &BString) -> Option<f64> {
+pub(crate) fn lfreq_ger(buf: &BString) -> Option<f64> {
     let alphabet: Vec<char> =
         "abcdefghijklmnopqrstuvwxyzßäöü".chars().collect();
 

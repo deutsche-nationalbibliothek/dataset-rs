@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::error::DatashedResult;
-use crate::lfreq::{lfreq_deu, lfreq_eng};
+use crate::lfreq::{lfreq_eng, lfreq_ger};
 use crate::prelude::{bail, DatashedError};
 
 fn language_detector() -> &'static LanguageDetector {
@@ -216,7 +216,7 @@ impl Document {
     pub(crate) fn lfreq(&mut self) -> Option<f64> {
         if let Some((lang, _)) = self.lang() {
             match lang.as_str() {
-                "deu" => lfreq_deu(&self.buf),
+                "ger" => lfreq_ger(&self.buf),
                 "eng" => lfreq_eng(&self.buf),
                 _ => None,
             }
