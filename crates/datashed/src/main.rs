@@ -25,6 +25,7 @@ mod document;
 mod error;
 mod kindmap;
 mod lfreq;
+mod mscmap;
 mod progress;
 mod utils;
 
