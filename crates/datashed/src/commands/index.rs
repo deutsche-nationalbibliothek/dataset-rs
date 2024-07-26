@@ -186,8 +186,8 @@ impl Index {
             Series::new("kind", kind),
             Series::new("path", path),
             DataFrame::new(vec![
-                Series::new("lang_code", lang_code),
-                Series::new("lang_score", lang_score),
+                Series::new("code", lang_code),
+                Series::new("score", lang_score),
             ])?
             .into_struct("lang")
             .into_series(),
