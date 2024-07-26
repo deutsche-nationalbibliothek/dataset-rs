@@ -3,7 +3,7 @@ name = "dataset"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "EUPL-1.2"
-rust-version = "1.79.0"
+rust-version = "1.80.0"
 version = "0.1.0"
 
 [[bin]]
@@ -20,7 +20,7 @@ resolver = "2"
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "EUPL-1.2"
-rust-version = "1.79.0"
+rust-version = "1.80.0"
 
 [workspace.dependencies]
 bstr = { version = "1.9.1", features = ["unicode"] }
