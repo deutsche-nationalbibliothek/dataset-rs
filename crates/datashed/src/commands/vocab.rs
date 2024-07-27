@@ -30,6 +30,15 @@ pub(crate) struct Vocab {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
+    #[arg(long, conflicts_with_all = ["bigrams", "trigrams"])]
+    unigrams: bool,
+
+    #[arg(long, conflicts_with_all = ["unigrams", "trigrams"])]
+    bigrams: bool,
+
+    #[arg(long, conflicts_with_all = ["unigrams", "bigrams"])]
+    trigrams: bool,
+
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
@@ -61,6 +70,14 @@ impl Vocab {
             index
         };
 
+        let size = if self.trigrams {
+            3
+        } else if self.bigrams {
+            2
+        } else {
+            1
+        };
+
         let path = df.column("path")?.str()?;
 
         let pbar = ProgressBarBuilder::new(PBAR_PROCESS, self.quiet)
@@ -75,9 +92,16 @@ impl Vocab {
                 let doc =
                     Document::from_path(base_dir.join(path)).unwrap();
 
-                doc.as_ref().words().map(str::to_lowercase).fold(
+                let words: Vec<String> = doc
+                    .as_ref()
+                    .words()
+                    .map(str::to_lowercase)
+                    .collect();
+
+                words.windows(size).fold(
                     VocabMap::new(),
-                    |mut vocab, token| {
+                    |mut vocab, tokens| {
+                        let token = tokens.join(" ");
                         vocab
                             .entry(token)
                             .and_modify(|cnt| *cnt += 1)
