@@ -81,6 +81,10 @@ pub(crate) struct Vocab {
     #[arg(long = "min-tf", default_value = "1", value_name = "freq")]
     min_token_freq: u64,
 
+    /// Ignore tokens with a document frequency less than \<freq\>.
+    #[arg(long = "min-df", default_value = "1", value_name = "freq")]
+    min_doc_freq: u64,
+
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
@@ -95,7 +99,7 @@ pub(crate) struct Vocab {
     predicate: Option<String>,
 }
 
-type VocabMap = HashMap<String, u64>;
+type VocabMap = HashMap<String, (u64, u64)>;
 
 impl Vocab {
     pub(crate) fn execute(self) -> DatashedResult<()> {
@@ -187,8 +191,8 @@ impl Vocab {
                         let token = tokens.join(" ");
                         vocab
                             .entry(token)
-                            .and_modify(|cnt| *cnt += 1)
-                            .or_insert(1);
+                            .and_modify(|(tf, _)| *tf += 1)
+                            .or_insert((1, 1));
                         vocab
                     },
                 )
@@ -196,33 +200,41 @@ impl Vocab {
             .reduce(VocabMap::new, |mut acc, rhs| {
                 for (token, count) in rhs.into_iter() {
                     acc.entry(token)
-                        .and_modify(|cnt| *cnt += count)
+                        .and_modify(|(tf, df)| {
+                            *tf += count.0;
+                            *df += count.1;
+                        })
                         .or_insert(count);
                 }
 
                 acc
             });
 
-        if self.min_token_freq > 1 {
-            vocab.retain(|_, count| *count >= self.min_token_freq);
+        if self.min_token_freq > 1 || self.min_doc_freq > 1 {
+            vocab.retain(|_, (tf, df)| {
+                *tf >= self.min_token_freq && *df >= self.min_doc_freq
+            });
         }
 
         let mut tokens = Vec::with_capacity(vocab.len());
-        let mut counts = Vec::with_capacity(vocab.len());
+        let mut freqs = Vec::with_capacity(vocab.len());
+        let mut docs = Vec::with_capacity(vocab.len());
 
-        for (token, count) in vocab.into_iter() {
+        for (token, (tf, df)) in vocab.into_iter() {
             tokens.push(token);
-            counts.push(count);
+            freqs.push(tf);
+            docs.push(df);
         }
 
         let sort_options = SortMultipleOptions::default()
-            .with_order_descending_multi([true, false]);
+            .with_order_descending_multi([true, true, false]);
 
         let mut df = DataFrame::new(vec![
             Series::new("token", tokens),
-            Series::new("count", counts),
+            Series::new("tf", freqs),
+            Series::new("df", docs),
         ])?
-        .sort(["count", "token"], sort_options)?;
+        .sort(["tf", "df", "token"], sort_options)?;
 
         if let Some(path) = self.output {
             let mut writer = IpcWriter::new(File::create(path)?)
