@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::fs::{read_to_string, File};
 use std::io::stdout;
 use std::path::PathBuf;
@@ -85,6 +86,16 @@ pub(crate) struct Vocab {
     #[arg(long = "min-df", default_value = "1", value_name = "freq")]
     min_doc_freq: u64,
 
+    /// Ignore documents which are *not* explicitly listed in the given
+    /// allow-lists.
+    #[arg(long = "allow-list", short = 'A')]
+    allow_list: Option<PathBuf>,
+
+    /// Ignore documents which are explicitly listed in the given
+    /// deny-lists.
+    #[arg(long = "deny-list", short = 'D')]
+    deny_list: Option<PathBuf>,
+
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
@@ -101,13 +112,27 @@ pub(crate) struct Vocab {
 
 type VocabMap = HashMap<String, (u64, u64)>;
 
+fn read_filter_list(path: PathBuf) -> DatashedResult<DataFrame> {
+    Ok(match path.extension().and_then(OsStr::to_str) {
+        Some("ipc" | "arrow") => IpcReader::new(File::open(path)?)
+            .memory_mapped(None)
+            .finish()?,
+        _ => CsvReadOptions::default()
+            .with_has_header(true)
+            .with_infer_schema_length(Some(0))
+            .try_into_reader_with_file_path(Some(path))?
+            .finish()?,
+    })
+}
+
 impl Vocab {
     pub(crate) fn execute(self) -> DatashedResult<()> {
         let datashed = Datashed::discover()?;
         let base_dir = datashed.base_dir();
         let index = datashed.index()?;
 
-        let df: DataFrame = if let Some(predicate) = self.predicate {
+        let mut df: DataFrame = if let Some(predicate) = self.predicate
+        {
             let mut ctx = SQLContext::new();
             ctx.register("df", index.lazy());
             ctx.execute(&format!("SELECT * FROM df WHERE {predicate}"))?
@@ -115,6 +140,26 @@ impl Vocab {
         } else {
             index
         };
+
+        if let Some(path) = self.allow_list {
+            let allow_list =
+                read_filter_list(path)?.column("idn")?.clone();
+
+            df = df
+                .lazy()
+                .filter(col("idn").is_in(lit(allow_list)))
+                .collect()?;
+        }
+
+        if let Some(path) = self.deny_list {
+            let allow_list =
+                read_filter_list(path)?.column("idn")?.clone();
+
+            df = df
+                .lazy()
+                .filter(col("idn").is_in(lit(allow_list)).not())
+                .collect()?;
+        }
 
         let stopwords: HashSet<String> =
             if let Some(path) = self.stopwords {
