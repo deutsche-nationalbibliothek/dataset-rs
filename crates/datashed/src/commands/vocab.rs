@@ -77,6 +77,10 @@ pub(crate) struct Vocab {
     )]
     min_token_len: usize,
 
+    /// Ignore tokens with a frequency less than \<freq\>.
+    #[arg(long = "min-tf", default_value = "1", value_name = "freq")]
+    min_token_freq: u64,
+
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
@@ -149,7 +153,7 @@ impl Vocab {
             })
             .collect();
 
-        let vocab = (0..df.height())
+        let mut vocab = (0..df.height())
             .into_par_iter()
             .progress_with(pbar)
             .map(|idx| -> VocabMap {
@@ -198,6 +202,10 @@ impl Vocab {
 
                 acc
             });
+
+        if self.min_token_freq > 1 {
+            vocab.retain(|_, count| *count >= self.min_token_freq);
+        }
 
         let mut tokens = Vec::with_capacity(vocab.len());
         let mut counts = Vec::with_capacity(vocab.len());
