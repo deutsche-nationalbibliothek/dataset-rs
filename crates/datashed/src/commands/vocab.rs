@@ -3,18 +3,35 @@ use std::io::stdout;
 use std::path::PathBuf;
 
 use bstr::ByteSlice;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use hashbrown::HashMap;
 use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use polars::sql::SQLContext;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
+use unicode_categories::UnicodeCategories;
 
 use crate::prelude::*;
 
 const PBAR_PROCESS: &str =
     "Processing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
+
+#[derive(Debug, Clone, PartialEq, Eq, ValueEnum)]
+enum UnicodeCategory {
+    #[clap(name = "a")]
+    All,
+    #[clap(name = "l")]
+    Lowercase,
+    #[clap(name = "u")]
+    Uppercase,
+    #[clap(name = "t")]
+    Titlecase,
+    #[clap(name = "m")]
+    Modifier,
+    #[clap(name = "o")]
+    Other,
+}
 
 /// Create an index of all available documents.
 #[derive(Debug, Default, Parser)]
@@ -38,6 +55,15 @@ pub(crate) struct Vocab {
 
     #[arg(long, conflicts_with_all = ["unigrams", "bigrams"])]
     trigrams: bool,
+
+    /// Includes only those words in the vocabulary where at least one
+    /// character belongs to one of the specified Unicode categories.
+    #[arg(
+        short = 'L',
+        value_name = "category",
+        hide_possible_values = true
+    )]
+    categories: Vec<UnicodeCategory>,
 
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
@@ -84,6 +110,22 @@ impl Vocab {
             .len(df.height() as u64)
             .build();
 
+        let predicates: Vec<fn(char) -> bool> = self
+            .categories
+            .iter()
+            .map(|category| {
+                use UnicodeCategory::*;
+                match category {
+                    Lowercase => UnicodeCategories::is_letter_lowercase,
+                    Uppercase => UnicodeCategories::is_letter_uppercase,
+                    Titlecase => UnicodeCategories::is_letter_titlecase,
+                    Modifier => UnicodeCategories::is_letter_modifier,
+                    Other => UnicodeCategories::is_letter_other,
+                    All => UnicodeCategories::is_letter,
+                }
+            })
+            .collect();
+
         let vocab = (0..df.height())
             .into_par_iter()
             .progress_with(pbar)
@@ -95,6 +137,13 @@ impl Vocab {
                 let words: Vec<String> = doc
                     .as_ref()
                     .words()
+                    .filter(|word: &&str| {
+                        if self.categories.is_empty() {
+                            return true;
+                        }
+
+                        predicates.iter().any(|f| word.chars().any(f))
+                    })
                     .map(str::to_lowercase)
                     .collect();
 
