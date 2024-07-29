@@ -1,10 +1,10 @@
-use std::fs::File;
+use std::fs::{read_to_string, File};
 use std::io::stdout;
 use std::path::PathBuf;
 
 use bstr::ByteSlice;
 use clap::{Parser, ValueEnum};
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use indicatif::ParallelProgressIterator;
 use polars::prelude::*;
 use polars::sql::SQLContext;
@@ -65,6 +65,9 @@ pub(crate) struct Vocab {
     )]
     categories: Vec<UnicodeCategory>,
 
+    #[arg(long)]
+    stopwords: Option<PathBuf>,
+
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
@@ -94,6 +97,14 @@ impl Vocab {
                 .collect()?
         } else {
             index
+        };
+
+        let stopwords: HashSet<String> = if let Some(path) =
+            self.stopwords
+        {
+            read_to_string(path)?.lines().map(String::from).collect()
+        } else {
+            HashSet::new()
         };
 
         let size = if self.trigrams {
@@ -143,6 +154,10 @@ impl Vocab {
                         }
 
                         predicates.iter().any(|f| word.chars().any(f))
+                    })
+                    .filter(|word: &&str| {
+                        stopwords.is_empty()
+                            || !stopwords.contains(&word.to_lowercase())
                     })
                     .map(str::to_lowercase)
                     .collect();
