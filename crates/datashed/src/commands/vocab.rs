@@ -70,16 +70,24 @@ pub(crate) struct Vocab {
 
     /// Ignore tokens with a length less than \<length\>.
     #[arg(
+<<<<<<< HEAD
         long,
+=======
+        long = "min-tl",
+>>>>>>> origin/main
         short = 'l',
         default_value = "2",
         value_name = "length"
     )]
+<<<<<<< HEAD
     min_token_length: usize,
 
     /// Ingore tokens with a frequency less than \<freq\>.
     #[arg(long = "min-tf", default_value = "1", value_name = "freq")]
     min_token_freq: u64,
+=======
+    min_token_len: usize,
+>>>>>>> origin/main
 
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
@@ -116,7 +124,11 @@ impl Vocab {
             if let Some(path) = self.stopwords {
                 read_to_string(path)?
                     .lines()
+<<<<<<< HEAD
                     .filter(|word| word.len() >= self.min_token_length)
+=======
+                    .filter(|word| word.len() >= self.min_token_len)
+>>>>>>> origin/main
                     .map(String::from)
                     .collect()
             } else {
@@ -164,7 +176,9 @@ impl Vocab {
                 let words: Vec<String> = doc
                     .as_ref()
                     .words()
-                    .filter(|word| word.len() >= self.min_token_length)
+                    .filter(|word| {
+                        word.chars().count() >= self.min_token_len
+                    })
                     .filter(|word| {
                         if self.categories.is_empty() {
                             return true;
