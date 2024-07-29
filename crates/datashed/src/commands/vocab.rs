@@ -68,7 +68,7 @@ pub(crate) struct Vocab {
     #[arg(long)]
     stopwords: Option<PathBuf>,
 
-    /// Ignore tokens with a length less than <length>.
+    /// Ignore tokens with a length less than \<length\>.
     #[arg(
         long,
         short = 'l',
