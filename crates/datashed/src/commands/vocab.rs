@@ -56,7 +56,7 @@ pub(crate) struct Vocab {
     #[arg(long, conflicts_with_all = ["unigrams", "bigrams"])]
     trigrams: bool,
 
-    /// Includes only those words in the vocabulary where at least one
+    /// Includes only those tokens in the vocabulary where at least one
     /// character belongs to one of the specified Unicode categories.
     #[arg(
         short = 'L',
@@ -67,6 +67,15 @@ pub(crate) struct Vocab {
 
     #[arg(long)]
     stopwords: Option<PathBuf>,
+
+    /// Ignore tokens with a length less than \<length\>.
+    #[arg(
+        long = "min-tl",
+        short = 'l',
+        default_value = "2",
+        value_name = "length"
+    )]
+    min_token_len: usize,
 
     /// If set, the index will be written in CSV format to the standard
     /// output (stdout).
@@ -99,13 +108,16 @@ impl Vocab {
             index
         };
 
-        let stopwords: HashSet<String> = if let Some(path) =
-            self.stopwords
-        {
-            read_to_string(path)?.lines().map(String::from).collect()
-        } else {
-            HashSet::new()
-        };
+        let stopwords: HashSet<String> =
+            if let Some(path) = self.stopwords {
+                read_to_string(path)?
+                    .lines()
+                    .filter(|word| word.len() >= self.min_token_len)
+                    .map(String::from)
+                    .collect()
+            } else {
+                HashSet::new()
+            };
 
         let size = if self.trigrams {
             3
@@ -148,14 +160,17 @@ impl Vocab {
                 let words: Vec<String> = doc
                     .as_ref()
                     .words()
-                    .filter(|word: &&str| {
+                    .filter(|word| {
+                        word.chars().count() >= self.min_token_len
+                    })
+                    .filter(|word| {
                         if self.categories.is_empty() {
                             return true;
                         }
 
                         predicates.iter().any(|f| word.chars().any(f))
                     })
-                    .filter(|word: &&str| {
+                    .filter(|word| {
                         stopwords.is_empty()
                             || !stopwords.contains(&word.to_lowercase())
                     })
