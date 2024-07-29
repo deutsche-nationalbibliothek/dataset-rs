@@ -77,7 +77,7 @@ pub(crate) struct Vocab {
     )]
     min_token_len: usize,
 
-    /// Ingore tokens with a frequency less than \<freq\>.
+    /// Ignore tokens with a frequency less than \<freq\>.
     #[arg(long = "min-tf", default_value = "1", value_name = "freq")]
     min_token_freq: u64,
 
