@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 
 use semver::Version;
@@ -21,6 +22,9 @@ pub(crate) struct Config {
 
     /// Runtime options.
     pub(crate) runtime: Option<Runtime>,
+
+    /// Server options.
+    pub(crate) server: Option<Server>,
 
     /// A set of document kind refinements.
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
@@ -75,6 +79,12 @@ pub(crate) struct Runtime {
     /// of "0" is chosen, the maximum number of available threads
     /// is used.
     pub(crate) num_jobs: Option<usize>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub(crate) struct Server {
+    pub(crate) address: Option<IpAddr>,
+    pub(crate) port: Option<u16>,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Hash)]

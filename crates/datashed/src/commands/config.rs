@@ -1,5 +1,8 @@
+use std::net::IpAddr;
+
 use clap::Parser;
 
+use crate::config::Server;
 use crate::prelude::*;
 
 /// Get and set datashed config options.
@@ -46,6 +49,8 @@ impl Config {
 
         let name = match self.name.as_str() {
             name if name == "runtime.num_jobs" => name,
+            name if name == "server.address" => name,
+            name if name == "server.port" => name,
             name => {
                 bail!("unknown config option `{name}`");
             }
@@ -69,6 +74,36 @@ impl Config {
                         bail!("invalid value `{value}`");
                     }
                 }
+                "server.address" => {
+                    if let Ok(value) = value.parse::<IpAddr>() {
+                        if let Some(ref mut server) = config.server {
+                            server.address = Some(value);
+                        } else {
+                            config.server = Some(Server {
+                                address: Some(value),
+                                ..Default::default()
+                            });
+                        }
+                        config.save()?;
+                    } else {
+                        bail!("invalid value `{value}`");
+                    }
+                }
+                "server.port" => {
+                    if let Ok(value) = value.parse::<u16>() {
+                        if let Some(ref mut server) = config.server {
+                            server.port = Some(value);
+                        } else {
+                            config.server = Some(Server {
+                                port: Some(value),
+                                ..Default::default()
+                            });
+                        }
+                        config.save()?;
+                    } else {
+                        bail!("invalid value `{value}`");
+                    }
+                }
                 _ => unreachable!(),
             }
         } else if self.unset {
@@ -76,6 +111,26 @@ impl Config {
                 "runtime.num_jobs" => {
                     config.runtime = None;
                     config.save()?;
+                }
+                "server.address" => {
+                    if let Some(ref mut server) = config.server {
+                        if server.port.is_some() {
+                            server.address = None;
+                        } else {
+                            config.server = None;
+                        }
+                        config.save()?;
+                    }
+                }
+                "server.port" => {
+                    if let Some(ref mut server) = config.server {
+                        if server.address.is_none() {
+                            config.server = None;
+                        } else {
+                            server.port = None;
+                        }
+                        config.save()?;
+                    }
                 }
                 _ => unreachable!(),
             }
@@ -87,6 +142,14 @@ impl Config {
                         config.runtime.and_then(|rt| rt.num_jobs),
                     );
                 }
+                "server.address" => print_option(
+                    name,
+                    config.server.and_then(|srv| srv.address),
+                ),
+                "server.port" => print_option(
+                    name,
+                    config.server.and_then(|srv| srv.port),
+                ),
                 _ => unreachable!(),
             }
         } else {

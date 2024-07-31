@@ -14,8 +14,11 @@ pub(crate) struct Datashed {
 
 impl Datashed {
     pub(crate) const CONFIG: &'static str = "datashed.toml";
+    pub(crate) const RATINGS: &'static str = "ratings.csv";
     pub(crate) const INDEX: &'static str = "index.ipc";
+
     pub(crate) const DATA_DIR: &'static str = "data";
+    pub(crate) const TEMP_DIR: &'static str = "tmp";
 
     /// Discovers the root of the data pod.
     ///
@@ -57,6 +60,12 @@ impl Datashed {
     #[inline]
     pub(crate) fn data_dir(&self) -> PathBuf {
         self.root_dir.join(Self::DATA_DIR)
+    }
+
+    /// Returns the temp directory of the datashed.
+    #[inline]
+    pub(crate) fn temp_dir(&self) -> PathBuf {
+        self.root_dir.join(Self::TEMP_DIR)
     }
 
     /// Returns the index associated with the datashed.

@@ -17,6 +17,9 @@ pub(crate) enum DatashedError {
     Toml(#[from] toml::de::Error),
 
     #[error(transparent)]
+    Csv(#[from] csv::Error),
+
+    #[error(transparent)]
     Polars(#[from] polars::error::PolarsError),
 
     #[error(transparent)]
