@@ -10,6 +10,7 @@ use semver::Version;
 
 use crate::prelude::*;
 
+const RATINGS: &str = "path,rating,comment,user,created\n";
 const GITIGNORE: &str = "# datashed\n/data\n/index.ipc\n";
 
 /// Initialize a new or re-initialize an existing datashed.
@@ -131,6 +132,7 @@ impl Init {
     pub(crate) fn execute(mut self) -> DatashedResult<()> {
         let root_dir = env::current_dir()?.join(self.path);
         let data_dir = root_dir.join(Datashed::DATA_DIR);
+        let ratings = root_dir.join(Datashed::RATINGS);
         let config = root_dir.join(Datashed::CONFIG);
 
         if !root_dir.exists() {
@@ -200,6 +202,10 @@ impl Init {
             );
 
             config.save()?;
+        }
+
+        if !ratings.exists() {
+            fs::write(ratings, RATINGS)?;
         }
 
         Ok(())

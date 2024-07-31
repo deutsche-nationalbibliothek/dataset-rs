@@ -30,6 +30,7 @@ pub(crate) enum Command {
     #[clap(alias = "new")]
     Init(Init),
     Restore(Restore),
+    Serve(Serve),
     Status(Status),
     Summary(Summary),
     Verify(Verify),
