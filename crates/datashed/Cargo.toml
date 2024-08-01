@@ -49,3 +49,7 @@ version = "0.25.0"
 [dependencies.pica-record]
 git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
 version = "0.25.0"
+
+[features]
+performant = ["polars/performant", "polars/nightly", "polars/cse"]
+
