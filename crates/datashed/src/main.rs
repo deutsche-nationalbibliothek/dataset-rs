@@ -5,6 +5,7 @@ use clap::Parser;
 use cli::{Args, Command};
 use datashed::Datashed;
 use error::{DatashedError, DatashedResult};
+use polars::error::PolarsError;
 use rayon::ThreadPoolBuilder;
 
 pub(crate) mod prelude {
@@ -78,6 +79,11 @@ fn main() {
             if e.kind() == ErrorKind::BrokenPipe =>
         {
             process::exit(0)
+        }
+        Err(DatashedError::Polars(PolarsError::IO {
+            error, ..
+        })) if error.kind() == ErrorKind::BrokenPipe => {
+            process::exit(0);
         }
         Err(e) => {
             eprintln!("error: {e:#}");
