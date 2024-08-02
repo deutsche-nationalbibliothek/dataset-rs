@@ -64,6 +64,7 @@ struct Row {
     lfreq: Option<f64>,
     alpha: f64,
     words: u64,
+    avg_word_len: f32,
     ttr: f64,
     size: u64,
     strlen: u64,
@@ -85,6 +86,7 @@ impl TryFrom<&PathBuf> for Row {
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
             words: doc.word_count(),
+            avg_word_len: doc.avg_word_len(),
             ttr: doc.type_token_ratio(),
             size: doc.size(),
             strlen: doc.strlen(),
@@ -157,6 +159,7 @@ impl Index {
         let mut lfreq: Vec<Option<f64>> = vec![];
         let mut alpha: Vec<f64> = vec![];
         let mut words: Vec<u64> = vec![];
+        let mut avg_word_len: Vec<f32> = vec![];
         let mut ttr: Vec<f64> = vec![];
         let mut size: Vec<u64> = vec![];
         let mut strlen: Vec<u64> = vec![];
@@ -176,6 +179,7 @@ impl Index {
             lfreq.push(row.lfreq);
             alpha.push(row.alpha);
             words.push(row.words);
+            avg_word_len.push(row.avg_word_len);
             ttr.push(row.ttr);
             size.push(row.size);
             strlen.push(row.strlen);
@@ -207,6 +211,7 @@ impl Index {
             Series::new("lfreq", lfreq),
             Series::new("alpha", alpha),
             Series::new("words", words),
+            Series::new("avg_word_len", avg_word_len),
             Series::new("ttr", ttr),
             Series::new("size", size),
             Series::new("strlen", strlen),

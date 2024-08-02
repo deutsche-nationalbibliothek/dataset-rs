@@ -231,6 +231,20 @@ impl Document {
         self.buf.words().count() as u64
     }
 
+    /// Returns the average word length of the document.
+    #[inline]
+    pub(crate) fn avg_word_len(&self) -> f32 {
+        let total = self.word_count() as f32;
+        let word_lens =
+            self.buf.words().map(|word| word.len() as f32).sum::<f32>();
+
+        if total > 0.0 {
+            word_lens / total
+        } else {
+            0.0
+        }
+    }
+
     /// Returns the ratio of alphabetic characters to the total number
     /// of characters in the document.
     ///
