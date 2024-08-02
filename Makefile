@@ -33,7 +33,7 @@ release:
 	$(CARGO) build --release --workspace --features performant
 
 dev-install:
-	$(CARGO) install -q --path crates/datashed --bin datashed
+	$(CARGO) install -q --debug --path crates/datashed --bin datashed
 	# $(CARGO) install --debug -q --path . --bin dataset
 
 install:

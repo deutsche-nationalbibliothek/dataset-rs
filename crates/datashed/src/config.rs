@@ -26,6 +26,10 @@ pub(crate) struct Config {
     /// Server options.
     pub(crate) server: Option<Server>,
 
+    /// List of users.
+    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
+    pub(crate) users: HashMap<String, User>,
+
     /// A set of document kind refinements.
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub(crate) kinds: HashMap<DocumentKind, KindSpec>,
@@ -79,6 +83,11 @@ pub(crate) struct Runtime {
     /// of "0" is chosen, the maximum number of available threads
     /// is used.
     pub(crate) num_jobs: Option<usize>,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub(crate) struct User {
+    pub(crate) secret: String,
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
