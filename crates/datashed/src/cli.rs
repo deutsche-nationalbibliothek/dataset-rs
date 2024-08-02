@@ -32,6 +32,7 @@ pub(crate) enum Command {
     Restore(Restore),
     Serve(Serve),
     Status(Status),
+    User(User),
     Summary(Summary),
     Verify(Verify),
     Version(Version),
