@@ -225,6 +225,12 @@ impl Document {
         }
     }
 
+    /// Returns the total number of words
+    #[inline]
+    pub(crate) fn word_count(&self) -> u64 {
+        self.buf.words().count() as u64
+    }
+
     /// Returns the ratio of alphabetic characters to the total number
     /// of characters in the document.
     ///
@@ -277,7 +283,7 @@ impl Document {
     /// The range of the function is $[0, 1]$ and the score of an empty
     /// document is defined to $0.0$.
     pub(crate) fn type_token_ratio(&self) -> f64 {
-        let total = self.buf.words().count() as f64;
+        let total = self.word_count() as f64;
         if total == 0.0 {
             return 0.0;
         }
