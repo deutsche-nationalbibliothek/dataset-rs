@@ -45,7 +45,8 @@ struct RatingReq {
     path: PathBuf,
     rating: String,
     comment: Option<String>,
-    user: String,
+    username: String,
+    secret: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -63,8 +64,20 @@ async fn f(
     let dataset = &state.datashed;
     let base_dir = dataset.base_dir();
     let path = req.path.clone();
-    let user = req.user.clone();
+    let username = req.username.clone();
     let comment = req.comment.clone().unwrap_or_default();
+
+    let Ok(config) = dataset.config() else {
+        return HttpResponse::InternalServerError().finish();
+    };
+
+    let Some(user) = config.users.get(&username) else {
+        return HttpResponse::Unauthorized().finish();
+    };
+
+    if user.secret != req.secret {
+        return HttpResponse::Unauthorized().finish();
+    }
 
     if !base_dir.join(&path).exists() {
         return HttpResponse::BadRequest()
@@ -91,7 +104,7 @@ async fn f(
         path,
         &rating,
         &comment,
-        &user,
+        &username,
         &created_at,
     ]);
 
