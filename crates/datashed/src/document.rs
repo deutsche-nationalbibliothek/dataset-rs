@@ -77,6 +77,8 @@ pub(crate) struct Document {
     path: PathBuf,
     metadata: Metadata,
     buf: BString,
+    word_cnt: usize,
+    char_cnt: usize,
     _lang: Option<(Language, f64)>,
 }
 
@@ -96,11 +98,16 @@ impl Document {
         let mut buf = Vec::new();
 
         let _ = file.read_to_end(&mut buf)?;
+        let buf = BString::from(buf);
+        let word_cnt = buf.words().count();
+        let char_cnt = buf.chars().count();
 
         Ok(Self {
             path,
             metadata,
-            buf: BString::from(buf),
+            buf,
+            word_cnt,
+            char_cnt,
             _lang: None,
         })
     }
@@ -138,7 +145,13 @@ impl Document {
     /// Returns the number of characters in the document
     #[inline]
     pub(crate) fn strlen(&self) -> u64 {
-        self.buf.chars().count() as u64
+        self.char_cnt as u64
+    }
+
+    /// Returns the total number of words
+    #[inline]
+    pub(crate) fn word_count(&self) -> u64 {
+        self.word_cnt as u64
     }
 
     /// Returns the last modification time of the document.
@@ -225,16 +238,10 @@ impl Document {
         }
     }
 
-    /// Returns the total number of words
-    #[inline]
-    pub(crate) fn word_count(&self) -> u64 {
-        self.buf.words().count() as u64
-    }
-
     /// Returns the average word length of the document.
     #[inline]
     pub(crate) fn avg_word_len(&self) -> f32 {
-        let total = self.word_count() as f32;
+        let total = self.word_cnt as f32;
         let word_lens =
             self.buf.words().map(|word| word.len() as f32).sum::<f32>();
 
@@ -273,7 +280,7 @@ impl Document {
     ///
     /// [Unicode Standard]: https://www.unicode.org/versions/latest/
     pub(crate) fn alpha(&self) -> f64 {
-        let total = self.buf.chars().count() as f64;
+        let total = self.strlen() as f64;
         if total <= 0.0 {
             return 0.0;
         }
@@ -297,7 +304,7 @@ impl Document {
     /// The range of the function is $[0, 1]$ and the score of an empty
     /// document is defined to $0.0$.
     pub(crate) fn type_token_ratio(&self) -> f64 {
-        let total = self.word_count() as f64;
+        let total = self.word_cnt as f64;
         if total == 0.0 {
             return 0.0;
         }
