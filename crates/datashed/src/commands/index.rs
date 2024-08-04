@@ -196,7 +196,7 @@ impl Index {
             }
         }
 
-        let mut df = DataFrame::new(vec![
+        let df = DataFrame::new(vec![
             Series::new("remote", remote),
             Series::new("idn", idn),
             Series::new("kind", kind),
@@ -218,6 +218,9 @@ impl Index {
             Series::new("mtime", mtime),
             Series::new("hash", hash),
         ])?;
+
+        let mut df: DataFrame =
+            df.lazy().select([col("*").shrink_dtype()]).collect()?;
 
         match self.output {
             Some(path) => {
