@@ -5,6 +5,7 @@ use clap::Parser;
 use cli::{Args, Command};
 use datashed::Datashed;
 use error::{DatashedError, DatashedResult};
+use jemallocator::Jemalloc;
 use polars::error::PolarsError;
 use rayon::ThreadPoolBuilder;
 
@@ -29,6 +30,9 @@ mod lfreq;
 mod mscmap;
 mod progress;
 mod utils;
+
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 fn num_threads(args: &Args) -> usize {
     if let Some(num_threads) = args.num_jobs {
