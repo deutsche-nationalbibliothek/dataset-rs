@@ -19,7 +19,9 @@ use crate::prelude::{bail, DatashedError};
 fn language_detector() -> &'static LanguageDetector {
     static DETECTOR: OnceLock<LanguageDetector> = OnceLock::new();
     DETECTOR.get_or_init(|| {
-        LanguageDetectorBuilder::from_all_languages().build()
+        LanguageDetectorBuilder::from_all_languages()
+            .with_preloaded_language_models()
+            .build()
     })
 }
 
