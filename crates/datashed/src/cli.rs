@@ -30,6 +30,7 @@ pub(crate) enum Command {
     Index(Index),
     #[clap(alias = "new")]
     Init(Init),
+    Lfreq(Lfreq),
     Restore(Restore),
     Serve(Serve),
     Status(Status),
