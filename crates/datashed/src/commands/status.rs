@@ -4,6 +4,7 @@ use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use glob::{glob_with, MatchOptions};
 use hashbrown::HashSet;
+use polars::prelude::DataType;
 
 use crate::prelude::*;
 use crate::utils::relpath;
@@ -53,8 +54,12 @@ impl Status {
 
         let path = index.column("path")?.str()?;
         let hash = index.column("hash")?.str()?;
-        let mtime = index.column("mtime")?.u64()?;
-        let size = index.column("size")?.u64()?;
+
+        let mtime = index.column("mtime")?.cast(&DataType::UInt64)?;
+        let mtime = mtime.u64()?;
+
+        let size = index.column("size")?.cast(&DataType::UInt64)?;
+        let size = size.u64()?;
 
         for idx in 0..index.height() {
             let index_path = path.get(idx).unwrap();

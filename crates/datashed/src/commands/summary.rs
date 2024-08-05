@@ -5,7 +5,7 @@ use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use humansize::{make_format, BINARY};
 use polars::lazy::dsl::col;
-use polars::prelude::{IntoLazy, SortMultipleOptions};
+use polars::prelude::{DataType, IntoLazy, SortMultipleOptions};
 use serde_json::{json, Map};
 
 use crate::prelude::*;
@@ -47,7 +47,7 @@ impl Summary {
                 col("remote"),
                 col("kind"),
                 col("docs"),
-                col("size"),
+                col("size").cast(DataType::UInt64),
                 col("dups"),
             ])
             .sort(["kind"], SortMultipleOptions::default())

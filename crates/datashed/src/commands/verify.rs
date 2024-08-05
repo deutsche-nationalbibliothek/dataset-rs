@@ -2,6 +2,7 @@ use std::path::Path;
 
 use clap::{Parser, ValueEnum};
 use indicatif::ParallelProgressIterator;
+use polars::prelude::DataType;
 use rayon::prelude::*;
 
 use crate::prelude::*;
@@ -52,8 +53,12 @@ impl Verify {
 
         let path = index.column("path")?.str()?;
         let hash = index.column("hash")?.str()?;
-        let mtime = index.column("mtime")?.u64()?;
-        let size = index.column("size")?.u64()?;
+
+        let mtime = index.column("mtime")?.cast(&DataType::UInt64)?;
+        let mtime = mtime.u64()?;
+
+        let size = index.column("size")?.cast(&DataType::UInt64)?;
+        let size = size.u64()?;
 
         let pbar = ProgressBarBuilder::new(PBAR_VERIFY, self.quiet)
             .len(index.height() as u64)
