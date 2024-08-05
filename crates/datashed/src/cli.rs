@@ -25,6 +25,7 @@ pub(crate) enum Command {
     Archive(Archive),
     Bibrefs(BibRefs),
     Clean(Clean),
+    Completions(Completions),
     Config(Config),
     Index(Index),
     #[clap(alias = "new")]
