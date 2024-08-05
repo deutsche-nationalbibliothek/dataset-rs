@@ -54,6 +54,7 @@ fn run(args: Args) -> DatashedResult<()> {
         Command::Archive(cmd) => cmd.execute(),
         Command::Bibrefs(cmd) => cmd.execute(),
         Command::Clean(cmd) => cmd.execute(),
+        Command::Completions(cmd) => cmd.execute(),
         Command::Config(cmd) => cmd.execute(),
         Command::Index(cmd) => cmd.execute(),
         Command::Init(cmd) => cmd.execute(),
