@@ -5,13 +5,13 @@ use std::path::PathBuf;
 use clap::Parser;
 use glob::glob_with;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
+use kind::KindMap;
+use msc::MscMap;
 use pica_record::io::{ReaderBuilder, RecordsIterator};
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::document::DocumentKind;
-use crate::kindmap::KindMap;
-use crate::mscmap::MscMap;
 use crate::prelude::*;
 use crate::utils::relpath;
 
@@ -24,6 +24,9 @@ const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
 const PBAR_INDEX: &str =
     "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
+
+mod kind;
+mod msc;
 
 /// Create an index of all available documents.
 #[derive(Debug, Default, Parser)]
