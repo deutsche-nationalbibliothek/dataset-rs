@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
 
+use hashbrown::HashMap;
 use pica_matcher::RecordMatcher;
 use pica_path::PathExt;
 use pica_record::ByteRecord;
@@ -25,12 +25,12 @@ impl Matcher {
 
 #[derive(Debug, Default)]
 pub(crate) struct KindMap {
-    refinements: BTreeMap<(String, DocumentKind), DocumentKind>,
+    refinements: HashMap<(String, DocumentKind), DocumentKind>,
     matchers: Vec<Matcher>,
 }
 
 impl Deref for KindMap {
-    type Target = BTreeMap<(String, DocumentKind), DocumentKind>;
+    type Target = HashMap<(String, DocumentKind), DocumentKind>;
 
     fn deref(&self) -> &Self::Target {
         &self.refinements
@@ -69,7 +69,7 @@ impl KindMap {
 
         Ok(Self {
             matchers,
-            refinements: BTreeMap::new(),
+            refinements: HashMap::new(),
         })
     }
 
