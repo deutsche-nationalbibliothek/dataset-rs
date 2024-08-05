@@ -58,6 +58,7 @@ fn run(args: Args) -> DatashedResult<()> {
         Command::Config(cmd) => cmd.execute(),
         Command::Index(cmd) => cmd.execute(),
         Command::Init(cmd) => cmd.execute(),
+        Command::Lfreq(cmd) => cmd.execute(),
         Command::Restore(cmd) => cmd.execute(),
         Command::Serve(cmd) => cmd.execute(),
         Command::Status(cmd) => cmd.execute(),
