@@ -1,9 +1,9 @@
-use std::collections::BTreeSet;
 use std::env::current_dir;
 
 use clap::Parser;
 use comfy_table::{presets, Row, Table};
 use glob::{glob_with, MatchOptions};
+use hashbrown::HashSet;
 
 use crate::prelude::*;
 use crate::utils::relpath;
@@ -45,7 +45,7 @@ impl Status {
         let pattern = format!("{}/**/*.txt", data_dir.display());
         let options = MatchOptions::default();
 
-        let mut files: BTreeSet<_> = glob_with(&pattern, options)
+        let mut files: HashSet<_> = glob_with(&pattern, options)
             .map_err(|e| DatashedError::Other(e.to_string()))?
             .filter_map(Result::ok)
             .map(|path| relpath(path, base_dir))

@@ -1,10 +1,10 @@
-use std::collections::BTreeSet;
 use std::fs::{remove_file, File};
 
 use clap::Parser;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Confirm;
 use glob::glob_with;
+use hashbrown::HashSet;
 use indicatif::ProgressIterator;
 use polars::prelude::*;
 
@@ -45,7 +45,7 @@ impl Clean {
             ProgressBarBuilder::new(PBAR_COLLECT, self.quiet).build();
 
         let mut missing: Vec<_> = vec![];
-        let mut untracked: BTreeSet<_> =
+        let mut untracked: HashSet<_> =
             glob_with(&pattern, Default::default())
                 .map_err(|e| DatashedError::Other(e.to_string()))?
                 .progress_with(pbar)
