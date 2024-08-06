@@ -69,21 +69,21 @@ pub(crate) struct Vocab {
     #[arg(long)]
     stopwords: Option<PathBuf>,
 
-    /// Ignore tokens with a length less than \<length\>.
+    /// Ignore tokens with a length less than `n`.
     #[arg(
         long = "min-tl",
         short = 'l',
         default_value = "2",
-        value_name = "length"
+        value_name = "n"
     )]
     min_token_len: usize,
 
-    /// Ignore tokens with a frequency less than \<freq\>.
-    #[arg(long = "min-tf", default_value = "1", value_name = "freq")]
+    /// Ignore tokens with a frequency less than `n`.
+    #[arg(long = "min-tf", default_value = "1", value_name = "n")]
     min_token_freq: u64,
 
-    /// Ignore tokens with a document frequency less than \<freq\>.
-    #[arg(long = "min-df", default_value = "1", value_name = "freq")]
+    /// Ignore tokens with a document frequency less than `n`.
+    #[arg(long = "min-df", default_value = "1", value_name = "n")]
     min_doc_freq: u64,
 
     /// Ignore documents which are *not* explicitly listed in the given

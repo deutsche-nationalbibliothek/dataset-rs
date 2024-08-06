@@ -10,7 +10,7 @@ use semver::Version;
 
 use crate::prelude::*;
 
-const RATINGS: &str = "path,rating,comment,user,created\n";
+const RATINGS: &str = "path,hash,rating,comment,user,created\n";
 const GITIGNORE: &str = "# datashed\n/data\n/index.ipc\n";
 
 /// Initialize a new or re-initialize an existing datashed.

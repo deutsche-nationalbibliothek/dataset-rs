@@ -25,6 +25,12 @@ pub(crate) enum DatashedError {
     #[error(transparent)]
     ReadPica(#[from] pica_record::io::ReadPicaError),
 
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    Minus(#[from] minus::MinusError),
+
     #[error("{0}")]
     Other(String),
 }

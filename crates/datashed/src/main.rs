@@ -49,7 +49,7 @@ fn num_threads(args: &Args) -> usize {
     0
 }
 
-fn run(args: Args) -> DatashedResult<()> {
+async fn run(args: Args) -> DatashedResult<()> {
     match args.cmd {
         Command::Archive(cmd) => cmd.execute(),
         Command::Bibrefs(cmd) => cmd.execute(),
@@ -60,7 +60,8 @@ fn run(args: Args) -> DatashedResult<()> {
         Command::Init(cmd) => cmd.execute(),
         Command::Lfreq(cmd) => cmd.execute(),
         Command::Restore(cmd) => cmd.execute(),
-        Command::Serve(cmd) => cmd.execute(),
+        Command::Rate(cmd) => cmd.execute().await,
+        Command::Serve(cmd) => cmd.execute().await,
         Command::Status(cmd) => cmd.execute(),
         Command::Summary(cmd) => cmd.execute(),
         Command::User(cmd) => cmd.execute(),
@@ -70,7 +71,8 @@ fn run(args: Args) -> DatashedResult<()> {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
     ThreadPoolBuilder::new()
@@ -78,7 +80,7 @@ fn main() {
         .build_global()
         .unwrap();
 
-    match run(args) {
+    match run(args).await {
         Ok(()) => process::exit(0),
         Err(DatashedError::IO(e))
             if e.kind() == ErrorKind::BrokenPipe =>

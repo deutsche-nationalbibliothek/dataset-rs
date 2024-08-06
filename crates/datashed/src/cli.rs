@@ -31,11 +31,12 @@ pub(crate) enum Command {
     #[clap(alias = "new")]
     Init(Init),
     Lfreq(Lfreq),
+    Rate(Rate),
     Restore(Restore),
     Serve(Serve),
     Status(Status),
-    User(User),
     Summary(Summary),
+    User(User),
     Verify(Verify),
     Version(Version),
     Vocab(Vocab),
