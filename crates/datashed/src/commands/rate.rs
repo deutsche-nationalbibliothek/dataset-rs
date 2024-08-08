@@ -245,7 +245,7 @@ impl Rate {
                         comment.as_str(),
                         username.as_str(),
                     ])?;
-
+                    state_writer.flush()?;
                     continue;
                 }
                 _ => {
