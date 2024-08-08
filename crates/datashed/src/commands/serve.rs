@@ -4,13 +4,12 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use actix_files::Files;
+use actix_files::{Files, NamedFile};
 use actix_web::{
     get, guard, head, post, web, App, HttpResponse, HttpServer,
-    Responder,
 };
 use csv::{Writer, WriterBuilder};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::error::DatashedResult;
 use crate::prelude::Datashed;
@@ -43,29 +42,24 @@ struct AppState {
 #[derive(Debug, Deserialize)]
 struct RatingReq {
     path: PathBuf,
+    hash: String,
     rating: String,
-    comment: Option<String>,
+    comment: String,
     username: String,
     secret: String,
 }
 
-#[derive(Debug, Serialize)]
-struct Record {
-    rater: String,
-    rating: String,
-    comment: String,
-}
-
 #[post("/ratings")]
-async fn f(
+async fn ratings(
     state: web::Data<AppState>,
     req: web::Json<RatingReq>,
 ) -> HttpResponse {
     let dataset = &state.datashed;
     let base_dir = dataset.base_dir();
     let path = req.path.clone();
+    let hash = req.hash.clone();
     let username = req.username.clone();
-    let comment = req.comment.clone().unwrap_or_default();
+    let comment = req.comment.clone();
 
     let Ok(config) = dataset.config() else {
         return HttpResponse::InternalServerError().finish();
@@ -102,6 +96,7 @@ async fn f(
     let mut writer = state.wtr.lock().unwrap();
     let result = writer.write_record([
         path,
+        &hash,
         &rating,
         &comment,
         &username,
@@ -118,9 +113,12 @@ async fn f(
     HttpResponse::Ok().finish()
 }
 
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello, datashed!")
+#[get("/index.ipc")]
+async fn index(
+    state: web::Data<AppState>,
+) -> actix_web::Result<NamedFile> {
+    let path = &state.datashed.base_dir().join("index.ipc");
+    Ok(NamedFile::open(path)?)
 }
 
 #[head("/health-check")]
@@ -129,7 +127,6 @@ async fn health_check() -> HttpResponse {
 }
 
 impl Serve {
-    #[actix_web::main]
     pub(crate) async fn execute(self) -> DatashedResult<()> {
         let datashed = Datashed::discover()?;
         let config = datashed.config()?;
@@ -160,12 +157,12 @@ impl Serve {
             App::new()
                 .app_data(app_data.clone())
                 .service(health_check)
+                .service(index)
                 .service(
                     Files::new("/data", data_dir.clone())
                         .method_guard(guard::Get()),
                 )
-                .service(f)
-                .service(index)
+                .service(ratings)
         })
         .workers(2)
         .bind((addr, port))?
