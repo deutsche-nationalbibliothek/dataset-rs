@@ -132,6 +132,7 @@ impl Init {
     pub(crate) fn execute(mut self) -> DatashedResult<()> {
         let root_dir = env::current_dir()?.join(self.path);
         let data_dir = root_dir.join(Datashed::DATA_DIR);
+        let tmp_dir = root_dir.join(Datashed::TEMP_DIR);
         let ratings = root_dir.join(Datashed::RATINGS);
         let config = root_dir.join(Datashed::CONFIG);
 
@@ -153,6 +154,15 @@ impl Init {
 
         if !data_dir.exists() {
             fs::create_dir_all(&data_dir)?;
+        }
+
+        if !tmp_dir.exists() {
+            fs::create_dir(&tmp_dir)?;
+        }
+
+        let gitignore = tmp_dir.join(".gitignore");
+        if !gitignore.exists() {
+            fs::write(gitignore, "*\n!.gitignore\n")?;
         }
 
         if self.vcs == Vcs::Git {
