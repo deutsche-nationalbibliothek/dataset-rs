@@ -1,20 +1,10 @@
-[package]
-name = "dataset"
-authors = ["Nico Wagner <n.wagner@dnb.de>"]
-edition = "2021"
-license = "EUPL-1.2"
-rust-version = "1.80.0"
-version = "0.1.0"
-
-[[bin]]
-name = "dataset"
-path = "src/bin/main.rs"
-
-[dependencies]
-
 [workspace]
-members = ["crates/datashed"]
 resolver = "2"
+default-members = ["crates/dataset"]
+members = [
+    "crates/datashed",
+    "crates/dataset",
+]
 
 [workspace.package]
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
@@ -36,8 +26,6 @@ semver = { version = "1.0.23", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 thiserror = { version = "1.0" }
 toml = { version = "0.8.14", features = ["preserve_order"] }
-
-dataset = { path = "." }
 
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]
