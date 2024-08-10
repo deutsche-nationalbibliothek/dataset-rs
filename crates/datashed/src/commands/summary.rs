@@ -70,7 +70,7 @@ impl Summary {
                 map.insert(
                     kind.to_string(),
                     json!({
-                        "docs": docs.to_string(),
+                        "docs": docs,
                         "size": size,
                         "duplicates": dups,
 
@@ -82,7 +82,6 @@ impl Summary {
             fs::write(path, value.to_string())?;
         } else {
             let formatter = make_format(BINARY);
-
             let mut table = Table::new();
             table.load_preset(presets::UTF8_FULL_CONDENSED);
             table.set_header(Row::from(vec![
