@@ -2,3 +2,4 @@ max_width = 72
 group_imports = "StdExternalCrate"
 imports_granularity = "Module"
 wrap_comments = true
+edition = "2021"
