@@ -63,7 +63,8 @@ struct Row {
     kind: DocumentKind,
     msc: Option<String>,
     path: PathBuf,
-    lang: Option<(String, f64)>,
+    lang_code: Option<String>,
+    lang_score: Option<f64>,
     lfreq: Option<f64>,
     alpha: f64,
     words: u64,
@@ -80,7 +81,12 @@ impl TryFrom<&PathBuf> for Row {
 
     fn try_from(path: &PathBuf) -> Result<Self, Self::Error> {
         let mut doc = Document::from_path(path)?;
-        let lang = doc.lang();
+        let (lang_code, lang_score) = match doc.lang() {
+            Some((lang_code, lang_score)) => {
+                (Some(lang_code), Some(lang_score))
+            }
+            _ => (None, None),
+        };
 
         Ok(Row {
             idn: doc.idn(),
@@ -95,7 +101,8 @@ impl TryFrom<&PathBuf> for Row {
             strlen: doc.strlen(),
             mtime: doc.modified(),
             hash: doc.hash(),
-            lang,
+            lang_code,
+            lang_score,
             ..Default::default()
         })
     }
@@ -179,6 +186,8 @@ impl Index {
             msc.push(msc_map.get(&row.idn).cloned());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
+            lang_code.push(row.lang_code);
+            lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
             alpha.push(row.alpha);
             words.push(row.words);
@@ -189,14 +198,6 @@ impl Index {
             mtime.push(row.mtime);
             hash.push(row.hash[0..8].to_string());
             idn.push(row.idn);
-
-            if let Some((code, score)) = row.lang {
-                lang_code.push(Some(code));
-                lang_score.push(Some(score));
-            } else {
-                lang_code.push(None);
-                lang_score.push(None);
-            }
         }
 
         let df = DataFrame::new(vec![
@@ -205,12 +206,8 @@ impl Index {
             Series::new("kind", kind),
             Series::new("msc", msc),
             Series::new("path", path),
-            DataFrame::new(vec![
-                Series::new("code", lang_code),
-                Series::new("score", lang_score),
-            ])?
-            .into_struct("lang")
-            .into_series(),
+            Series::new("lang_code", lang_code),
+            Series::new("lang_score", lang_score),
             Series::new("lfreq", lfreq),
             Series::new("alpha", alpha),
             Series::new("words", words),
@@ -232,10 +229,6 @@ impl Index {
                 writer.finish(&mut df)?;
             }
             None if self.stdout => {
-                // The lang column must be unnested, because CSV
-                // doesn't support nested columns.
-                let mut df = df.unnest(["lang"])?;
-
                 let mut writer = CsvWriter::new(stdout().lock());
                 writer.finish(&mut df)?;
             }
