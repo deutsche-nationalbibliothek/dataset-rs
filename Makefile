@@ -33,16 +33,16 @@ release:
 	$(CARGO) build --release --workspace --features performant
 
 dev-install:
+	$(CARGO) install -q --debug --path crates/dataset --bin dataset
 	$(CARGO) install -q --debug --path crates/datashed --bin datashed
-	# $(CARGO) install --debug -q --path . --bin dataset
 
 install:
 	install -Dm755 target/release/datashed $(DESTDIR)$(BINDIR)/datashed
-	# install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
+	install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/datashed
-	# rm -f $(DESTDIR)$(BINDIR)/dataset
+	rm -f $(DESTDIR)$(BINDIR)/dataset
 
 .PHONY: build clean docs check test clippy check-fmt release install uninstall
 

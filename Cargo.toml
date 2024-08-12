@@ -26,6 +26,7 @@ semver = { version = "1.0.23", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 thiserror = { version = "1.0" }
 toml = { version = "0.8.14", features = ["preserve_order"] }
+tokio = { version = "1.39.2", features = ["full"] }
 
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]

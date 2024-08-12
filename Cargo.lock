@@ -850,7 +850,11 @@ dependencies = [
  "clap",
  "clap_complete",
  "rayon",
+ "semver",
+ "serde",
  "thiserror",
+ "tokio",
+ "toml",
 ]
 
 [[package]]
