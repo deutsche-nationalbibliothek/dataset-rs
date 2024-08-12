@@ -1,12 +1,17 @@
+use std::io::ErrorKind;
 use std::process;
 
 use clap::Parser;
-use cli::Args;
-use error::DatashedResult;
+use cli::{Args, Command};
+use error::{DatasetError, DatasetResult};
 use rayon::ThreadPoolBuilder;
 
 mod cli;
+mod commands;
+mod config;
+mod dataset;
 mod error;
+mod prelude;
 
 fn num_threads(args: &Args) -> usize {
     if let Some(num_threads) = args.num_jobs {
@@ -16,11 +21,14 @@ fn num_threads(args: &Args) -> usize {
     0
 }
 
-fn run(_args: Args) -> DatashedResult<()> {
-    Ok(())
+async fn run(args: Args) -> DatasetResult<()> {
+    match args.cmd {
+        Command::Init(cmd) => cmd.execute(),
+    }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let args = Args::parse();
 
     ThreadPoolBuilder::new()
@@ -28,7 +36,16 @@ fn main() {
         .build_global()
         .unwrap();
 
-    if run(args).is_ok() {
-        process::exit(0);
+    match run(args).await {
+        Ok(()) => process::exit(0),
+        Err(DatasetError::IO(e))
+            if e.kind() == ErrorKind::BrokenPipe =>
+        {
+            process::exit(0)
+        }
+        Err(e) => {
+            eprintln!("error: {e:#}");
+            process::exit(1);
+        }
     }
 }

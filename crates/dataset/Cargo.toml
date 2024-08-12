@@ -11,3 +11,7 @@ clap = { workspace = true }
 clap_complete = { workspace = true }
 rayon = { workspace = true }
 thiserror = { workspace = true }
+semver = { workspace = true }
+toml = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }

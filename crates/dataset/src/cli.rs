@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about = None, max_term_width = 72)]
@@ -13,4 +13,15 @@ pub(crate) struct Args {
         hide_env_values = true
     )]
     pub(crate) num_jobs: Option<usize>,
+
+    #[command(subcommand)]
+    pub(crate) cmd: Command,
+}
+
+use crate::commands::*;
+
+#[derive(Debug, Subcommand)]
+pub(crate) enum Command {
+    #[clap(alias = "new")]
+    Init(Init),
 }
