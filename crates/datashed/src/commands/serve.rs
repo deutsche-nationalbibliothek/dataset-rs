@@ -55,6 +55,8 @@ async fn ratings(
     req: web::Json<RatingReq>,
 ) -> HttpResponse {
     let dataset = &state.datashed;
+    let config = dataset.config().unwrap();
+    let remote = config.metadata.name;
     let base_dir = dataset.base_dir();
     let path = req.path.clone();
     let hash = req.hash.clone();
@@ -95,6 +97,7 @@ async fn ratings(
 
     let mut writer = state.wtr.lock().unwrap();
     let result = writer.write_record([
+        &remote,
         path,
         &hash,
         &rating,
