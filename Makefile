@@ -32,9 +32,13 @@ check-fmt:
 release:
 	$(CARGO) build --release --workspace --features performant
 
-dev-install:
+dev-dataset:
 	$(CARGO) install -q --debug --path crates/dataset --bin dataset
+
+dev-datashed:
 	$(CARGO) install -q --debug --path crates/datashed --bin datashed
+
+dev-install: dev-dataset dev-datashed
 
 install:
 	install -Dm755 target/release/datashed $(DESTDIR)$(BINDIR)/datashed

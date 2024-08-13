@@ -17,6 +17,9 @@ pub(crate) struct Config {
     /// Dataset metadata.
     pub(crate) metadata: Metadata,
 
+    /// Runtime options.
+    pub(crate) runtime: Option<Runtime>,
+
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:
     ///
@@ -58,6 +61,14 @@ impl Default for Metadata {
             authors: vec![],
         }
     }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub(crate) struct Runtime {
+    /// Number of threads to use. If this options isn't set or a value
+    /// of "0" is chosen, the maximum number of available threads
+    /// is used.
+    pub(crate) num_jobs: Option<usize>,
 }
 
 impl Config {
