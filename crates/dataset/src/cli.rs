@@ -26,4 +26,5 @@ pub(crate) enum Command {
     Config(Config),
     #[clap(alias = "new")]
     Init(Init),
+    Version(Version),
 }
