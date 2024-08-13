@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -6,6 +7,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
+use crate::remote::Remote;
 
 /// Dataset config.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -19,6 +21,13 @@ pub(crate) struct Config {
 
     /// Runtime options.
     pub(crate) runtime: Option<Runtime>,
+
+    #[serde(
+        rename = "remote",
+        skip_serializing_if = "HashMap::is_empty",
+        default
+    )]
+    pub(crate) remotes: HashMap<String, Remote>,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:

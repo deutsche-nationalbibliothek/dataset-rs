@@ -26,5 +26,6 @@ pub(crate) enum Command {
     Config(Config),
     #[clap(alias = "new")]
     Init(Init),
+    Remote(Remote),
     Version(Version),
 }
