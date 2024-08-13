@@ -38,25 +38,25 @@ impl Dataset {
         Ok(Self { root_dir })
     }
 
-    /// Returns the config associated with the datashed.
+    /// Returns the config associated with the dataset.
     #[inline]
     pub(crate) fn config(&self) -> DatasetResult<Config> {
         Config::from_path(self.root_dir.join(Self::CONFIG))
     }
 
-    /// Returns the base directory of the datashed.
+    /// Returns the base directory of the dataset.
     #[inline]
     pub(crate) fn base_dir(&self) -> &PathBuf {
         &self.root_dir
     }
 
-    /// Returns the data directory of the datashed.
+    /// Returns the data directory of the dataset.
     #[inline]
     pub(crate) fn data_dir(&self) -> PathBuf {
         self.root_dir.join(Self::DATA_DIR)
     }
 
-    /// Returns the temp directory of the datashed.
+    /// Returns the temp directory of the dataset.
     #[inline]
     pub(crate) fn temp_dir(&self) -> PathBuf {
         self.root_dir.join(Self::TMP_DIR)

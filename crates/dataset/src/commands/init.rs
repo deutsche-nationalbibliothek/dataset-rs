@@ -12,7 +12,7 @@ use crate::prelude::*;
 
 const GITIGNORE: &str = "# dataset\n/data\n/index.ipc\n";
 
-/// Initialize a new or re-initialize an existing datashed.
+/// Initialize a new or re-initialize an existing dataset.
 #[derive(Debug, Parser)]
 pub(crate) struct Init {
     /// The name of the dataset.
@@ -28,7 +28,7 @@ pub(crate) struct Init {
     description: Option<String>,
 
     /// A list of people or organizations, which are considered as the
-    /// authors of the datashed. By default the list is populated with
+    /// authors of the dataset. By default the list is populated with
     /// the git identity (if available).
     #[arg(short, long = "author")]
     authors: Vec<String>,

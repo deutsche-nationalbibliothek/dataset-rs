@@ -3,6 +3,7 @@ use std::process;
 
 use clap::Parser;
 use cli::{Args, Command};
+use dataset::Dataset;
 use error::{DatasetError, DatasetResult};
 use rayon::ThreadPoolBuilder;
 
@@ -18,11 +19,20 @@ fn num_threads(args: &Args) -> usize {
         return num_threads;
     }
 
+    if let Ok(config) = Dataset::discover().and_then(|ds| ds.config()) {
+        if let Some(runtime) = config.runtime {
+            if let Some(num_threads) = runtime.num_jobs {
+                return num_threads;
+            }
+        }
+    }
+
     0
 }
 
 async fn run(args: Args) -> DatasetResult<()> {
     match args.cmd {
+        Command::Config(cmd) => cmd.execute(),
         Command::Init(cmd) => cmd.execute(),
     }
 }

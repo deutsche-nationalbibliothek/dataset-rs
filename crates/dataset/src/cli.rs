@@ -22,6 +22,7 @@ use crate::commands::*;
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
+    Config(Config),
     #[clap(alias = "new")]
     Init(Init),
 }
