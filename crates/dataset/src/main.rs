@@ -14,6 +14,14 @@ mod dataset;
 mod error;
 mod prelude;
 
+async fn run(args: Args) -> DatasetResult<()> {
+    match args.cmd {
+        Command::Completions(cmd) => cmd.execute(),
+        Command::Config(cmd) => cmd.execute(),
+        Command::Init(cmd) => cmd.execute(),
+    }
+}
+
 fn num_threads(args: &Args) -> usize {
     if let Some(num_threads) = args.num_jobs {
         return num_threads;
@@ -28,13 +36,6 @@ fn num_threads(args: &Args) -> usize {
     }
 
     0
-}
-
-async fn run(args: Args) -> DatasetResult<()> {
-    match args.cmd {
-        Command::Config(cmd) => cmd.execute(),
-        Command::Init(cmd) => cmd.execute(),
-    }
 }
 
 #[tokio::main]
