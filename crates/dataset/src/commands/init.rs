@@ -10,7 +10,7 @@ use semver::Version;
 
 use crate::prelude::*;
 
-const GITIGNORE: &str = "# dataset\n/data\n/index.ipc\n";
+const GITIGNORE: &str = "# dataset\n/data\n";
 
 /// Initialize a new or re-initialize an existing dataset.
 #[derive(Debug, Parser)]
@@ -129,9 +129,10 @@ fn git_user(path: &PathBuf) -> Option<String> {
 impl Init {
     pub(crate) fn execute(mut self) -> DatasetResult<()> {
         let root_dir = env::current_dir()?.join(self.path);
+        let dot_dir = root_dir.join(Dataset::DOT_DIR);
         let data_dir = root_dir.join(Dataset::DATA_DIR);
-        let tmp_dir = root_dir.join(Dataset::TMP_DIR);
-        let config = root_dir.join(Dataset::CONFIG);
+        let tmp_dir = dot_dir.join(Dataset::TMP_DIR);
+        let config = dot_dir.join(Dataset::CONFIG);
 
         if !root_dir.exists() {
             fs::create_dir_all(&root_dir)?;
@@ -147,6 +148,10 @@ impl Init {
                 "Re-Initialize exiting datase in {}",
                 root_dir.display()
             );
+        }
+
+        if !dot_dir.exists() {
+            fs::create_dir_all(&dot_dir)?;
         }
 
         if !data_dir.exists() {

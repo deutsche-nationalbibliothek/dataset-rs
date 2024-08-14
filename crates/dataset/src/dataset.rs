@@ -10,7 +10,8 @@ pub(crate) struct Dataset {
 }
 
 impl Dataset {
-    pub(crate) const CONFIG: &'static str = "dataset.toml";
+    pub(crate) const CONFIG: &'static str = "config.toml";
+    pub(crate) const DOT_DIR: &'static str = ".dataset";
     pub(crate) const DATA_DIR: &'static str = "data";
     pub(crate) const TMP_DIR: &'static str = "tmp";
 
@@ -23,9 +24,9 @@ impl Dataset {
 
         loop {
             if let Ok(metadata) =
-                fs::metadata(root_dir.join(Self::CONFIG))
+                fs::metadata(root_dir.join(Self::DOT_DIR))
             {
-                if metadata.is_file() {
+                if metadata.is_dir() {
                     break;
                 }
             }
@@ -41,7 +42,7 @@ impl Dataset {
     /// Returns the config associated with the dataset.
     #[inline]
     pub(crate) fn config(&self) -> DatasetResult<Config> {
-        Config::from_path(self.root_dir.join(Self::CONFIG))
+        Config::from_path(self.dot_dir().join(Self::CONFIG))
     }
 
     /// Returns the base directory of the dataset.
@@ -50,15 +51,21 @@ impl Dataset {
         &self.root_dir
     }
 
+    /// Returns the dot directory of the dataset.
+    #[inline]
+    pub(crate) fn dot_dir(&self) -> PathBuf {
+        self.root_dir.join(Self::DOT_DIR)
+    }
+
     /// Returns the data directory of the dataset.
     #[inline]
     pub(crate) fn data_dir(&self) -> PathBuf {
         self.root_dir.join(Self::DATA_DIR)
     }
 
-    /// Returns the temp directory of the dataset.
+    /// Returns the tmp directory of the dataset.
     #[inline]
-    pub(crate) fn temp_dir(&self) -> PathBuf {
-        self.root_dir.join(Self::TMP_DIR)
+    pub(crate) fn tmp_dir(&self) -> PathBuf {
+        self.dot_dir().join(Self::TMP_DIR)
     }
 }
