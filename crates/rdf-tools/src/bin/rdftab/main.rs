@@ -48,7 +48,7 @@ fn stringify<T: Term>(t: T) -> String {
     match t.kind() {
         Iri => t.iri().unwrap().to_string(),
         Literal => t.lexical_form().unwrap().to_string(),
-        BlankNode => format!("_:{}", t.bnode_id().unwrap().to_string()),
+        BlankNode => format!("_:{}", *t.bnode_id().unwrap()),
         _ => unimplemented!("{:?}", t.kind()),
     }
 }
@@ -93,7 +93,7 @@ fn process<TS: TripleSource + 'static>(
                 record.push(language);
             }
 
-            if record.len() > 0 {
+            if !record.is_empty() {
                 writer.write_record(record).expect("write");
             }
         }
@@ -141,9 +141,9 @@ fn main() -> anyhow::Result<()> {
         let reader: BufReader<Box<dyn Read>> =
             match path.extension().and_then(OsStr::to_str) {
                 Some("gz") => BufReader::new(Box::new(GzDecoder::new(
-                    File::open(&path)?,
+                    File::open(path)?,
                 ))),
-                _ => BufReader::new(Box::new(File::open(&path)?)),
+                _ => BufReader::new(Box::new(File::open(path)?)),
             };
 
         let filename_str = path
