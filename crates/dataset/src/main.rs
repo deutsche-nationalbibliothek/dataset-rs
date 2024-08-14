@@ -13,12 +13,14 @@ mod config;
 mod dataset;
 mod error;
 mod prelude;
+mod remote;
 
 async fn run(args: Args) -> DatasetResult<()> {
     match args.cmd {
         Command::Completions(cmd) => cmd.execute(),
         Command::Config(cmd) => cmd.execute(),
         Command::Init(cmd) => cmd.execute(),
+        Command::Remote(cmd) => cmd.execute(),
         Command::Version(cmd) => cmd.execute(),
     }
 }
