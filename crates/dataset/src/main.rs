@@ -19,6 +19,7 @@ async fn run(args: Args) -> DatasetResult<()> {
     match args.cmd {
         Command::Completions(cmd) => cmd.execute(),
         Command::Config(cmd) => cmd.execute(),
+        Command::Fetch(cmd) => cmd.execute().await,
         Command::Init(cmd) => cmd.execute(),
         Command::Remote(cmd) => cmd.execute(),
         Command::Version(cmd) => cmd.execute(),

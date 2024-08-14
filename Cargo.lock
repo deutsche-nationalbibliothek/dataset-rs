@@ -850,7 +850,9 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "clap_complete",
+ "polars",
  "rayon",
+ "reqwest",
  "semver",
  "serde",
  "thiserror",

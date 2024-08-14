@@ -5,8 +5,8 @@ use crate::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Remote {
-    url: Url,
-    query: Option<String>,
+    pub(crate) url: Url,
+    pub(crate) predicate: Option<String>,
 }
 
 impl Remote {
@@ -23,7 +23,7 @@ impl Remote {
 
         Ok(Self {
             url,
-            query: query.map(|s| s.to_string()),
+            predicate: query.map(|s| s.to_string()),
         })
     }
 
@@ -43,7 +43,7 @@ impl Remote {
         Ok(())
     }
 
-    pub(crate) fn set_query<S: ToString>(&mut self, query: S) {
-        self.query = Some(query.to_string());
+    pub(crate) fn set_predicate<S: ToString>(&mut self, predicate: S) {
+        self.predicate = Some(predicate.to_string());
     }
 }

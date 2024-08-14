@@ -11,6 +11,8 @@ pub(crate) struct Dataset {
 
 impl Dataset {
     pub(crate) const CONFIG: &'static str = "config.toml";
+    pub(crate) const REMOTES: &'static str = "remotes.ipc";
+
     pub(crate) const DOT_DIR: &'static str = ".dataset";
     pub(crate) const DATA_DIR: &'static str = "data";
     pub(crate) const TMP_DIR: &'static str = "tmp";

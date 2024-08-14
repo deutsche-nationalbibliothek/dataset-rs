@@ -22,11 +22,12 @@ ndarray = { version = "0.15.6" }
 ndarray-stats = { version = "0.5.1" }
 rayon = { version = "1.10.0" }
 regex = { version = "1.10.5" }
+reqwest = { version = "0.12.5", features = ["json", "blocking"] }
 semver = { version = "1.0.23", features = ["serde"] }
 serde = { version = "1.0.204", features = ["derive"] }
 thiserror = { version = "1.0" }
-toml = { version = "0.8.14", features = ["preserve_order"] }
 tokio = { version = "1.39.2", features = ["full"] }
+toml = { version = "0.8.14", features = ["preserve_order"] }
 
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]

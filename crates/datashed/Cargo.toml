@@ -29,7 +29,7 @@ ndarray-stats = { workspace = true }
 polars = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
-reqwest = { version = "0.12.5", features = ["json", "blocking"] }
+reqwest = { workspace = true }
 semver = { workspace = true }
 serde = { workspace = true }
 serde_json = { version = "1.0.120", features = ["preserve_order"] }

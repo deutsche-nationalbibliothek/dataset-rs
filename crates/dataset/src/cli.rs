@@ -24,6 +24,7 @@ use crate::commands::*;
 pub(crate) enum Command {
     Completions(Completions),
     Config(Config),
+    Fetch(Fetch),
     #[clap(alias = "new")]
     Init(Init),
     Remote(Remote),
