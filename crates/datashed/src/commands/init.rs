@@ -16,15 +16,15 @@ const GITIGNORE: &str = "# datashed\n/data\n/index.ipc\n";
 /// Initialize a new or re-initialize an existing datashed.
 #[derive(Debug, Parser)]
 pub(crate) struct Init {
-    /// The name of the data pod.
+    /// The name of the datashed.
     #[arg(short, long)]
     name: Option<String>,
 
-    /// The version of the data pod.
+    /// The version of the datashed.
     #[arg(long, default_value = "0.1.0")]
     version: Version,
 
-    /// A short blurb about the data pod.
+    /// A short blurb about the datashed.
     #[arg(short, long)]
     description: Option<String>,
 
@@ -34,7 +34,7 @@ pub(crate) struct Init {
     #[arg(short, long = "author")]
     authors: Vec<String>,
 
-    /// Initialize the data pod for the given version control system
+    /// Initialize the datashed for the given version control system
     /// (VCS).
     #[arg(long, default_value = "git")]
     vcs: Vcs,
@@ -54,7 +54,7 @@ pub(crate) struct Init {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// The location of the data pod.
+    /// The location of the datashed.
     #[arg(default_value = ".")]
     path: PathBuf,
 }
@@ -141,13 +141,13 @@ impl Init {
 
             if self.verbose {
                 eprintln!(
-                    "Initialize new data pod in {}",
+                    "Initialize new datashed in {}",
                     root_dir.display()
                 );
             }
         } else if self.verbose {
             eprintln!(
-                "Re-Initialize exiting data pod in {}",
+                "Re-Initialize exiting datashed in {}",
                 root_dir.display()
             );
         }

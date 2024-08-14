@@ -8,7 +8,7 @@ use crate::config::Config;
 use crate::error::{bail, DatashedError, DatashedResult};
 
 pub(crate) struct Datashed {
-    /// The root directory of the data pod.
+    /// The root directory of the datashed.
     root_dir: PathBuf,
 }
 
@@ -20,10 +20,10 @@ impl Datashed {
     pub(crate) const DATA_DIR: &'static str = "data";
     pub(crate) const TEMP_DIR: &'static str = "tmp";
 
-    /// Discovers the root of the data pod.
+    /// Discovers the root of the datashed.
     ///
     /// This function fails, if neither the current directory nor any
-    /// parent directory contains a data pod [Config].
+    /// parent directory contains a datashed [Config].
     pub(crate) fn discover() -> DatashedResult<Self> {
         let mut root_dir = env::current_dir()?;
 
@@ -37,7 +37,7 @@ impl Datashed {
             }
 
             if !root_dir.pop() {
-                bail!("not a data pod (or any parent directory)");
+                bail!("not a datashed (or any parent directory)");
             }
         }
 

@@ -51,17 +51,17 @@ pub(crate) struct Config {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Metadata {
-    /// The name of the data pod.
+    /// The name of the datashed.
     pub(crate) name: String,
 
-    /// The version of the data pod.
+    /// The version of the datashed.
     pub(crate) version: Version,
 
-    /// A short blurb about the data pod.
+    /// A short blurb about the datashed.
     pub(crate) description: Option<String>,
 
     /// A list of people or organizations, which are considered as the
-    /// authors of the data pod.
+    /// authors of the datashed.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub(crate) authors: Vec<String>,
 }
