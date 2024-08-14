@@ -332,6 +332,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
+
+[[package]]
 name = "argminmax"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2662,6 +2668,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "mownstr"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bc45ce96192b5d8b20cffb10ccd85cc431c283a7d171a0d843ac0bd7d444598"
+
+[[package]]
 name = "multiversion"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2908,6 +2920,21 @@ name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
+
+[[package]]
+name = "oxilangtag"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23f3f87617a86af77fa3691e6350483e7154c2ead9f1261b75130e21ca0f8acb"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "oxiri"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d05417ee46e2eb40dd9d590b4d67fc2408208b3a48a6b7f71d2bc1d7ce12a3e0"
 
 [[package]]
 name = "parking_lot"
@@ -3551,6 +3578,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-xml"
+version = "0.28.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce5e73202a820a31f8a0ee32ada5e21029c81fd9e3ebf668a40832e4219d9d1"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3632,6 +3668,17 @@ checksum = "1465873a3dfdaa8ae7cb14b4383657caab0b3e8a0aa9ae8e04b044854c8dfce2"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
+]
+
+[[package]]
+name = "rdf-tools"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "csv",
+ "flate2",
+ "sophia",
 ]
 
 [[package]]
@@ -3774,6 +3821,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "resiter"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbc95d56eb1865f69288945759cc0879d60ee68168dce676730275804ad2b276"
+
+[[package]]
 name = "ring"
 version = "0.17.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3786,6 +3839,35 @@ dependencies = [
  "spin",
  "untrusted",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rio_api"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1924fa1f0e6d851f9b73b3c569e607c368a0d92995d99d563ad7bf1414696603"
+
+[[package]]
+name = "rio_turtle"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cec59971eafd99b9c7e3544bfcabafea81a7072ac51c9f46985ca0bd7ba6016"
+dependencies = [
+ "oxilangtag",
+ "oxiri",
+ "rio_api",
+]
+
+[[package]]
+name = "rio_xml"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2edda57b877119dc326c612ba822e3ca1ee22bfc86781a4e9dc0884756b58c3"
+dependencies = [
+ "oxilangtag",
+ "oxiri",
+ "quick-xml",
+ "rio_api",
 ]
 
 [[package]]
@@ -4102,6 +4184,146 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "sophia"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d9d3e79754eeda3fc7e3610afcc492613fa0a5581d286d7545094e3e7ce1608"
+dependencies = [
+ "sophia_api",
+ "sophia_c14n",
+ "sophia_inmem",
+ "sophia_iri",
+ "sophia_isomorphism",
+ "sophia_resource",
+ "sophia_rio",
+ "sophia_term",
+ "sophia_turtle",
+ "sophia_xml",
+]
+
+[[package]]
+name = "sophia_api"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e41b1197b9dbd2e5e2a7d8dc62fd6bab001724576463831920b13567bde2a4c"
+dependencies = [
+ "lazy_static",
+ "mownstr",
+ "regex",
+ "resiter",
+ "serde",
+ "sophia_iri",
+ "thiserror",
+]
+
+[[package]]
+name = "sophia_c14n"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "04e4ebf65104879fc9f3f1f54224b42ad1f9e40b6a5dc26c5a17bf43846d6a1d"
+dependencies = [
+ "sha2",
+ "sophia_api",
+ "sophia_iri",
+ "thiserror",
+]
+
+[[package]]
+name = "sophia_inmem"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba3f836b898bbd5d5a73a977995e1d5dab8e2cf96a017890954864ece18b1e8c"
+dependencies = [
+ "sophia_api",
+ "thiserror",
+]
+
+[[package]]
+name = "sophia_iri"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb62d2fcd10fc3a44b646b1893ad478df0cb771f7ceb0331a5f3cee25f37ba7e"
+dependencies = [
+ "lazy_static",
+ "oxiri",
+ "regex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "sophia_isomorphism"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2b3876c71756d3dd94590c51090a036298a983f6b1e5c316f9eca514b2f6a5e"
+dependencies = [
+ "sophia_api",
+ "sophia_iri",
+]
+
+[[package]]
+name = "sophia_resource"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "807253d3a4144e1f3eacf6976849dab04cbd493ff568414df07c33fd10886ce2"
+dependencies = [
+ "sophia_api",
+ "sophia_iri",
+ "sophia_turtle",
+ "sophia_xml",
+ "thiserror",
+]
+
+[[package]]
+name = "sophia_rio"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93e107086ca2b3e329dbe0f85f9ce504b1fbb478c85341338942b9dff613d4d8"
+dependencies = [
+ "rio_api",
+ "sophia_api",
+ "sophia_iri",
+]
+
+[[package]]
+name = "sophia_term"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca3a77f8523038dc1204a59dd461f27322cbe14bea3da873d41b6cc40c3e63e9"
+dependencies = [
+ "lazy_static",
+ "sophia_api",
+]
+
+[[package]]
+name = "sophia_turtle"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a7b7ce7aeb34f55867599544622420b2a6b6488b16811e06fd3755fc9cae4d0"
+dependencies = [
+ "lazy_static",
+ "oxiri",
+ "regex",
+ "rio_turtle",
+ "sophia_api",
+ "sophia_iri",
+ "sophia_rio",
+]
+
+[[package]]
+name = "sophia_xml"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9df98b3ae2636fb806dcc8ac76eee27d567a3167e7c548a8a16aa23e43367518"
+dependencies = [
+ "oxiri",
+ "rio_xml",
+ "sophia_api",
+ "sophia_iri",
+ "sophia_rio",
 ]
 
 [[package]]

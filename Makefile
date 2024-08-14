@@ -38,15 +38,20 @@ dev-dataset:
 dev-datashed:
 	$(CARGO) install -q --debug --path crates/datashed --bin datashed
 
-dev-install: dev-dataset dev-datashed
+dev-rdftab:
+	$(CARGO) install -q --debug --path crates/rdf-tools --bin rdftab
+
+dev-install: dev-dataset dev-datashed dev-rdftab
 
 install:
 	install -Dm755 target/release/datashed $(DESTDIR)$(BINDIR)/datashed
 	install -Dm755 target/release/dataset $(DESTDIR)$(BINDIR)/dataset
+	install -Dm755 target/release/rdftab $(DESTDIR)$(BINDIR)/rdftab
 
 uninstall:
 	rm -f $(DESTDIR)$(BINDIR)/datashed
 	rm -f $(DESTDIR)$(BINDIR)/dataset
+	rm -f $(DESTDIR)$(BINDIR)/rdftab
 
 .PHONY: build clean docs check test clippy check-fmt release install uninstall
 

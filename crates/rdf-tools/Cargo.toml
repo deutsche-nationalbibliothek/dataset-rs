@@ -1,0 +1,19 @@
+[package]
+name = "rdf-tools"
+version = "0.1.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "rdftab"
+path = "src/bin/rdftab/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+clap = { workspace = true }
+csv = { workspace = true }
+flate2 = "1.0"
+sophia = { version = "0.8", features = ["xml"] }
+
