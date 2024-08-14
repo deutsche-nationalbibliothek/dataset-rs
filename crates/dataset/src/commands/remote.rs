@@ -42,12 +42,12 @@ pub(crate) enum Command {
     },
 
     /// Changes the where clause for the remote `name`.
-    SetWhere {
+    SetPredicate {
         /// The name of the remote.
         name: String,
 
         /// The where clause to filter documents.
-        query: String,
+        predicate: String,
     },
 }
 
@@ -81,9 +81,9 @@ impl Remote {
                     bail!("remote '{name}' does not exist.")
                 }
             }
-            Command::SetWhere { name, query } => {
+            Command::SetPredicate { name, predicate } => {
                 if let Some(remote) = config.remotes.get_mut(&name) {
-                    remote.set_query(query);
+                    remote.set_predicate(predicate);
                 } else {
                     bail!("remote '{name}' does not exist.")
                 }

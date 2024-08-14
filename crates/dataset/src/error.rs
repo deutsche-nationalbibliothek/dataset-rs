@@ -14,6 +14,12 @@ pub(crate) enum DatasetError {
     IO(#[from] std::io::Error),
 
     #[error(transparent)]
+    Polars(#[from] polars::error::PolarsError),
+
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+
+    #[error(transparent)]
     Toml(#[from] toml::de::Error),
 
     #[error("{0}")]

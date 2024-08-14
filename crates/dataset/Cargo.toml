@@ -9,7 +9,9 @@ rust-version.workspace = true
 [dependencies]
 clap = { workspace = true }
 clap_complete = { workspace = true }
+polars = { workspace = true }
 rayon = { workspace = true }
+reqwest = { workspace = true }
 semver = { workspace = true }
 serde = { workspace = true }
 thiserror = { workspace = true }
