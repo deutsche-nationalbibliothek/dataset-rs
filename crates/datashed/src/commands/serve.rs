@@ -5,6 +5,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use actix_files::{Files, NamedFile};
+use actix_web::middleware::Logger;
 use actix_web::{
     get, guard, head, post, web, App, HttpResponse, HttpServer,
 };
@@ -158,6 +159,7 @@ impl Serve {
 
         let _ = HttpServer::new(move || {
             App::new()
+                .wrap(Logger::default())
                 .app_data(app_data.clone())
                 .service(health_check)
                 .service(index)
