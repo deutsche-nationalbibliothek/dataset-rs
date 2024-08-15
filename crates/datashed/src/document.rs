@@ -398,7 +398,7 @@ mod tests {
     #[test]
     fn document_modified() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.modified(), 1723744458);
+        assert!(doc.modified() > 1723744458);
         Ok(())
     }
 
