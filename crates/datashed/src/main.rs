@@ -4,6 +4,7 @@ use std::process;
 use clap::Parser;
 use cli::{Args, Command};
 use datashed::Datashed;
+use env_logger::Env;
 use error::{DatashedError, DatashedResult};
 use jemallocator::Jemalloc;
 use polars::error::PolarsError;
@@ -71,6 +72,18 @@ async fn run(args: Args) -> DatashedResult<()> {
     }
 }
 
+fn init_logger() {
+    let env = Env::default()
+        .filter("DATASHED_LOG_LEVEL")
+        .write_style("DATASHED_LOG_STYLE")
+        .default_filter_or("info");
+
+    env_logger::Builder::from_env(env)
+        .format_module_path(false)
+        .format_target(false)
+        .init();
+}
+
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
@@ -79,6 +92,8 @@ async fn main() {
         .num_threads(num_threads(&args))
         .build_global()
         .unwrap();
+
+    init_logger();
 
     match run(args).await {
         Ok(()) => process::exit(0),
