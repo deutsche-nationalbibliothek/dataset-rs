@@ -272,8 +272,8 @@ impl Document {
     /// where $N$ is total number of characters of the document, $c_i$
     /// is the i-th character of the document, $A$ is the subset of all
     /// characters, which satisfy the _Alphabetic_ property and
-    /// $\mathbf{1}_A$ is the indicator function, which returns 1 if
-    /// the i-th character is alphabetic and otherwise 0.
+    /// $\mathbf{1}_A$ is the indicator function, which returns 1f64 *
+    /// if the i-th character is alphabetic and otherwise 0.
     ///
     /// ## Note
     ///
@@ -316,5 +316,172 @@ impl Document {
         let unique = words.len() as f64;
 
         unique / total
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use approx::assert_abs_diff_eq;
+    use DocumentKind::*;
+
+    use super::*;
+
+    type TestResult = anyhow::Result<()>;
+
+    #[test]
+    fn document_kind_from_str() {
+        assert_eq!(DocumentKind::from_str("article").unwrap(), Article);
+        assert_eq!(DocumentKind::from_str("blurb").unwrap(), Blurb);
+        assert_eq!(DocumentKind::from_str("book").unwrap(), Book);
+        assert_eq!(DocumentKind::from_str("ft").unwrap(), Other);
+        assert_eq!(DocumentKind::from_str("other").unwrap(), Other);
+        assert_eq!(DocumentKind::from_str("toc").unwrap(), Toc);
+
+        assert!(DocumentKind::from_str("wp").is_err());
+    }
+
+    #[test]
+    fn document_kind_to_string() {
+        assert_eq!(Article.to_string(), "article");
+        assert_eq!(Blurb.to_string(), "blurb");
+        assert_eq!(Book.to_string(), "book");
+        assert_eq!(Other.to_string(), "other");
+        assert_eq!(Toc.to_string(), "toc");
+    }
+
+    #[test]
+    fn document_kind_default() {
+        assert_eq!(DocumentKind::default(), Other);
+    }
+
+    #[test]
+    fn document_from_path() {
+        assert!(Document::from_path("tests/data/fox.txt").is_ok());
+        assert!(Document::from_path("tests/data/cat.txt").is_err());
+    }
+
+    #[test]
+    fn document_idn() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.idn(), "fox");
+        Ok(())
+    }
+
+    #[test]
+    fn document_kind() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.kind(), Other);
+        Ok(())
+    }
+
+    #[test]
+    fn document_size() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.size(), 45);
+        Ok(())
+    }
+
+    #[test]
+    fn document_strlen() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.strlen(), 45);
+        Ok(())
+    }
+
+    #[test]
+    fn document_word_count() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.word_count(), 9);
+        Ok(())
+    }
+
+    #[test]
+    fn document_modified() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.modified(), 1723744458);
+        Ok(())
+    }
+
+    #[test]
+    fn document_hash() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_eq!(doc.hash(), "b47cc0f104b62d4c7c30bcd68fd8e67613e287dc4ad8c310ef10cbadea9c4380");
+        Ok(())
+    }
+
+    #[test]
+    fn document_lang() -> TestResult {
+        let mut doc = Document::from_path("tests/data/fox.txt")?;
+        let (code, score) = doc.lang().unwrap();
+        assert_abs_diff_eq!(score, 0.1780, epsilon = 1e-4);
+        assert_eq!(code, "eng");
+        Ok(())
+    }
+
+    #[test]
+    fn document_lfreq() -> TestResult {
+        let mut doc = Document::from_path("tests/data/fox.txt")?;
+        let lfreq = doc.lfreq().unwrap();
+
+        let n = 35.0;
+        let expected = ((1f64 / n - 0.08167).powi(2)
+            + (1f64 / n - 0.01492).powi(2)
+            + (1f64 / n - 0.02782).powi(2)
+            + (1f64 / n - 0.04253).powi(2)
+            + (3f64 / n - 0.12702).powi(2)
+            + (1f64 / n - 0.02228).powi(2)
+            + (1f64 / n - 0.02015).powi(2)
+            + (2f64 / n - 0.06094).powi(2)
+            + (1f64 / n - 0.06966).powi(2)
+            + (1f64 / n - 0.00253).powi(2)
+            + (1f64 / n - 0.01772).powi(2)
+            + (1f64 / n - 0.04025).powi(2)
+            + (1f64 / n - 0.02406).powi(2)
+            + (1f64 / n - 0.06749).powi(2)
+            + (4f64 / n - 0.07507).powi(2)
+            + (1f64 / n - 0.01929).powi(2)
+            + (1f64 / n - 0.00950).powi(2)
+            + (2f64 / n - 0.05987).powi(2)
+            + (1f64 / n - 0.06327).powi(2)
+            + (2f64 / n - 0.09056).powi(2)
+            + (2f64 / n - 0.02758).powi(2)
+            + (1f64 / n - 0.00978).powi(2)
+            + (1f64 / n - 0.02360).powi(2)
+            + (1f64 / n - 0.00250).powi(2)
+            + (1f64 / n - 0.01974).powi(2)
+            + (1f64 / n - 0.00074).powi(2))
+        .sqrt();
+
+        assert_abs_diff_eq!(lfreq, expected, epsilon = 1e-4);
+        Ok(())
+    }
+
+    #[test]
+    fn document_avg_word_len() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_abs_diff_eq!(
+            doc.avg_word_len(),
+            (3.0 + 5.0 + 5.0 + 3.0 + 5.0 + 4.0 + 3.0 + 4.0 + 3.0) / 9.0,
+            epsilon = 1e-4
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn document_alpha() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_abs_diff_eq!(doc.alpha(), 35.0 / 45.0, epsilon = 1e-4);
+        Ok(())
+    }
+
+    #[test]
+    fn document_type_token_ratio() -> TestResult {
+        let doc = Document::from_path("tests/data/fox.txt")?;
+        assert_abs_diff_eq!(
+            doc.type_token_ratio(),
+            8.0 / 9.0,
+            epsilon = 1e-4
+        );
+        Ok(())
     }
 }

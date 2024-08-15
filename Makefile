@@ -21,7 +21,7 @@ check:
 	$(CARGO) check --workspace
 
 test:
-	$(CARGO) test --workspace
+	$(CARGO) nextest run --workspace
 
 clippy:
 	$(CARGO) clippy --workspace
