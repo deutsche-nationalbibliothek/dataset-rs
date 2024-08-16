@@ -23,7 +23,6 @@ hashbrown = { workspace = true }
 humansize = { workspace = true }
 indicatif = { workspace = true }
 jemallocator = { version = "0.5.4" }
-lingua = { version = "1.6.2" }
 minus = { version = "5.6.1", features = ["search", "static_output"] }
 ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
@@ -41,6 +40,23 @@ tokio = { workspace = true }
 toml = { workspace = true }
 unicode-normalization = { version = "0.1.23" }
 unicode_categories = { version = "0.1.1" }
+
+[dependencies.lingua]
+version = "1.6.2"
+default-features = false
+features = [
+    "danish",
+    "dutch",
+    "english",
+    "french",
+    "german",
+    "italian",
+    "latin",
+    "polish",
+    "portuguese",
+    "russian",
+    "spanish",
+]
 
 [dependencies.pica-path]
 git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
