@@ -10,16 +10,6 @@ use jemallocator::Jemalloc;
 use polars::error::PolarsError;
 use rayon::ThreadPoolBuilder;
 
-pub(crate) mod prelude {
-    pub(crate) use crate::config::{Config, Runtime};
-    pub(crate) use crate::datashed::Datashed;
-    pub(crate) use crate::document::Document;
-    pub(crate) use crate::error::{
-        bail, DatashedError, DatashedResult,
-    };
-    pub(crate) use crate::progress::ProgressBarBuilder;
-}
-
 mod cli;
 mod commands;
 mod config;
@@ -27,6 +17,7 @@ mod datashed;
 mod document;
 mod error;
 mod lfreq;
+mod prelude;
 mod progress;
 mod utils;
 
