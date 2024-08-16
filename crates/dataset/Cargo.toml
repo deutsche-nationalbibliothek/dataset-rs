@@ -9,6 +9,8 @@ rust-version.workspace = true
 [dependencies]
 clap = { workspace = true }
 clap_complete = { workspace = true }
+humansize = { workspace = true }
+indicatif = { workspace = true }
 polars = { workspace = true }
 rayon = { workspace = true }
 reqwest = { workspace = true }
