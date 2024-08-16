@@ -74,3 +74,25 @@ pub(crate) fn lfreq_eng(buf: &BString) -> Option<f64> {
 
     x.l2_dist(&y).ok()
 }
+
+#[cfg(test)]
+mod tests {
+    use bstr::BString;
+
+    type TestResult = anyhow::Result<()>;
+
+    #[test]
+    fn frequencies() -> TestResult {
+        use super::frequencies;
+
+        let alphabet: Vec<char> = "abcdef".chars().collect();
+        let freqs = frequencies(&BString::from("abca"), &alphabet);
+
+        assert_eq!(freqs.get(&'a').unwrap(), &2);
+        assert_eq!(freqs.get(&'b').unwrap(), &1);
+        assert_eq!(freqs.get(&'c').unwrap(), &1);
+        assert_eq!(freqs.len(), 3);
+
+        Ok(())
+    }
+}
