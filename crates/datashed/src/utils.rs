@@ -34,3 +34,25 @@ pub(crate) fn state_dir() -> DatashedResult<PathBuf> {
 
     bail!("unable determine state directory!")
 }
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use super::relpath;
+
+    #[test]
+    fn relpath_ok() {
+        let path = PathBuf::from("/home/foo/bar/baz.txt");
+        let prefix = PathBuf::from("/home/foo");
+        assert_eq!(relpath(path, prefix), "bar/baz.txt");
+    }
+
+    #[test]
+    #[should_panic]
+    fn relpath_panic() {
+        let path = PathBuf::from("/home/foo/bar/baz.txt");
+        let prefix = PathBuf::from("/home/bar");
+        let _ = relpath(path, prefix);
+    }
+}
