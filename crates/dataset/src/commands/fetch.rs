@@ -1,8 +1,10 @@
 use std::fs::File;
 use std::io::{stdout, Cursor};
 use std::path::PathBuf;
+use std::time::Duration;
 
 use clap::Parser;
+use indicatif::{HumanCount, ProgressBar};
 use polars::prelude::*;
 use polars::sql::SQLContext;
 
@@ -42,6 +44,15 @@ impl Fetch {
         let mut dfs = vec![];
 
         for (name, remote) in remotes.iter() {
+            let pbar = if !self.quiet {
+                ProgressBar::new_spinner()
+            } else {
+                ProgressBar::hidden()
+            };
+
+            pbar.enable_steady_tick(Duration::from_millis(100));
+            pbar.set_message(format!("Fetching {name}..."));
+
             let mut index_url = remote.url.clone();
             index_url.set_path("/index.ipc");
 
@@ -65,10 +76,29 @@ impl Fetch {
                     .collect()?
             }
 
-            if index.height() > 0 {
+            let cnt = index.height();
+            if cnt > 0 {
                 dfs.push(index.lazy());
             }
+
+            pbar.finish_and_clear();
+
+            if !self.quiet {
+                eprintln!(
+                    "Fetching {name}: {} documents, done.",
+                    HumanCount(cnt as u64)
+                );
+            }
         }
+
+        let pbar = if !self.quiet {
+            ProgressBar::new_spinner()
+        } else {
+            ProgressBar::hidden()
+        };
+
+        pbar.enable_steady_tick(Duration::from_millis(100));
+        pbar.set_message("Creating compound index");
 
         let args = UnionArgs {
             to_supertypes: true,
@@ -98,6 +128,7 @@ impl Fetch {
             }
         }
 
+        pbar.finish_and_clear();
         Ok(())
     }
 }
