@@ -59,10 +59,10 @@ pub(crate) struct Index {
 
 #[derive(Debug, Default)]
 struct Row {
+    path: PathBuf,
     idn: String,
     kind: DocumentKind,
     msc: Option<String>,
-    path: PathBuf,
     lang_code: Option<String>,
     lang_score: Option<f64>,
     lfreq: Option<f64>,
@@ -89,9 +89,9 @@ impl TryFrom<&PathBuf> for Row {
         };
 
         Ok(Row {
+            path: path.into(),
             idn: doc.idn(),
             kind: doc.kind(),
-            path: path.into(),
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
             words: doc.word_count(),
@@ -159,11 +159,11 @@ impl Index {
                 DatashedError::other("unable to index documents!")
             })?;
 
+        let mut remote: Vec<&str> = vec![];
+        let mut path: Vec<String> = vec![];
         let mut idn: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
         let mut msc: Vec<Option<String>> = vec![];
-        let mut remote: Vec<&str> = vec![];
-        let mut path: Vec<String> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
         let mut lang_score: Vec<Option<f64>> = vec![];
         let mut lfreq: Vec<Option<f64>> = vec![];
@@ -182,10 +182,10 @@ impl Index {
                 .unwrap_or(&row.kind)
                 .to_owned();
 
-            kind.push(new_kind.to_string());
-            msc.push(msc_map.get(&row.idn).cloned());
             remote.push(&config.metadata.name);
             path.push(relpath(&row.path, base_dir));
+            kind.push(new_kind.to_string());
+            msc.push(msc_map.get(&row.idn).cloned());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
@@ -202,10 +202,10 @@ impl Index {
 
         let df = DataFrame::new(vec![
             Series::new("remote", remote),
+            Series::new("path", path),
             Series::new("idn", idn),
             Series::new("kind", kind),
             Series::new("msc", msc),
-            Series::new("path", path),
             Series::new("lang_code", lang_code),
             Series::new("lang_score", lang_score),
             Series::new("lfreq", lfreq),
