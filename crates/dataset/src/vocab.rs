@@ -55,7 +55,7 @@ pub(crate) struct VocabConfig {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub(crate) targets: Vec<LabelSource>,
 
-    // Parameters to fit a subset of authority records (kind) acording
+    // Parameters to fit a subset of authority records (kind) according
     // to available documents.
     #[serde(
         rename = "kind",
