@@ -13,7 +13,9 @@ mod config;
 mod dataset;
 mod error;
 mod prelude;
+mod progress;
 mod remote;
+mod vocab;
 
 async fn run(args: Args) -> DatasetResult<()> {
     match args.cmd {
@@ -23,6 +25,7 @@ async fn run(args: Args) -> DatasetResult<()> {
         Command::Init(cmd) => cmd.execute(),
         Command::Remote(cmd) => cmd.execute(),
         Command::Version(cmd) => cmd.execute(),
+        Command::Vocab(cmd) => cmd.execute(),
     }
 }
 

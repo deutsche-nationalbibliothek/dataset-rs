@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
 use crate::remote::Remote;
+use crate::vocab::VocabConfig;
 
 /// Dataset config.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -28,6 +29,9 @@ pub(crate) struct Config {
         default
     )]
     pub(crate) remotes: HashMap<String, Remote>,
+
+    #[serde(default, skip_serializing_if = "VocabConfig::is_empty")]
+    pub(crate) vocab: VocabConfig,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:

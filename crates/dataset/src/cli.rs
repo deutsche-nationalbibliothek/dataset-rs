@@ -29,4 +29,5 @@ pub(crate) enum Command {
     Init(Init),
     Remote(Remote),
     Version(Version),
+    Vocab(Vocab),
 }

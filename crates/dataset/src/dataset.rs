@@ -1,5 +1,8 @@
+use std::env;
+use std::fs::{self, File};
 use std::path::PathBuf;
-use std::{env, fs};
+
+use polars::prelude::*;
 
 use crate::config::Config;
 use crate::prelude::*;
@@ -12,6 +15,7 @@ pub(crate) struct Dataset {
 impl Dataset {
     pub(crate) const CONFIG: &'static str = "config.toml";
     pub(crate) const REMOTES: &'static str = "remotes.ipc";
+    pub(crate) const VOCAB: &'static str = "vocab.csv";
 
     pub(crate) const DOT_DIR: &'static str = ".dataset";
     pub(crate) const DATA_DIR: &'static str = "data";
@@ -69,5 +73,15 @@ impl Dataset {
     #[inline]
     pub(crate) fn tmp_dir(&self) -> PathBuf {
         self.dot_dir().join(Self::TMP_DIR)
+    }
+
+    /// Returns the remote index.
+    #[inline]
+    pub(crate) fn remotes(&self) -> DatasetResult<DataFrame> {
+        Ok(IpcReader::new(File::open(
+            self.dot_dir().join(Self::REMOTES),
+        )?)
+        .memory_mapped(None)
+        .finish()?)
     }
 }
