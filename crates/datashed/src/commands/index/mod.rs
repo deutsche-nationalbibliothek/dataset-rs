@@ -7,7 +7,7 @@ use glob::glob_with;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use kind::KindMap;
 use msc::MscMap;
-use pica_record::io::{ReaderBuilder, RecordsIterator};
+use pica_record::prelude::*;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
@@ -124,7 +124,7 @@ impl Index {
                     .build();
 
             let mut reader = ReaderBuilder::new().from_path(path)?;
-            while let Some(result) = reader.next() {
+            while let Some(result) = reader.next_byte_record() {
                 if let Ok(record) = result {
                     kind_map.process_record(&record);
                     msc_map.process_record(&record);
@@ -201,22 +201,22 @@ impl Index {
         }
 
         let df = DataFrame::new(vec![
-            Series::new("remote", remote),
-            Series::new("path", path),
-            Series::new("idn", idn),
-            Series::new("kind", kind),
-            Series::new("msc", msc),
-            Series::new("lang_code", lang_code),
-            Series::new("lang_score", lang_score),
-            Series::new("lfreq", lfreq),
-            Series::new("alpha", alpha),
-            Series::new("words", words),
-            Series::new("avg_word_len", avg_word_len),
-            Series::new("ttr", ttr),
-            Series::new("size", size),
-            Series::new("strlen", strlen),
-            Series::new("mtime", mtime),
-            Series::new("hash", hash),
+            Column::new("remote".into(), remote),
+            Column::new("path".into(), path),
+            Column::new("idn".into(), idn),
+            Column::new("kind".into(), kind),
+            Column::new("msc".into(), msc),
+            Column::new("lang_code".into(), lang_code),
+            Column::new("lang_score".into(), lang_score),
+            Column::new("lfreq".into(), lfreq),
+            Column::new("alpha".into(), alpha),
+            Column::new("words".into(), words),
+            Column::new("avg_word_len".into(), avg_word_len),
+            Column::new("ttr".into(), ttr),
+            Column::new("size".into(), size),
+            Column::new("strlen".into(), strlen),
+            Column::new("mtime".into(), mtime),
+            Column::new("hash".into(), hash),
         ])?;
 
         let mut df: DataFrame =

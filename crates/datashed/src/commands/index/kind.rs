@@ -1,10 +1,7 @@
 use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
 
 use hashbrown::HashMap;
-use pica_matcher::RecordMatcher;
-use pica_path::PathExt;
-use pica_record::ByteRecord;
+use pica_record::prelude::*;
 
 use crate::document::DocumentKind;
 use crate::prelude::*;
@@ -53,7 +50,7 @@ impl KindMap {
                 let to = &refinement.target;
 
                 let matcher =
-                    RecordMatcher::from_str(filter).map_err(|_| {
+                    RecordMatcher::new(filter).map_err(|_| {
                         DatashedError::other(format!(
                             "Invalid record matcher '{filter}'"
                         ))
@@ -76,7 +73,7 @@ impl KindMap {
     pub(crate) fn process_record(&mut self, record: &ByteRecord) {
         self.matchers.iter().for_each(|matcher| {
             if matcher.is_match(record) {
-                let idn = record.idn().unwrap_or_default().to_string();
+                let idn = record.ppn().to_string();
                 let _ = self.refinements.insert(
                     (idn, matcher.from.clone()),
                     matcher.to.clone(),

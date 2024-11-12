@@ -26,10 +26,10 @@ pub(crate) enum DatasetError {
     ReadPica(#[from] pica_record::io::ReadPicaError),
 
     #[error(transparent)]
-    PicaMatcher(#[from] pica_matcher::ParseMatcherError),
+    PicaMatcher(#[from] pica_record::matcher::ParseMatcherError),
 
     #[error(transparent)]
-    PicaPath(#[from] pica_path::ParsePathError),
+    PicaPath(#[from] pica_record::path::ParsePathError),
 
     #[error(transparent)]
     Toml(#[from] toml::de::Error),

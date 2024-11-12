@@ -1,8 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
 use hashbrown::{HashMap, HashSet};
-use pica_path::{Path, PathExt};
-use pica_record::ByteRecord;
+use pica_record::prelude::*;
 
 use crate::prelude::*;
 
@@ -60,7 +59,10 @@ impl MscMap {
         );
 
         Ok(Self {
-            paths: paths.into_iter().map(Path::new).collect(),
+            paths: paths
+                .into_iter()
+                .filter_map(|path| Path::new(path).ok())
+                .collect(),
             allow,
             ..Default::default()
         })
@@ -70,13 +72,15 @@ impl MscMap {
         if let Some(msc) = self
             .paths
             .iter()
-            .flat_map(|path| record.path(path, &Default::default()))
+            .flat_map(|path| {
+                record
+                    .path(path, &Default::default())
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+            })
             .find(|msc| self.allow.get(&msc.to_string()).is_some())
         {
-            self.insert(
-                record.idn().unwrap().to_string(),
-                msc.to_string(),
-            );
+            self.insert(record.ppn().to_string(), msc.to_string());
         }
     }
 }

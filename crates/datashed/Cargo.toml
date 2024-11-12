@@ -26,9 +26,7 @@ jemallocator = { version = "0.5.4" }
 minus = { version = "5.6.1", features = ["search", "static_output"] }
 ndarray = { workspace = true }
 ndarray-stats = { workspace = true }
-pica-matcher = { workspace = true }
-pica-path = { workspace = true }
-pica-record = { workspace = true }
+pica-record = { workspace = true, features = ["serde", "unstable"] }
 polars = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }

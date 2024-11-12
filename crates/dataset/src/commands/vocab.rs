@@ -2,15 +2,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::{self, Write};
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use clap::Parser;
 use csv::WriterBuilder;
-use pica_matcher::{MatcherOptions, RecordMatcher};
-use pica_path::{Path, PathExt};
-use pica_record::io::{ReaderBuilder, RecordsIterator};
-use pica_record::ByteRecord;
-use pica_select::{Query, QueryExt};
+use pica_record::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -82,65 +77,31 @@ fn bbg_to_kind<T: AsRef<[u8]>>(bbg: T) -> DatasetResult<VocabKind> {
     })
 }
 
-macro_rules! pref_label {
-    ($record:expr, $query:expr, $parens:expr) => {{
-        let outcome: Vec<Vec<String>> = $record
-            .query(&Query::new($query), &Default::default())
-            .into_inner();
-
-        if outcome.len() > 0 {
-            let mut label = String::new();
-            if !outcome[0][0].is_empty() {
-                label.push_str(&outcome[0][0]);
-            }
-
-            if !outcome[0][1].is_empty() {
-                if $parens {
-                    label.push_str(&format!(" ({})", &outcome[0][1]));
-                } else {
-                    label.push_str(&format!(", {}", &outcome[0][1]));
-                }
-            }
-
-            if !label.is_empty() {
-                Some(label)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }};
-}
-
 impl TryFrom<&ByteRecord<'_>> for AuthorityRecord {
     type Error = DatasetError;
 
     fn try_from(record: &ByteRecord<'_>) -> Result<Self, Self::Error> {
-        use VocabKind::*;
-
-        let Some(idn) = record.idn().map(ToString::to_string) else {
-            return Err(DatasetError::other("unable to get idn"));
-        };
-
         let options = MatcherOptions::default();
+        let idn = record.ppn().to_string();
 
-        let values = record.path(&Path::new("002@.0"), &options);
-        let kind = match values.first() {
+        let kind = match record
+            .first(&Path::new("002@.0").unwrap(), &options)
+        {
             None => {
                 return Err(DatasetError::other("unable to get bbg"))
             }
             Some(bbg) => bbg_to_kind(bbg)?,
         };
 
-        let label = match kind {
-            Conference => pref_label!(record, "030A{a, g}", false),
-            CorporateBody => pref_label!(record, "029A{a, g}", false),
-            Person => pref_label!(record, "028A{a, d}", true),
-            PlaceOrGeoName => pref_label!(record, "065A{a, g}", false),
-            SubjectHeading => pref_label!(record, "041A{a, g}", false),
-            Work => pref_label!(record, "022A{a, g}", false),
-        };
+        let label = None;
+        // let label = match kind {
+        //     Conference => pref_label!(record, "030A{a, g}", false),
+        //     CorporateBody => pref_label!(record, "029A{a, g}",
+        // false),     Person => pref_label!(record, "028A{a,
+        // d}", true),     PlaceOrGeoName => pref_label!(record,
+        // "065A{a, g}", false),     SubjectHeading =>
+        // pref_label!(record, "041A{a, g}", false),     Work =>
+        // pref_label!(record, "022A{a, g}", false), };
 
         Ok(AuthorityRecord {
             uri: format!("https://d-nb.info/gnd/{idn}"),
@@ -173,7 +134,7 @@ impl Vocab {
             BTreeMap::new();
 
         let mut reader = ReaderBuilder::new().from_path(path)?;
-        let matcher = RecordMatcher::from_str(&config.vocab.filter)?;
+        let matcher = RecordMatcher::new(&config.vocab.filter)?;
         let options = MatcherOptions::new()
             .strsim_threshold(config.vocab.strsim_threshold)
             .case_ignore(config.vocab.case_ignore);
@@ -181,14 +142,14 @@ impl Vocab {
         let pbar =
             ProgressBarBuilder::new(PBAR_PROCESS, self.quiet).build();
 
-        while let Some(result) = reader.next() {
+        while let Some(result) = reader.next_byte_record() {
             pbar.inc(1);
 
             let Ok(record) = result else {
                 continue;
             };
 
-            let idn = record.idn().map(ToString::to_string).unwrap();
+            let idn = record.ppn().to_string();
             let mut seen = BTreeSet::new();
 
             if matcher.is_match(&record, &options) {
@@ -199,15 +160,14 @@ impl Vocab {
 
             for target in config.vocab.targets.iter() {
                 if let Some(ref matcher_str) = target.predicate {
-                    let matcher = RecordMatcher::from_str(matcher_str)?;
+                    let matcher = RecordMatcher::new(matcher_str)?;
                     if !matcher.is_match(&record, &options) {
                         continue;
                     }
                 }
 
                 record
-                    .path(&Path::new(&target.source), &options)
-                    .iter()
+                    .path(&Path::new(&target.source).unwrap(), &options)
                     .for_each(|idn| {
                         if !idn.is_empty() && !seen.contains(idn) {
                             seen.insert(idn.to_owned());

@@ -142,22 +142,24 @@ impl Vocab {
         };
 
         if let Some(path) = self.allow_list {
-            let allow_list =
-                read_filter_list(path)?.column("idn")?.clone();
-
             df = df
                 .lazy()
-                .filter(col("idn").is_in(lit(allow_list)))
+                .semi_join(
+                    read_filter_list(path)?.lazy(),
+                    col("idn"),
+                    col("idn"),
+                )
                 .collect()?;
         }
 
         if let Some(path) = self.deny_list {
-            let allow_list =
-                read_filter_list(path)?.column("idn")?.clone();
-
             df = df
                 .lazy()
-                .filter(col("idn").is_in(lit(allow_list)).not())
+                .semi_join(
+                    read_filter_list(path)?.lazy(),
+                    col("idn"),
+                    col("idn"),
+                )
                 .collect()?;
         }
 
@@ -275,9 +277,9 @@ impl Vocab {
             .with_order_descending_multi([true, true, false]);
 
         let mut df = DataFrame::new(vec![
-            Series::new("token", tokens),
-            Series::new("tf", freqs),
-            Series::new("df", docs),
+            Column::new("token".into(), tokens),
+            Column::new("tf".into(), freqs),
+            Column::new("df".into(), docs),
         ])?
         .sort(["tf", "df", "token"], sort_options)?;
 

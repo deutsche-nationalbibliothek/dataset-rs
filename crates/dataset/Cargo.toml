@@ -12,10 +12,7 @@ clap_complete = { workspace = true }
 csv = { workspace = true }
 humansize = { workspace = true }
 indicatif = { workspace = true }
-pica-matcher = { workspace = true }
-pica-path = { workspace = true }
-pica-record = { workspace = true }
-pica-select = { workspace = true }
+pica-record = { workspace = true, features = ["serde", "unstable"] }
 polars = { workspace = true }
 rayon = { workspace = true }
 reqwest = { workspace = true }

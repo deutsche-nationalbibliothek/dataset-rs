@@ -143,11 +143,11 @@ impl BibRefs {
         }
 
         let mut df = DataFrame::new(vec![
-            Series::new("path", path),
-            Series::new("type", r#type),
-            Series::new("value", value),
-            Series::new("start", start),
-            Series::new("end", end),
+            Column::new("path".into(), path),
+            Column::new("type".into(), r#type),
+            Column::new("value".into(), value),
+            Column::new("start".into(), start),
+            Column::new("end".into(), end),
         ])?;
 
         if let Some(path) = self.output {

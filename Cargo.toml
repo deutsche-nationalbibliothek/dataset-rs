@@ -10,61 +10,47 @@ members = [
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
 edition = "2021"
 license = "EUPL-1.2"
-rust-version = "1.80.0"
+rust-version = "1.82.0"
 
 [workspace.dependencies]
 anyhow = { version = "1.0" }
-approx = { version = "0.5.1" }
-bstr = { version = "1.9.1", features = ["unicode"] }
-clap_complete = { version = "4.5.12" }
-csv = { version = "1.3.0" }
-glob = { version = "0.3.1" }
-hashbrown = { version = "0.14.5" }
-humansize = { version = "2.1.3" }
-indicatif = { version = "0.17.8", features = ["rayon"] }
-ndarray = { version = "0.16.1" }
-ndarray-stats = { version = "0.6.0" }
-rayon = { version = "1.10.0" }
-regex = { version = "1.10.5" }
-reqwest = { version = "0.12.5", features = ["json", "blocking"] }
-semver = { version = "1.0.23", features = ["serde"] }
-serde = { version = "1.0.204", features = ["derive"] }
-thiserror = { version = "1.0" }
-tokio = { version = "1.39.2", features = ["full"] }
-toml = { version = "0.8.14", features = ["preserve_order"] }
+approx = { version = "0.5" }
+bstr = { version = "1.10", features = ["unicode"] }
+clap_complete = { version = "4.5" }
+csv = { version = "1.3" }
+glob = { version = "0.3" }
+hashbrown = { version = "0.15" }
+humansize = { version = "2.1" }
+indicatif = { version = "0.17", features = ["rayon"] }
+ndarray = { version = "0.16" }
+ndarray-stats = { version = "0.6" }
+rayon = { version = "1.10" }
+regex = { version = "1.11" }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+semver = { version = "1.0", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = { version = "2.0" }
+tokio = { version = "1.41", features = ["full"] }
+toml = { version = "0.8", features = ["preserve_order"] }
 
 [workspace.dependencies.clap]
 features = ["cargo", "derive", "wrap_help", "usage", "env"]
 version = "4.5"
 
 [workspace.dependencies.polars]
-version = "0.41.3"
+version = "0.44"
 features = [
     "dtype-full",
+    "semi_anti_join",
     "ipc",
     "is_in",
     "lazy",
     "sql",
 ]
 
-[workspace.dependencies.pica-path]
-git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
-features = ["serde"]
-version = "0.25.0"
-
-[workspace.dependencies.pica-matcher]
-git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
-features = ["serde"]
-version = "0.25.0"
-
 [workspace.dependencies.pica-record]
 git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
-version = "0.25.0"
-
-[workspace.dependencies.pica-select]
-git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
-version = "0.25.0"
-
+branch = "main"
 
 [profile.release]
 panic = "abort"

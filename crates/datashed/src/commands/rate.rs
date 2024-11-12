@@ -94,14 +94,16 @@ impl Rate {
 
         let mut index = IpcReader::new(Cursor::new(body)).finish()?;
         if let Some(path) = self.path {
-            let paths = CsvReader::new(File::open(path)?)
-                .finish()?
-                .column("path")?
-                .clone();
-
+            let paths = CsvReader::new(File::open(path)?).finish()?;
             index = index
+                .clone()
                 .lazy()
-                .filter(col("path").is_in(lit(paths)))
+                .join(
+                    paths.clone().lazy(),
+                    [col("path")],
+                    [col("path")],
+                    JoinArgs::new(JoinType::Semi),
+                )
                 .collect()?;
         }
 
@@ -121,10 +123,15 @@ impl Rate {
                 .filter(col("remote").eq(lit(remote)))
                 .collect()?;
 
-            let paths = state_df.column("path")?.clone();
             index = index
+                .clone()
                 .lazy()
-                .filter(col("path").is_in(lit(paths)).not())
+                .join(
+                    state_df.clone().lazy(),
+                    [col("path")],
+                    [col("path")],
+                    JoinArgs::new(JoinType::Anti),
+                )
                 .collect()?;
         }
 

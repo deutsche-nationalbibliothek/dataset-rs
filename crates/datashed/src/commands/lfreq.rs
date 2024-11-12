@@ -130,12 +130,12 @@ impl Lfreq {
         }
 
         let mut series = vec![];
-        series.push(Series::new("path", path));
-        series.push(Series::new("total", total));
+        series.push(Column::new("path".into(), path));
+        series.push(Column::new("total".into(), total));
 
         for c in alphabet {
-            series.push(Series::new(
-                &c.to_string(),
+            series.push(Column::new(
+                c.to_string().into(),
                 freqs.get(&c).unwrap(),
             ));
         }
