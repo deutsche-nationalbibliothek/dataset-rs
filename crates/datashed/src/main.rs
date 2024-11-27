@@ -48,6 +48,7 @@ async fn run(args: Args) -> DatashedResult<()> {
         Command::Clean(cmd) => cmd.execute(),
         Command::Completions(cmd) => cmd.execute(),
         Command::Config(cmd) => cmd.execute(),
+        Command::Grep(cmd) => cmd.execute(),
         Command::Index(cmd) => cmd.execute(),
         Command::Init(cmd) => cmd.execute(),
         Command::Lfreq(cmd) => cmd.execute(),
