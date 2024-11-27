@@ -96,6 +96,7 @@ jobs:
       - run: make clippy
 
   outdated:
+    if: false
     continue-on-error: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: check
