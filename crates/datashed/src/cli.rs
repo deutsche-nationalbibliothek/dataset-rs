@@ -27,6 +27,7 @@ pub(crate) enum Command {
     Clean(Clean),
     Completions(Completions),
     Config(Config),
+    Grep(Grep),
     Index(Index),
     #[clap(alias = "new")]
     Init(Init),
