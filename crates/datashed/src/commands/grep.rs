@@ -154,9 +154,14 @@ impl Grep {
             .collect()?;
 
         if let Some(path) = self.output {
-            let mut writer = IpcWriter::new(File::create(path)?)
-                .with_compression(Some(IpcCompression::ZSTD));
-            writer.finish(&mut df)?;
+            if path.ends_with(".csv") {
+                let mut writer = CsvWriter::new(File::create(path)?);
+                writer.finish(&mut df)?;
+            } else {
+                let mut writer = IpcWriter::new(File::create(path)?)
+                    .with_compression(Some(IpcCompression::ZSTD));
+                writer.finish(&mut df)?;
+            }
         } else {
             let mut writer = CsvWriter::new(stdout().lock());
             writer.finish(&mut df)?;
