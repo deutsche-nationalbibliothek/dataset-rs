@@ -38,13 +38,13 @@ features = ["cargo", "derive", "wrap_help", "usage", "env"]
 version = "4.5"
 
 [workspace.dependencies.polars]
-version = "0.44"
+version = "0.45"
 features = [
     "dtype-full",
-    "semi_anti_join",
     "ipc",
     "is_in",
     "lazy",
+    "semi_anti_join",
     "sql",
 ]
 
