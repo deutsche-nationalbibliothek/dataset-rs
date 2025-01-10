@@ -141,6 +141,7 @@ impl Rate {
             );
 
         let remote = index.column("remote")?.str()?;
+        let kind = index.column("kind")?.str()?;
         let path = index.column("path")?.str()?;
         let hash = index.column("hash")?.str()?;
         let idn = index.column("idn")?.str()?;
@@ -152,15 +153,21 @@ impl Rate {
 
         for idx in 0..len {
             let remote = remote.get(idx).unwrap();
+            let kind = kind.get(idx).unwrap();
             let filename = path.get(idx).unwrap();
             let hash = hash.get(idx).unwrap();
             let idn = idn.get(idx).unwrap();
 
             print!("\x1B[2J");
             let header = format!(
-                "Rating {}/{len} (path = {filename}, hash = {hash})",
-                idx + 1
+                "Rating {}/{} (path = {}, kind = {}, hash = {})",
+                idx + 1,
+                len,
+                filename,
+                kind,
+                hash
             );
+
             println!("{header}\n{0}\n", "~".repeat(header.len()));
             println!("Portal:\n\thttps://d-nb.info/{idn}\n",);
             println!(
