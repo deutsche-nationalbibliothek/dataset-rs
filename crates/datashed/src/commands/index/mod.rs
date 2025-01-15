@@ -1,9 +1,11 @@
 use std::fs::File;
 use std::io::stdout;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use clap::Parser;
 use glob::glob_with;
+use hashbrown::HashMap;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use kind::KindMap;
 use msc::MscMap;
@@ -46,6 +48,12 @@ pub(crate) struct Index {
     /// output (stdout).
     #[arg(long, conflicts_with = "output")]
     stdout: bool,
+
+    /// A list of kind refinements that take precedence over any filter
+    /// citeria. To be applied a document must match the `path` and the
+    /// `hash` value. The list must be given in CSV format.
+    #[arg(long, short = 'R', value_name = "filename")]
+    refinements: Option<PathBuf>,
 
     /// Write the index into `filename`. By default (if `--stdout`
     /// isn't set), the index will be written to `index.ipc` into
@@ -117,6 +125,30 @@ impl Index {
 
         let mut kind_map = KindMap::from_config(&config)?;
         let mut msc_map = MscMap::from_config(&config)?;
+        let mut refinements = HashMap::new();
+
+        if let Some(path) = self.refinements {
+            let df = CsvReadOptions::default()
+                .with_has_header(true)
+                .with_infer_schema_length(Some(0))
+                .try_into_reader_with_file_path(Some(path))?
+                .finish()?;
+
+            let path_ = df.column("path")?.str()?;
+            let hash_ = df.column("hash")?.str()?;
+            let kind_ = df.column("kind")?.str()?;
+
+            for i in 0..df.height() {
+                let v = DocumentKind::from_str(kind_.get(i).unwrap())
+                    .unwrap();
+                let k = (
+                    path_.get(i).unwrap().to_string(),
+                    hash_.get(i).unwrap().to_string(),
+                );
+
+                refinements.insert(k, v);
+            }
+        }
 
         if let Some(path) = self.path {
             let pbar =
@@ -177,14 +209,17 @@ impl Index {
         let mut hash: Vec<String> = vec![];
 
         for row in rows.into_iter() {
-            let new_kind = kind_map
-                .get(&(row.idn.clone(), row.kind.clone()))
-                .unwrap_or(&row.kind)
-                .to_owned();
+            let hash_ = row.hash[0..8].to_string();
+            let path_ = relpath(&row.path, base_dir);
+            let kind_ = refinements
+                .remove(&(path_.clone(), hash_.clone()))
+                .or(kind_map
+                    .remove(&(row.idn.clone(), row.kind.clone())))
+                .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
-            path.push(relpath(&row.path, base_dir));
-            kind.push(new_kind.to_string());
+            path.push(path_);
+            kind.push(kind_.to_string());
             msc.push(msc_map.get(&row.idn).cloned());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
@@ -196,7 +231,7 @@ impl Index {
             size.push(row.size);
             strlen.push(row.strlen);
             mtime.push(row.mtime);
-            hash.push(row.hash[0..8].to_string());
+            hash.push(hash_);
             idn.push(row.idn);
         }
 
