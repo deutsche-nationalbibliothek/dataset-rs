@@ -10,6 +10,7 @@ use polars::sql::SQLContext;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use regex::bytes::RegexBuilder;
 
+use crate::document::DocumentKind;
 use crate::prelude::*;
 
 const PBAR_PROCESS: &str =
@@ -54,6 +55,10 @@ pub(crate) struct Grep {
     #[arg(long, short = 'n', value_name = "NUM")]
     max_bytes: Option<u64>,
 
+    /// Whether to append to an existing file or not.
+    #[arg(long, short = 'a', requires = "output")]
+    append: bool,
+
     /// Write the sub-index into `filename`. By default output will be
     /// written in CSV format to the standard output (`stdout`).
     #[arg(short, long, value_name = "filename")]
@@ -62,6 +67,19 @@ pub(crate) struct Grep {
     /// An optional predicate to filter the document-set.
     #[arg(long = "where")]
     predicate: Option<String>,
+
+    /// Retrieve specific columns from the index.
+    #[arg(long, short = 'H')]
+    header: Option<String>,
+
+    /// If specified, overwrite the document type with the specified
+    /// value
+    #[arg(long, short = 'k')]
+    kind: Option<DocumentKind>,
+
+    /// Add a comment column at the end of the sub-index.
+    #[arg(long, short = 'c')]
+    comment: Option<String>,
 
     ///  A regular expression used for searching
     pattern: String,
@@ -118,6 +136,7 @@ impl Grep {
 
         let df = df.collect()?;
         let path = df.column("path")?.str()?;
+
         let pbar = ProgressBarBuilder::new(PBAR_PROCESS, self.quiet)
             .len(df.height() as u64)
             .build();
@@ -148,19 +167,53 @@ impl Grep {
         let paths =
             DataFrame::new(vec![Column::new("path".into(), &paths)])?;
 
-        let mut df = df
-            .lazy()
-            .semi_join(paths.lazy(), col("path"), col("path"))
-            .collect()?;
+        let mut df =
+            df.lazy().semi_join(paths.lazy(), col("path"), col("path"));
 
-        if let Some(path) = self.output {
+        if let Some(kind) = self.kind {
+            df = df.with_column(lit(kind.to_string()).alias("kind"));
+        }
+
+        if let Some(comment) = self.comment {
+            df = df.with_column(lit(comment).alias("comment"));
+        }
+
+        if let Some(header) = self.header {
+            let mut ctx = SQLContext::new();
+            ctx.register("df", df);
+
+            df = ctx.execute(&format!("SELECT {header} FROM df"))?
+        }
+
+        let mut df: DataFrame = df.collect()?;
+        if let Some(ref path) = self.output {
             match path.extension().and_then(OsStr::to_str) {
                 Some("csv") => {
+                    if self.append {
+                        let existing = CsvReadOptions::default()
+                            .with_has_header(true)
+                            .with_infer_schema_length(Some(0))
+                            .try_into_reader_with_file_path(Some(
+                                path.into(),
+                            ))?
+                            .finish()?;
+
+                        df = existing.vstack(&df)?;
+                    }
+
                     let mut writer =
                         CsvWriter::new(File::create(path)?);
                     writer.finish(&mut df)?;
                 }
                 _ => {
+                    if self.append {
+                        let existing =
+                            IpcReader::new(File::open(path)?)
+                                .memory_mapped(None)
+                                .finish()?;
+                        df = existing.vstack(&df)?;
+                    }
+
                     let mut writer =
                         IpcWriter::new(File::create(path)?)
                             .with_compression(Some(

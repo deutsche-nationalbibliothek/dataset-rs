@@ -53,7 +53,7 @@ pub(crate) struct Index {
     /// citeria. To be applied a document must match the `path` and the
     /// `hash` value. The list must be given in CSV format.
     #[arg(long, short = 'R', value_name = "filename")]
-    refinements: Option<PathBuf>,
+    refinements: Vec<PathBuf>,
 
     /// Write the index into `filename`. By default (if `--stdout`
     /// isn't set), the index will be written to `index.ipc` into
@@ -127,11 +127,11 @@ impl Index {
         let mut msc_map = MscMap::from_config(&config)?;
         let mut refinements = HashMap::new();
 
-        if let Some(path) = self.refinements {
+        for path in self.refinements.iter() {
             let df = CsvReadOptions::default()
                 .with_has_header(true)
                 .with_infer_schema_length(Some(0))
-                .try_into_reader_with_file_path(Some(path))?
+                .try_into_reader_with_file_path(Some(path.into()))?
                 .finish()?;
 
             let path_ = df.column("path")?.str()?;
