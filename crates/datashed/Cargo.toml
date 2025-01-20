@@ -15,7 +15,7 @@ clap_complete = { workspace = true }
 comfy-table = { version = "7.1.1" }
 csv = { workspace = true }
 dialoguer = { version = "0.11.0" }
-directories = { version = "5.0.1" }
+directories = { version = "6.0" }
 env_logger = { version = "0.11.5" }
 flate2 = { version = "1.0.30" }
 glob = { workspace = true }
