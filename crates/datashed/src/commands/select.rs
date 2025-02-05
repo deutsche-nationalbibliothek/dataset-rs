@@ -79,12 +79,12 @@ fn read_filter_list(path: PathBuf) -> DatashedResult<DataFrame> {
 
 impl Select {
     pub(crate) fn execute(self) -> DatashedResult<()> {
-        let datashed = Datashed::discover()?;
         let index = if let Some(path) = self.index {
             IpcReader::new(File::open(path)?)
                 .memory_mapped(None)
                 .finish()?
         } else {
+            let datashed = Datashed::discover()?;
             datashed.index()?
         };
 
