@@ -23,7 +23,7 @@ pub(crate) struct Select {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
-    /// Ingore the datashed's index and use `filename` instead.
+    /// Ignore the datashed's index and use `filename` instead.
     #[arg(long, short = 'I')]
     index: Option<PathBuf>,
 
