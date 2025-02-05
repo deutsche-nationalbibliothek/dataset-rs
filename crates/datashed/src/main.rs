@@ -54,6 +54,7 @@ async fn run(args: Args) -> DatashedResult<()> {
         Command::Lfreq(cmd) => cmd.execute(),
         Command::Restore(cmd) => cmd.execute(),
         Command::Rate(cmd) => cmd.execute().await,
+        Command::Select(cmd) => cmd.execute(),
         Command::Serve(cmd) => cmd.execute().await,
         Command::Status(cmd) => cmd.execute(),
         Command::Summary(cmd) => cmd.execute(),

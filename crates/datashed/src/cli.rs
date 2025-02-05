@@ -34,6 +34,7 @@ pub(crate) enum Command {
     Lfreq(Lfreq),
     Rate(Rate),
     Restore(Restore),
+    Select(Select),
     Serve(Serve),
     Status(Status),
     Summary(Summary),
