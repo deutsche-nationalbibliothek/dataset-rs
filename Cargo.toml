@@ -38,7 +38,7 @@ features = ["cargo", "derive", "wrap_help", "usage", "env"]
 version = "4.5"
 
 [workspace.dependencies.polars]
-version = "0.45"
+version = "0.46"
 features = [
     "dtype-full",
     "ipc",
