@@ -50,7 +50,7 @@ features = [
 
 [workspace.dependencies.pica-record]
 git = "https://github.com/deutsche-nationalbibliothek/pica-rs.git"
-branch = "main"
+tag = "v1.0.1"
 
 [profile.release]
 panic = "abort"
