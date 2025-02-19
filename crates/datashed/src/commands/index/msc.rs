@@ -80,7 +80,10 @@ impl MscMap {
             })
             .find(|msc| self.allow.get(&msc.to_string()).is_some())
         {
-            self.insert(record.ppn().to_string(), msc.to_string());
+            self.insert(
+                record.ppn().unwrap().to_string(),
+                msc.to_string(),
+            );
         }
     }
 }

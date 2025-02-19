@@ -73,7 +73,7 @@ impl KindMap {
     pub(crate) fn process_record(&mut self, record: &ByteRecord) {
         for matcher in self.matchers.iter() {
             if matcher.is_match(record) {
-                let idn = record.ppn().to_string();
+                let idn = record.ppn().unwrap().to_string();
                 let _ = self.refinements.insert(
                     (idn, matcher.from.clone()),
                     matcher.to.clone(),

@@ -82,7 +82,7 @@ impl TryFrom<&ByteRecord<'_>> for AuthorityRecord {
 
     fn try_from(record: &ByteRecord<'_>) -> Result<Self, Self::Error> {
         let options = MatcherOptions::default();
-        let idn = record.ppn().to_string();
+        let idn = record.ppn().unwrap().to_string();
 
         let kind = match record
             .first(&Path::new("002@.0").unwrap(), &options)
@@ -149,7 +149,7 @@ impl Vocab {
                 continue;
             };
 
-            let idn = record.ppn().to_string();
+            let idn = record.ppn().unwrap().to_string();
             let mut seen = BTreeSet::new();
 
             if matcher.is_match(&record, &options) {
