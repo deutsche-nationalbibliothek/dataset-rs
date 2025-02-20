@@ -31,6 +31,10 @@ pub(crate) struct Grep {
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
 
+    /// Ignore the datashed's index and use `filename` instead.
+    #[arg(long, short = 'I')]
+    index: Option<PathBuf>,
+
     /// Ignore documents which are *not* explicitly listed in the given
     /// allow-lists.
     #[arg(long = "allow-list", short = 'A')]
@@ -102,7 +106,15 @@ impl Grep {
     pub(crate) fn execute(self) -> DatashedResult<()> {
         let datashed = Datashed::discover()?;
         let base_dir = datashed.base_dir();
-        let index = datashed.index()?;
+
+        let index = if let Some(path) = self.index {
+            IpcReader::new(File::open(path)?)
+                .memory_mapped(None)
+                .finish()?
+        } else {
+            let datashed = Datashed::discover()?;
+            datashed.index()?
+        };
 
         let re = RegexBuilder::new(&self.pattern)
             .case_insensitive(self.case_ignore)
