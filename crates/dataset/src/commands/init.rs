@@ -1,5 +1,5 @@
 use std::ffi::OsStr;
-use std::fs::{read_to_string, OpenOptions};
+use std::fs::{OpenOptions, read_to_string};
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Stdio;

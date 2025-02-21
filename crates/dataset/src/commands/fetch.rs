@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{stdout, Cursor};
+use std::io::{Cursor, stdout};
 use std::path::PathBuf;
 use std::time::Duration;
 

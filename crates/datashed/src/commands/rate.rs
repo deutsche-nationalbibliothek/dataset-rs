@@ -3,7 +3,7 @@ use std::io::Cursor;
 use std::path::PathBuf;
 
 use dialoguer::{Confirm, Input, Password, Select};
-use minus::{page_all, ExitStrategy, Pager};
+use minus::{ExitStrategy, Pager, page_all};
 use polars::io::SerReader;
 use polars::prelude::*;
 use reqwest::{Client, StatusCode, Url};

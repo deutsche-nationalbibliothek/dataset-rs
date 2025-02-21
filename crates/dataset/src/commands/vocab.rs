@@ -88,7 +88,7 @@ impl TryFrom<&ByteRecord<'_>> for AuthorityRecord {
             .first(&Path::new("002@.0").unwrap(), &options)
         {
             None => {
-                return Err(DatasetError::other("unable to get bbg"))
+                return Err(DatasetError::other("unable to get bbg"));
             }
             Some(bbg) => bbg_to_kind(bbg)?,
         };

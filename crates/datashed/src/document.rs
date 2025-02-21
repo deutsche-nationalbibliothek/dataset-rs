@@ -14,7 +14,7 @@ use sha2::{Digest, Sha256};
 
 use crate::error::DatashedResult;
 use crate::lfreq::{lfreq_eng, lfreq_ger};
-use crate::prelude::{bail, DatashedError};
+use crate::prelude::{DatashedError, bail};
 
 fn language_detector() -> &'static LanguageDetector {
     static DETECTOR: OnceLock<LanguageDetector> = OnceLock::new();
@@ -247,11 +247,7 @@ impl Document {
         let word_lens =
             self.buf.words().map(|word| word.len() as f32).sum::<f32>();
 
-        if total > 0.0 {
-            word_lens / total
-        } else {
-            0.0
-        }
+        if total > 0.0 { word_lens / total } else { 0.0 }
     }
 
     /// Returns the ratio of alphabetic characters to the total number
@@ -321,8 +317,8 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
-    use approx::assert_abs_diff_eq;
     use DocumentKind::*;
+    use approx::assert_abs_diff_eq;
 
     use super::*;
 
@@ -405,7 +401,10 @@ mod tests {
     #[test]
     fn document_hash() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.hash(), "b47cc0f104b62d4c7c30bcd68fd8e67613e287dc4ad8c310ef10cbadea9c4380");
+        assert_eq!(
+            doc.hash(),
+            "b47cc0f104b62d4c7c30bcd68fd8e67613e287dc4ad8c310ef10cbadea9c4380"
+        );
         Ok(())
     }
 

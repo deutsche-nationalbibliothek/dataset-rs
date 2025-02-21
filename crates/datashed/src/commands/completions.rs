@@ -1,9 +1,9 @@
 use std::fs::File;
-use std::io::{stdout, Write};
+use std::io::{Write, stdout};
 use std::path::PathBuf;
 
 use clap::CommandFactory;
-use clap_complete::{generate, Shell};
+use clap_complete::{Shell, generate};
 
 use crate::cli::Args;
 use crate::prelude::*;

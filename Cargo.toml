@@ -1,3 +1,5 @@
+cargo-features = ["edition2024"]
+
 [workspace]
 resolver = "2"
 default-members = ["crates/dataset"]
@@ -8,9 +10,9 @@ members = [
 
 [workspace.package]
 authors = ["Nico Wagner <n.wagner@dnb.de>"]
-edition = "2021"
+edition = "2024"
 license = "EUPL-1.2"
-rust-version = "1.83.0"
+rust-version = "1.85.0"
 
 [workspace.dependencies]
 anyhow = { version = "1.0" }

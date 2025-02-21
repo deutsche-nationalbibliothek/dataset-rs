@@ -1,16 +1,15 @@
 use std::fs::File;
-use std::io::{stdout, Write};
+use std::io::{Write, stdout};
 use std::path::PathBuf;
 
 use clap::Parser;
-use flate2::write::GzEncoder;
 use flate2::Compression;
+use flate2::write::GzEncoder;
 use indicatif::ProgressIterator;
 
 use crate::prelude::*;
 
-const PBAR_ARCHIVE: &str =
-    "Archive documents: {human_pos} ({percent}%) | \
+const PBAR_ARCHIVE: &str = "Archive documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 /// Create an archive (tar.gz) of the index, config and all documents.

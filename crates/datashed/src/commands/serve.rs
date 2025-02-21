@@ -7,7 +7,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use actix_files::{Files, NamedFile};
 use actix_web::middleware::Logger;
 use actix_web::{
-    get, guard, head, post, web, App, HttpResponse, HttpServer,
+    App, HttpResponse, HttpServer, get, guard, head, post, web,
 };
 use csv::{Writer, WriterBuilder};
 use serde::Deserialize;
@@ -85,7 +85,7 @@ async fn ratings(
         "C" | "C-" | "P" | "P-" | "P+" | "I" => req.rating.clone(),
         rating => {
             return HttpResponse::BadRequest()
-                .body(format!("invalid rating '{rating}'!"))
+                .body(format!("invalid rating '{rating}'!"));
         }
     };
 

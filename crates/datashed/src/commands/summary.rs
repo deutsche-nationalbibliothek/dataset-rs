@@ -2,11 +2,11 @@ use std::fs::{self};
 use std::path::PathBuf;
 
 use clap::Parser;
-use comfy_table::{presets, Row, Table};
-use humansize::{make_format, BINARY};
+use comfy_table::{Row, Table, presets};
+use humansize::{BINARY, make_format};
 use polars::lazy::dsl::col;
 use polars::prelude::{DataType, IntoLazy, SortMultipleOptions};
-use serde_json::{json, Map};
+use serde_json::{Map, json};
 
 use crate::prelude::*;
 
