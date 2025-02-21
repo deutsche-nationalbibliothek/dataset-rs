@@ -1,8 +1,8 @@
-use std::fs::{remove_file, File};
+use std::fs::{File, remove_file};
 
 use clap::Parser;
-use dialoguer::theme::ColorfulTheme;
 use dialoguer::Confirm;
+use dialoguer::theme::ColorfulTheme;
 use glob::glob_with;
 use hashbrown::HashSet;
 use indicatif::ProgressIterator;

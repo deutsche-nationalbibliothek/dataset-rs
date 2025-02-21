@@ -5,7 +5,7 @@ use std::{env, fs};
 use polars::prelude::*;
 
 use crate::config::Config;
-use crate::error::{bail, DatashedError, DatashedResult};
+use crate::error::{DatashedError, DatashedResult, bail};
 
 pub(crate) struct Datashed {
     /// The root directory of the datashed.

@@ -1,5 +1,5 @@
 use std::ffi::OsStr;
-use std::fs::{read_to_string, File};
+use std::fs::{File, read_to_string};
 use std::io::stdout;
 use std::path::PathBuf;
 
@@ -14,8 +14,7 @@ use unicode_categories::UnicodeCategories;
 
 use crate::prelude::*;
 
-const PBAR_PROCESS: &str =
-    "Processing documents: {human_pos} ({percent}%) | \
+const PBAR_PROCESS: &str = "Processing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 #[derive(Debug, Clone, PartialEq, Eq, ValueEnum)]

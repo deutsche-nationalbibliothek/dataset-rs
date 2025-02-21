@@ -12,8 +12,7 @@ use unicode_normalization::UnicodeNormalization;
 
 use crate::prelude::*;
 
-const PBAR_PROCESS: &str =
-    "Processing documents: {human_pos} ({percent}%) | \
+const PBAR_PROCESS: &str = "Processing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 /// Create a frequency table over a fixed alphabet.

@@ -1,16 +1,15 @@
 use std::env::current_dir;
 
 use clap::Parser;
-use comfy_table::{presets, Row, Table};
-use glob::{glob_with, MatchOptions};
+use comfy_table::{Row, Table, presets};
+use glob::{MatchOptions, glob_with};
 use hashbrown::HashSet;
 use polars::prelude::DataType;
 
 use crate::prelude::*;
 use crate::utils::relpath;
 
-const PBAR_COLLECT: &str =
-    "Collecting documents: {human_pos} ({percent}%) | \
+const PBAR_COLLECT: &str = "Collecting documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 /// Show the datashed status

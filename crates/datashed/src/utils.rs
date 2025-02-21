@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use directories::ProjectDirs;
 
-use crate::error::{bail, DatashedError, DatashedResult};
+use crate::error::{DatashedError, DatashedResult, bail};
 
 #[inline]
 pub(crate) fn relpath<P1, P2>(path: P1, prefix: P2) -> String

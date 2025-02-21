@@ -13,8 +13,7 @@ use regex::bytes::RegexBuilder;
 use crate::document::DocumentKind;
 use crate::prelude::*;
 
-const PBAR_PROCESS: &str =
-    "Processing documents: {human_pos} ({percent}%) | \
+const PBAR_PROCESS: &str = "Processing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 /// Find documents matching a pattern.

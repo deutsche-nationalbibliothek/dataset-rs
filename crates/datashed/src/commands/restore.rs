@@ -1,4 +1,4 @@
-use std::fs::{create_dir, File};
+use std::fs::{File, create_dir};
 use std::path::PathBuf;
 
 use clap::Parser;

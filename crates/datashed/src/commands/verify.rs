@@ -7,8 +7,7 @@ use rayon::prelude::*;
 
 use crate::prelude::*;
 
-const PBAR_VERIFY: &str =
-    "Verifying documents: {human_pos} ({percent}%) | \
+const PBAR_VERIFY: &str = "Verifying documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 #[derive(Clone, Debug, PartialEq, PartialOrd, Default, ValueEnum)]

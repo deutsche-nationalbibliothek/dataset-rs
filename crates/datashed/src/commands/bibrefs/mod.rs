@@ -54,8 +54,7 @@ trait Matcher: Sync {
     fn matches(&self, content: &[u8]) -> Vec<Reference>;
 }
 
-const PBAR_PROCESS: &str =
-    "Processing documents: {human_pos} ({percent}%) | \
+const PBAR_PROCESS: &str = "Processing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 /// Verify that the inventory of documents matches the index.

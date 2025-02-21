@@ -23,8 +23,7 @@ const PBAR_METADATA: &str = "Collecting metadata: {human_pos} | \
 const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
-const PBAR_INDEX: &str =
-    "Indexing documents: {human_pos} ({percent}%) | \
+const PBAR_INDEX: &str = "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 mod kind;
