@@ -144,7 +144,7 @@ impl Rate {
         let kind = index.column("kind")?.str()?;
         let path = index.column("path")?.str()?;
         let hash = index.column("hash")?.str()?;
-        let idn = index.column("idn")?.str()?;
+        let ppn = index.column("ppn").or(index.column("idn"))?.str()?;
         let len = index.height();
 
         let mut ratings_url = base_uri.clone();
@@ -156,7 +156,7 @@ impl Rate {
             let kind = kind.get(idx).unwrap();
             let filename = path.get(idx).unwrap();
             let hash = hash.get(idx).unwrap();
-            let idn = idn.get(idx).unwrap();
+            let ppn = ppn.get(idx).unwrap();
 
             print!("\x1B[2J");
             let header = format!(
@@ -169,11 +169,11 @@ impl Rate {
             );
 
             println!("{header}\n{0}\n", "~".repeat(header.len()));
-            println!("Portal:\n\thttps://d-nb.info/{idn}\n",);
+            println!("Portal:\n\thttps://d-nb.info/{ppn}\n",);
             println!(
                 "Record Browser:\n\t\
                 http://etc.dnb.de/pica-record-browser/show.xhtml\
-                ?src=prsx&idn={idn}\n"
+                ?src=prsx&idn={ppn}\n"
             );
 
             let stop = Confirm::new()
