@@ -69,7 +69,7 @@ jobs:
       matrix:
         target:
           - { os: ubuntu-latest, toolchain: stable, triple: x86_64-unknown-linux-gnu }
-          - { os: ubuntu-latest, toolchain: 1.83.0, triple: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, toolchain: 1.85.0, triple: x86_64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: beta, triple: x86_64-unknown-linux-gnu }
           - { os: ubuntu-latest, toolchain: nightly, triple: x86_64-unknown-linux-gnu }
           - { os: macos-latest, toolchain: stable, triple: x86_64-apple-darwin }
