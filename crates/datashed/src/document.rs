@@ -114,7 +114,7 @@ impl Document {
         })
     }
 
-    pub(crate) fn idn(&self) -> String {
+    pub(crate) fn ppn(&self) -> String {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
     }
 
@@ -357,9 +357,9 @@ mod tests {
     }
 
     #[test]
-    fn document_idn() -> TestResult {
+    fn document_ppn() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.idn(), "fox");
+        assert_eq!(doc.ppn(), "fox");
         Ok(())
     }
 

@@ -82,7 +82,7 @@ impl TryFrom<&ByteRecord<'_>> for AuthorityRecord {
 
     fn try_from(record: &ByteRecord<'_>) -> Result<Self, Self::Error> {
         let options = MatcherOptions::default();
-        let idn = record.ppn().unwrap().to_string();
+        let ppn = record.ppn().unwrap().to_string();
 
         let kind = match record
             .first(&Path::new("002@.0").unwrap(), &options)
@@ -104,8 +104,8 @@ impl TryFrom<&ByteRecord<'_>> for AuthorityRecord {
         // pref_label!(record, "022A{a, g}", false), };
 
         Ok(AuthorityRecord {
-            uri: format!("https://d-nb.info/gnd/{idn}"),
-            label: label.unwrap_or(format!("IDN : {idn}")),
+            uri: format!("https://d-nb.info/gnd/{ppn}"),
+            label: label.unwrap_or(format!("PPN: {ppn}")),
             notation: "".into(),
             kind,
         })
@@ -149,12 +149,12 @@ impl Vocab {
                 continue;
             };
 
-            let idn = record.ppn().unwrap().to_string();
+            let ppn = record.ppn().unwrap().to_string();
             let mut seen = BTreeSet::new();
 
             if matcher.is_match(&record, &options) {
                 let record = AuthorityRecord::try_from(&record)?;
-                vocab.insert(idn, record);
+                vocab.insert(ppn, record);
                 continue;
             }
 
@@ -168,11 +168,11 @@ impl Vocab {
 
                 record
                     .path(&Path::new(&target.source).unwrap(), &options)
-                    .for_each(|idn| {
-                        if !idn.is_empty() && !seen.contains(idn) {
-                            seen.insert(idn.to_owned());
+                    .for_each(|ppn| {
+                        if !ppn.is_empty() && !seen.contains(ppn) {
+                            seen.insert(ppn.to_owned());
                             freqs
-                                .entry(idn.to_string())
+                                .entry(ppn.to_string())
                                 .and_modify(|value| *value += 1)
                                 .or_insert(1);
                         }
@@ -191,11 +191,11 @@ impl Vocab {
         };
 
         let mut writer = WriterBuilder::new().from_writer(inner);
-        for (idn, record) in vocab.into_iter() {
+        for (ppn, record) in vocab.into_iter() {
             if let Some(KindConfig { threshold }) =
                 config.vocab.kinds.get(&record.kind)
             {
-                let count = freqs.remove(&idn).unwrap_or(0);
+                let count = freqs.remove(&ppn).unwrap_or(0);
                 if count < *threshold {
                     continue;
                 }

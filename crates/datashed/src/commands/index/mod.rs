@@ -67,7 +67,7 @@ pub(crate) struct Index {
 #[derive(Debug, Default)]
 struct Row {
     path: PathBuf,
-    idn: String,
+    ppn: String,
     kind: DocumentKind,
     msc: Option<String>,
     lang_code: Option<String>,
@@ -97,7 +97,7 @@ impl TryFrom<&PathBuf> for Row {
 
         Ok(Row {
             path: path.into(),
-            idn: doc.idn(),
+            ppn: doc.ppn(),
             kind: doc.kind(),
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
@@ -192,7 +192,7 @@ impl Index {
 
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
-        let mut idn: Vec<String> = vec![];
+        let mut ppn: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
         let mut msc: Vec<Option<String>> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
@@ -213,13 +213,13 @@ impl Index {
             let kind_ = refinements
                 .remove(&(path_.clone(), hash_.clone()))
                 .or(kind_map
-                    .remove(&(row.idn.clone(), row.kind.clone())))
+                    .remove(&(row.ppn.clone(), row.kind.clone())))
                 .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
             path.push(path_);
             kind.push(kind_.to_string());
-            msc.push(msc_map.get(&row.idn).cloned());
+            msc.push(msc_map.get(&row.ppn).cloned());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
@@ -231,13 +231,13 @@ impl Index {
             strlen.push(row.strlen);
             mtime.push(row.mtime);
             hash.push(hash_);
-            idn.push(row.idn);
+            ppn.push(row.ppn);
         }
 
         let df = DataFrame::new(vec![
             Column::new("remote".into(), remote),
             Column::new("path".into(), path),
-            Column::new("idn".into(), idn),
+            Column::new("ppn".into(), ppn),
             Column::new("kind".into(), kind),
             Column::new("msc".into(), msc),
             Column::new("lang_code".into(), lang_code),

@@ -50,7 +50,11 @@ pub(crate) struct Select {
     #[arg(long = "where")]
     predicate: Option<String>,
 
-    #[arg(long, default_value = "idn", conflicts_with_all = ["left_on", "right_on"])]
+    #[arg(
+        long,
+        default_value = "ppn",
+        conflicts_with_all = ["left_on", "right_on"],
+    )]
     on: String,
 
     #[arg(long, requires = "right_on", conflicts_with = "on")]

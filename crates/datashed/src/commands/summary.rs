@@ -38,7 +38,7 @@ impl Summary {
             .lazy()
             .group_by([col("remote"), col("kind")])
             .agg([
-                col("idn").count().alias("docs"),
+                col("ppn").count().alias("docs"),
                 col("size").sum(),
                 col("hash").n_unique().alias("unique"),
             ])

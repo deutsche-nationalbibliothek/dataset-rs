@@ -145,8 +145,8 @@ impl Vocab {
                 .lazy()
                 .semi_join(
                     read_filter_list(path)?.lazy(),
-                    col("idn"),
-                    col("idn"),
+                    col("ppn"),
+                    col("ppn"),
                 )
                 .collect()?;
         }
@@ -156,8 +156,8 @@ impl Vocab {
                 .lazy()
                 .semi_join(
                     read_filter_list(path)?.lazy(),
-                    col("idn"),
-                    col("idn"),
+                    col("ppn"),
+                    col("ppn"),
                 )
                 .collect()?;
         }
