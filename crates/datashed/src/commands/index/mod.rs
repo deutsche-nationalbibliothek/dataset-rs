@@ -209,6 +209,7 @@ impl Index {
 
         for row in rows.into_iter() {
             let path_ = relpath(&row.path, base_dir);
+            let hash_ = row.hash[0..8].to_string();
             let kind_ = refinements
                 .remove(&(path_.clone(), hash_.clone()))
                 .or(kind_map
@@ -216,7 +217,7 @@ impl Index {
                 .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
-            hash.push(row.hash[0..8].to_string());
+            hash.push(hash_);
             path.push(path_);
             kind.push(kind_.to_string());
             msc.push(msc_map.get(&row.ppn).cloned());
