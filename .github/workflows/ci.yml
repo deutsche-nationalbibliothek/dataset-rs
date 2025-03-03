@@ -96,15 +96,14 @@ jobs:
       - run: make clippy
 
   outdated:
-    if: false
     continue-on-error: ${{ github.ref != 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs: check
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: dtolnay/install@cargo-outdated
+      - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
+      - run: cargo install --git https://github.com/kbknapp/cargo-outdated.git --branch master
       - run: cargo update
       - run: cargo outdated --workspace --root-deps-only --exit-code 1
 
