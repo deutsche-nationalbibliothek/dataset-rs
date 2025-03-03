@@ -67,6 +67,7 @@ pub(crate) struct Index {
 #[derive(Debug, Default)]
 struct Row {
     path: PathBuf,
+    hash: String,
     ppn: String,
     kind: DocumentKind,
     msc: Option<String>,
@@ -80,7 +81,6 @@ struct Row {
     size: u64,
     strlen: u64,
     mtime: u64,
-    hash: String,
 }
 
 impl TryFrom<&PathBuf> for Row {
@@ -97,6 +97,7 @@ impl TryFrom<&PathBuf> for Row {
 
         Ok(Row {
             path: path.into(),
+            hash: doc.hash(),
             ppn: doc.ppn(),
             kind: doc.kind(),
             lfreq: doc.lfreq(),
@@ -107,7 +108,6 @@ impl TryFrom<&PathBuf> for Row {
             size: doc.size(),
             strlen: doc.strlen(),
             mtime: doc.modified(),
-            hash: doc.hash(),
             lang_code,
             lang_score,
             ..Default::default()
@@ -192,6 +192,7 @@ impl Index {
 
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
+        let mut hash: Vec<String> = vec![];
         let mut ppn: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
         let mut msc: Vec<Option<String>> = vec![];
@@ -205,10 +206,8 @@ impl Index {
         let mut size: Vec<u64> = vec![];
         let mut strlen: Vec<u64> = vec![];
         let mut mtime: Vec<u64> = vec![];
-        let mut hash: Vec<String> = vec![];
 
         for row in rows.into_iter() {
-            let hash_ = row.hash[0..8].to_string();
             let path_ = relpath(&row.path, base_dir);
             let kind_ = refinements
                 .remove(&(path_.clone(), hash_.clone()))
@@ -217,6 +216,7 @@ impl Index {
                 .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
+            hash.push(row.hash[0..8].to_string());
             path.push(path_);
             kind.push(kind_.to_string());
             msc.push(msc_map.get(&row.ppn).cloned());
@@ -230,13 +230,13 @@ impl Index {
             size.push(row.size);
             strlen.push(row.strlen);
             mtime.push(row.mtime);
-            hash.push(hash_);
             ppn.push(row.ppn);
         }
 
         let df = DataFrame::new(vec![
             Column::new("remote".into(), remote),
             Column::new("path".into(), path),
+            Column::new("hash".into(), hash),
             Column::new("ppn".into(), ppn),
             Column::new("kind".into(), kind),
             Column::new("msc".into(), msc),
@@ -250,7 +250,6 @@ impl Index {
             Column::new("size".into(), size),
             Column::new("strlen".into(), strlen),
             Column::new("mtime".into(), mtime),
-            Column::new("hash".into(), hash),
         ])?;
 
         let mut df: DataFrame =
