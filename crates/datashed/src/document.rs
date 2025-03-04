@@ -366,7 +366,7 @@ mod tests {
     #[test]
     fn document_ppn() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.ppn(), "fox");
+        assert_eq!(doc.file_stem(), "fox");
         Ok(())
     }
 
