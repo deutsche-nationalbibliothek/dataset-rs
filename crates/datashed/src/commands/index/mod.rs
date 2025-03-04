@@ -68,7 +68,7 @@ pub(crate) struct Index {
 struct Row {
     path: PathBuf,
     hash: String,
-    ppn: String,
+    doc_id: String,
     kind: DocumentKind,
     msc: Option<String>,
     lang_code: Option<String>,
@@ -98,7 +98,7 @@ impl TryFrom<&PathBuf> for Row {
         Ok(Row {
             path: path.into(),
             hash: doc.hash(),
-            ppn: doc.ppn(),
+            doc_id: doc.file_stem(),
             kind: doc.kind(),
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
@@ -193,7 +193,7 @@ impl Index {
         let mut remote: Vec<&str> = vec![];
         let mut path: Vec<String> = vec![];
         let mut hash: Vec<String> = vec![];
-        let mut ppn: Vec<String> = vec![];
+        let mut doc_id: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
         let mut msc: Vec<Option<String>> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
@@ -213,14 +213,14 @@ impl Index {
             let kind_ = refinements
                 .remove(&(path_.clone(), hash_.clone()))
                 .or(kind_map
-                    .remove(&(row.ppn.clone(), row.kind.clone())))
+                    .remove(&(row.doc_id.clone(), row.kind.clone())))
                 .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
             hash.push(hash_);
             path.push(path_);
             kind.push(kind_.to_string());
-            msc.push(msc_map.get(&row.ppn).cloned());
+            msc.push(msc_map.get(&row.doc_id).cloned());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
@@ -231,14 +231,14 @@ impl Index {
             size.push(row.size);
             strlen.push(row.strlen);
             mtime.push(row.mtime);
-            ppn.push(row.ppn);
+            doc_id.push(row.doc_id);
         }
 
         let df = DataFrame::new(vec![
             Column::new("remote".into(), remote),
             Column::new("path".into(), path),
             Column::new("hash".into(), hash),
-            Column::new("ppn".into(), ppn),
+            Column::new("doc_id".into(), doc_id),
             Column::new("kind".into(), kind),
             Column::new("msc".into(), msc),
             Column::new("lang_code".into(), lang_code),

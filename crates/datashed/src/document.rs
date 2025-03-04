@@ -114,7 +114,14 @@ impl Document {
         })
     }
 
-    pub(crate) fn ppn(&self) -> String {
+    /// Returns the filename without the file extension.
+    ///
+    /// # Panic
+    ///
+    /// This function panics if either the filename can't be extracted
+    /// or the filename can't be converted to a String.
+    #[inline(always)]
+    pub(crate) fn file_stem(&self) -> String {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
     }
 
