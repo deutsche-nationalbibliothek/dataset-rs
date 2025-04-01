@@ -7,8 +7,8 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-actix-files = { version = "0.6.6" }
-actix-web = { version = "4.9" }
+actix-files = { version = "0.6" }
+actix-web = { version = "4.10" }
 bstr = { workspace = true }
 clap = { workspace = true }
 clap_complete = { workspace = true }
