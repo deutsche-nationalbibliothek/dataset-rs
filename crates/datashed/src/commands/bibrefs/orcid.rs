@@ -28,7 +28,7 @@ impl Matcher for OrcidMatcher {
                 let m = caps.get(0).unwrap();
                 let (_, [value]) = caps.extract();
                 Reference {
-                    kind: RefKind::Isbn,
+                    kind: RefKind::Orcid,
                     value: value.to_str().unwrap().to_string(),
                     start: m.start(),
                     end: m.end(),

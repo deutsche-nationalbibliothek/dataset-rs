@@ -34,7 +34,6 @@ pub(crate) enum RefKind {
     Isbn,
     Issn,
     Ddc,
-    #[allow(dead_code)]
     Orcid,
     Isni,
 }
