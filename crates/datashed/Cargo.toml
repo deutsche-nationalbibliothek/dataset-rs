@@ -64,9 +64,5 @@ anyhow = { workspace = true }
 approx = { workspace = true }
 
 [features]
-performant = [
-    "pica-record/performant",
-    "polars/cse",
-    "polars/nightly",
-    "polars/performant"
-]
+nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
+performant = ["pica-record/performant", "polars/cse", "polars/performant"]
