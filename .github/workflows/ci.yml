@@ -44,7 +44,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
       - uses: Swatinem/rust-cache@v2
       - run: |
-          cargo check --workspace --all-features --no-fail-fast
+          cargo check --workspace --all-features
 
   deny:
     runs-on: ubuntu-latest
