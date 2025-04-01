@@ -12,7 +12,7 @@ clap_complete = { workspace = true }
 csv = { workspace = true }
 humansize = { workspace = true }
 indicatif = { workspace = true }
-pica-record = { workspace = true, features = ["serde", "unstable"] }
+pica-record = { workspace = true, features = ["serde"] }
 polars = { workspace = true }
 rayon = { workspace = true }
 reqwest = { workspace = true }
@@ -29,3 +29,4 @@ anyhow = { workspace = true }
 [features]
 nightly = ["pica-record/nightly", "polars/nightly"]
 performant = ["pica-record/performant", "polars/cse", "polars/performant"]
+unstable = ["pica-record/unstable"]
