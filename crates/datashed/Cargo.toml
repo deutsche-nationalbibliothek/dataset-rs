@@ -65,6 +65,7 @@ approx = { workspace = true }
 
 [features]
 performant = [
+    "pica-record/performant",
     "polars/cse",
     "polars/nightly",
     "polars/performant"
