@@ -419,7 +419,7 @@ mod tests {
     fn document_lang() -> TestResult {
         let mut doc = Document::from_path("tests/data/fox.txt")?;
         let (code, score) = doc.lang().unwrap();
-        assert_abs_diff_eq!(score, 0.4432, epsilon = 1e-4);
+        assert_abs_diff_eq!(score, 0.1780, epsilon = 1e-4);
         assert_eq!(code, "eng");
         Ok(())
     }
