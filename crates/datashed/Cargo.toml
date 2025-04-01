@@ -12,11 +12,11 @@ actix-web = { version = "4.10" }
 bstr = { workspace = true }
 clap = { workspace = true }
 clap_complete = { workspace = true }
-comfy-table = { version = "7.1.1" }
+comfy-table = { version = "7.1" }
 csv = { workspace = true }
 dialoguer = { version = "0.11.0" }
 directories = { version = "6.0" }
-env_logger = { version = "0.11.5" }
+env_logger = { version = "0.11" }
 flate2 = { version = "1.1" }
 glob = { workspace = true }
 hashbrown = { workspace = true }
