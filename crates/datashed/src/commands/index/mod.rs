@@ -78,7 +78,6 @@ struct Row {
     alpha: f64,
     words: u64,
     avg_word_len: f32,
-    ttr: f64,
     size: u64,
     strlen: u64,
     mtime: u64,
@@ -105,7 +104,6 @@ impl TryFrom<&PathBuf> for Row {
             alpha: doc.alpha(),
             words: doc.word_count(),
             avg_word_len: doc.avg_word_len(),
-            ttr: doc.type_token_ratio(),
             size: doc.size(),
             strlen: doc.strlen(),
             mtime: doc.modified(),
@@ -203,7 +201,6 @@ impl Index {
         let mut alpha: Vec<f64> = vec![];
         let mut words: Vec<u64> = vec![];
         let mut avg_word_len: Vec<f32> = vec![];
-        let mut ttr: Vec<f64> = vec![];
         let mut size: Vec<u64> = vec![];
         let mut strlen: Vec<u64> = vec![];
         let mut mtime: Vec<u64> = vec![];
@@ -228,7 +225,6 @@ impl Index {
             alpha.push(row.alpha);
             words.push(row.words);
             avg_word_len.push(row.avg_word_len);
-            ttr.push(row.ttr);
             size.push(row.size);
             strlen.push(row.strlen);
             mtime.push(row.mtime);
@@ -248,7 +244,6 @@ impl Index {
             Column::new("alpha".into(), alpha),
             Column::new("words".into(), words),
             Column::new("avg_word_len".into(), avg_word_len),
-            Column::new("ttr".into(), ttr),
             Column::new("size".into(), size),
             Column::new("strlen".into(), strlen),
             Column::new("mtime".into(), mtime),
