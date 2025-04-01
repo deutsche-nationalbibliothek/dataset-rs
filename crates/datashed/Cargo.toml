@@ -39,7 +39,7 @@ tar = { version = "0.4.41" }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 toml = { workspace = true }
-unicode-normalization = { version = "0.1.23" }
+unicode-normalization = { version = "0.1" }
 unicode_categories = { version = "0.1.1" }
 
 [dependencies.lingua]
