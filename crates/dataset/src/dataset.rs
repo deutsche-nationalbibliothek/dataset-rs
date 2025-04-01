@@ -65,18 +65,21 @@ impl Dataset {
 
     /// Returns the data directory of the dataset.
     #[inline]
+    #[allow(dead_code)]
     pub(crate) fn data_dir(&self) -> PathBuf {
         self.root_dir.join(Self::DATA_DIR)
     }
 
     /// Returns the tmp directory of the dataset.
     #[inline]
+    #[allow(dead_code)]
     pub(crate) fn tmp_dir(&self) -> PathBuf {
         self.dot_dir().join(Self::TMP_DIR)
     }
 
     /// Returns the remote index.
     #[inline]
+    #[allow(dead_code)]
     pub(crate) fn remotes(&self) -> DatasetResult<DataFrame> {
         Ok(IpcReader::new(File::open(
             self.dot_dir().join(Self::REMOTES),

@@ -70,6 +70,7 @@ struct Row {
     hash: String,
     doc_id: String,
     kind: DocumentKind,
+    #[allow(dead_code)]
     msc: Option<String>,
     lang_code: Option<String>,
     lang_score: Option<f64>,

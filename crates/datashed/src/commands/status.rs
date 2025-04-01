@@ -9,9 +9,6 @@ use polars::prelude::DataType;
 use crate::prelude::*;
 use crate::utils::relpath;
 
-const PBAR_COLLECT: &str = "Collecting documents: {human_pos} ({percent}%) | \
-        elapsed: {elapsed_precise}{msg}";
-
 /// Show the datashed status
 #[derive(Debug, Default, Parser)]
 pub(crate) struct Status {

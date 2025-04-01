@@ -15,6 +15,7 @@ impl<'a> ProgressBarBuilder<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) fn len(mut self, len: u64) -> Self {
         self.len = Some(len);
         self
