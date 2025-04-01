@@ -27,7 +27,7 @@ url = { version = "2.5.2", features = ["serde"] }
 anyhow = { workspace = true }
 
 [features]
-default = ["performant", "nightly", "unstable"]
+default = ["performant", "unstable"]
 nightly = ["pica-record/nightly", "polars/nightly"]
 performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable"]
