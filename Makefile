@@ -23,9 +23,6 @@ check:
 test:
 	$(CARGO) nextest run --workspace --no-fail-fast
 
-clippy:
-	$(CARGO) clippy --workspace
-
 check-fmt:
 	$(CARGO) fmt --all -- --check
 
