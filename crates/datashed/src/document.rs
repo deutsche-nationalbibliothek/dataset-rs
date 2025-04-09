@@ -113,14 +113,7 @@ impl Document {
         })
     }
 
-    /// Returns the filename without the file extension.
-    ///
-    /// # Panic
-    ///
-    /// This function panics if either the filename can't be extracted
-    /// or the filename can't be converted to a String.
-    #[inline(always)]
-    pub(crate) fn file_stem(&self) -> String {
+    pub(crate) fn ppn(&self) -> String {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
     }
 
@@ -343,7 +336,7 @@ mod tests {
     #[test]
     fn document_ppn() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.file_stem(), "fox");
+        assert_eq!(doc.ppn(), "fox");
         Ok(())
     }
 
