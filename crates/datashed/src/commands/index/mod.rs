@@ -8,7 +8,6 @@ use glob::glob_with;
 use hashbrown::HashMap;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
 use kind::KindMap;
-use msc::MscMap;
 use pica_record::prelude::*;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -27,7 +26,6 @@ const PBAR_INDEX: &str = "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
 
 mod kind;
-mod msc;
 
 /// Create an index of all available documents.
 #[derive(Debug, Default, Parser)]
@@ -70,8 +68,6 @@ struct Row {
     hash: String,
     ppn: String,
     kind: DocumentKind,
-    #[allow(dead_code)]
-    msc: Option<String>,
     lang_code: Option<String>,
     lang_score: Option<f64>,
     lfreq: Option<f64>,
@@ -109,7 +105,6 @@ impl TryFrom<&PathBuf> for Row {
             mtime: doc.modified(),
             lang_code,
             lang_score,
-            ..Default::default()
         })
     }
 }
@@ -122,7 +117,6 @@ impl Index {
         let config = datashed.config()?;
 
         let mut kind_map = KindMap::from_config(&config)?;
-        let mut msc_map = MscMap::from_config(&config)?;
         let mut refinements = HashMap::new();
 
         for path in self.refinements.iter() {
@@ -157,7 +151,6 @@ impl Index {
             while let Some(result) = reader.next_byte_record() {
                 if let Ok(record) = result {
                     kind_map.process_record(&record);
-                    msc_map.process_record(&record);
                 }
 
                 pbar.inc(1);
@@ -194,7 +187,6 @@ impl Index {
         let mut hash: Vec<String> = vec![];
         let mut ppn: Vec<String> = vec![];
         let mut kind: Vec<String> = vec![];
-        let mut msc: Vec<Option<String>> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
         let mut lang_score: Vec<Option<f64>> = vec![];
         let mut lfreq: Vec<Option<f64>> = vec![];
@@ -218,7 +210,6 @@ impl Index {
             hash.push(hash_);
             path.push(path_);
             kind.push(kind_.to_string());
-            msc.push(msc_map.get(&row.ppn).cloned());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
@@ -237,7 +228,6 @@ impl Index {
             Column::new("hash".into(), hash),
             Column::new("ppn".into(), ppn),
             Column::new("kind".into(), kind),
-            Column::new("msc".into(), msc),
             Column::new("lang_code".into(), lang_code),
             Column::new("lang_score".into(), lang_score),
             Column::new("lfreq".into(), lfreq),
