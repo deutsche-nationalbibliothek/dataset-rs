@@ -5,25 +5,21 @@ use std::path::PathBuf;
 use clap::Parser;
 use glob::glob_with;
 use indicatif::{ParallelProgressIterator, ProgressIterator};
-use kind::KindMap;
-use pica_record::prelude::*;
 use polars::prelude::*;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
-use crate::document::DocumentKind;
+use crate::doctype::DocumentType;
 use crate::prelude::*;
 use crate::utils::relpath;
 
-const PBAR_METADATA: &str = "Collecting metadata: {human_pos} | \
-        elapsed: {elapsed_precise}{msg}";
+// const PBAR_METADATA: &str = "Collecting metadata: {human_pos} | \
+//         elapsed: {elapsed_precise}{msg}";
 
 const PBAR_COLLECT: &str = "Collecting documents: {human_pos} | \
         elapsed: {elapsed_precise}{msg}";
 
 const PBAR_INDEX: &str = "Indexing documents: {human_pos} ({percent}%) | \
         elapsed: {elapsed_precise}{msg}";
-
-mod kind;
 
 /// Create an index of all available documents.
 #[derive(Debug, Default, Parser)]
@@ -59,7 +55,7 @@ struct Row {
     path: PathBuf,
     hash: String,
     ppn: String,
-    kind: DocumentKind,
+    doctype: DocumentType,
     lang_code: Option<String>,
     lang_score: Option<f64>,
     lfreq: Option<f64>,
@@ -87,7 +83,7 @@ impl TryFrom<&PathBuf> for Row {
             path: path.into(),
             hash: doc.hash(),
             ppn: doc.ppn(),
-            kind: doc.kind(),
+            doctype: doc.doctype(),
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
             words: doc.word_count(),
@@ -107,25 +103,6 @@ impl Index {
         let data_dir = datashed.data_dir();
         let base_dir = datashed.base_dir();
         let config = datashed.config()?;
-
-        let mut kind_map = KindMap::from_config(&config)?;
-
-        if let Some(path) = self.path {
-            let pbar =
-                ProgressBarBuilder::new(PBAR_METADATA, self.quiet)
-                    .build();
-
-            let mut reader = ReaderBuilder::new().from_path(path)?;
-            while let Some(result) = reader.next_byte_record() {
-                if let Ok(record) = result {
-                    kind_map.process_record(&record);
-                }
-
-                pbar.inc(1);
-            }
-
-            pbar.finish_using_style();
-        }
 
         let pattern = format!("{}/**/*.txt", data_dir.display());
         let pbar =
@@ -154,7 +131,7 @@ impl Index {
         let mut path: Vec<String> = vec![];
         let mut hash: Vec<String> = vec![];
         let mut ppn: Vec<String> = vec![];
-        let mut kind: Vec<String> = vec![];
+        let mut doctype: Vec<String> = vec![];
         let mut lang_code: Vec<Option<String>> = vec![];
         let mut lang_score: Vec<Option<f64>> = vec![];
         let mut lfreq: Vec<Option<f64>> = vec![];
@@ -168,14 +145,11 @@ impl Index {
         for row in rows.into_iter() {
             let path_ = relpath(&row.path, base_dir);
             let hash_ = row.hash[0..8].to_string();
-            let kind_ = kind_map
-                .remove(&(row.ppn.clone(), row.kind.clone()))
-                .unwrap_or(row.kind);
 
             remote.push(&config.metadata.name);
             hash.push(hash_);
             path.push(path_);
-            kind.push(kind_.to_string());
+            doctype.push(row.doctype.to_string());
             lang_code.push(row.lang_code);
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
@@ -193,7 +167,7 @@ impl Index {
             Column::new("path".into(), path),
             Column::new("hash".into(), hash),
             Column::new("ppn".into(), ppn),
-            Column::new("kind".into(), kind),
+            Column::new("doctype".into(), doctype),
             Column::new("lang_code".into(), lang_code),
             Column::new("lang_score".into(), lang_score),
             Column::new("lfreq".into(), lfreq),
