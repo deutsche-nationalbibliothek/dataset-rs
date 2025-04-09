@@ -14,6 +14,7 @@ mod cli;
 mod commands;
 mod config;
 mod datashed;
+mod doctype;
 mod document;
 mod error;
 mod lfreq;

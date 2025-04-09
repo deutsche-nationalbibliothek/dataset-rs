@@ -1,4 +1,4 @@
-use std::fmt::{self, Display, Write};
+use std::fmt::Write;
 use std::fs::{File, Metadata};
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
@@ -8,12 +8,11 @@ use std::time::UNIX_EPOCH;
 
 use bstr::{BString, ByteSlice};
 use lingua::{Language, LanguageDetector, LanguageDetectorBuilder};
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::doctype::DocumentType;
 use crate::error::DatashedResult;
 use crate::lfreq::{lfreq_eng, lfreq_ger};
-use crate::prelude::{DatashedError, bail};
 
 fn language_detector() -> &'static LanguageDetector {
     static DETECTOR: OnceLock<LanguageDetector> = OnceLock::new();
@@ -22,55 +21,6 @@ fn language_detector() -> &'static LanguageDetector {
             .with_preloaded_language_models()
             .build()
     })
-}
-
-#[derive(
-    Debug,
-    Default,
-    PartialEq,
-    Eq,
-    Serialize,
-    Deserialize,
-    Hash,
-    Clone,
-    PartialOrd,
-    Ord,
-)]
-#[serde(rename_all = "lowercase")]
-pub(crate) enum DocumentKind {
-    Article,
-    Blurb,
-    Book,
-    #[default]
-    Other,
-    Toc,
-}
-
-impl Display for DocumentKind {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Article => write!(f, "article"),
-            Self::Blurb => write!(f, "blurb"),
-            Self::Book => write!(f, "book"),
-            Self::Other => write!(f, "other"),
-            Self::Toc => write!(f, "toc"),
-        }
-    }
-}
-
-impl FromStr for DocumentKind {
-    type Err = DatashedError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "article" => Ok(Self::Article),
-            "blurb" => Ok(Self::Blurb),
-            "book" => Ok(Self::Book),
-            "other" | "ft" => Ok(Self::Other),
-            "toc" => Ok(Self::Toc),
-            _ => bail!("invalid document kind '{s}'"),
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -117,13 +67,13 @@ impl Document {
         self.path.file_stem().unwrap().to_str().unwrap().to_string()
     }
 
-    /// Returns the kind of the document.
+    /// Returns the type of the document.
     ///
     /// # Note
     ///
     /// If the kind can be derived by multiple path components, the
     /// function chooses the broadest.
-    pub(crate) fn kind(&self) -> DocumentKind {
+    pub(crate) fn doctype(&self) -> DocumentType {
         self.path
             .components()
             .filter_map(|component| {
@@ -133,7 +83,7 @@ impl Document {
                     None
                 }
             })
-            .find_map(|s| DocumentKind::from_str(s).ok())
+            .find_map(|s| DocumentType::from_str(s).ok())
             .unwrap_or_default()
     }
 
@@ -294,38 +244,11 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
-    use DocumentKind::*;
     use approx::assert_abs_diff_eq;
 
     use super::*;
 
     type TestResult = anyhow::Result<()>;
-
-    #[test]
-    fn document_kind_from_str() {
-        assert_eq!(DocumentKind::from_str("article").unwrap(), Article);
-        assert_eq!(DocumentKind::from_str("blurb").unwrap(), Blurb);
-        assert_eq!(DocumentKind::from_str("book").unwrap(), Book);
-        assert_eq!(DocumentKind::from_str("ft").unwrap(), Other);
-        assert_eq!(DocumentKind::from_str("other").unwrap(), Other);
-        assert_eq!(DocumentKind::from_str("toc").unwrap(), Toc);
-
-        assert!(DocumentKind::from_str("wp").is_err());
-    }
-
-    #[test]
-    fn document_kind_to_string() {
-        assert_eq!(Article.to_string(), "article");
-        assert_eq!(Blurb.to_string(), "blurb");
-        assert_eq!(Book.to_string(), "book");
-        assert_eq!(Other.to_string(), "other");
-        assert_eq!(Toc.to_string(), "toc");
-    }
-
-    #[test]
-    fn document_kind_default() {
-        assert_eq!(DocumentKind::default(), Other);
-    }
 
     #[test]
     fn document_from_path() {

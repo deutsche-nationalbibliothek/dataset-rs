@@ -7,7 +7,6 @@ use std::path::{Path, PathBuf};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
-use crate::document::DocumentKind;
 use crate::error::DatashedResult;
 
 /// Datashed config.
@@ -29,10 +28,6 @@ pub(crate) struct Config {
     /// List of users.
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
     pub(crate) users: HashMap<String, User>,
-
-    /// A set of document kind refinements.
-    #[serde(skip_serializing_if = "HashMap::is_empty", default)]
-    pub(crate) kinds: HashMap<DocumentKind, KindSpec>,
 
     /// This structure should always be constructed using a public
     /// constructor or using the update syntax:
@@ -94,18 +89,6 @@ pub(crate) struct User {
 pub(crate) struct Server {
     pub(crate) address: Option<IpAddr>,
     pub(crate) port: Option<u16>,
-}
-
-#[derive(Debug, Default, Serialize, Deserialize, Clone, Hash)]
-pub(crate) struct KindSpec {
-    #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    pub(crate) refinements: Vec<Refinement>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
-pub(crate) struct Refinement {
-    pub(crate) target: DocumentKind,
-    pub(crate) filter: String,
 }
 
 impl Config {

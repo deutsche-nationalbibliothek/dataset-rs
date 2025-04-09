@@ -10,7 +10,7 @@ use polars::sql::SQLContext;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use regex::bytes::RegexBuilder;
 
-use crate::document::DocumentKind;
+use crate::doctype::DocumentType;
 use crate::prelude::*;
 
 const PBAR_PROCESS: &str = "Processing documents: {human_pos} ({percent}%) | \
@@ -77,8 +77,8 @@ pub(crate) struct Grep {
 
     /// If specified, overwrite the document type with the specified
     /// value
-    #[arg(long, short = 'k')]
-    kind: Option<DocumentKind>,
+    #[arg(long = "doc-type", short = 'd')]
+    doctype: Option<DocumentType>,
 
     /// Add a comment column at the end of the sub-index.
     #[arg(long, short = 'c')]
@@ -181,8 +181,9 @@ impl Grep {
         let mut df =
             df.lazy().semi_join(paths.lazy(), col("path"), col("path"));
 
-        if let Some(kind) = self.kind {
-            df = df.with_column(lit(kind.to_string()).alias("kind"));
+        if let Some(doctype) = self.doctype {
+            df = df
+                .with_column(lit(doctype.to_string()).alias("doctype"));
         }
 
         if let Some(comment) = self.comment {
