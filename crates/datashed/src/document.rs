@@ -266,7 +266,7 @@ mod tests {
     #[test]
     fn document_kind() -> TestResult {
         let doc = Document::from_path("tests/data/fox.txt")?;
-        assert_eq!(doc.kind(), Other);
+        assert_eq!(doc.doctype(), DocumentType::Other);
         Ok(())
     }
 

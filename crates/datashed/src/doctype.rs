@@ -60,8 +60,6 @@ impl FromStr for DocumentType {
 mod tests {
     use super::*;
 
-    type TestResult = anyhow::Result<()>;
-
     #[test]
     fn document_kind_from_str() {
         use DocumentType::*;
