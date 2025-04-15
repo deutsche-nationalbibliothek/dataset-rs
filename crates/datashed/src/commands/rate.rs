@@ -141,7 +141,7 @@ impl Rate {
             );
 
         let remote = index.column("remote")?.str()?;
-        let kind = index.column("kind")?.str()?;
+        // let kind = index.column("kind")?.str()?;
         let path = index.column("path")?.str()?;
         let hash = index.column("hash")?.str()?;
         let ppn = index.column("ppn").or(index.column("idn"))?.str()?;
@@ -153,18 +153,16 @@ impl Rate {
 
         for idx in 0..len {
             let remote = remote.get(idx).unwrap();
-            let kind = kind.get(idx).unwrap();
             let filename = path.get(idx).unwrap();
             let hash = hash.get(idx).unwrap();
             let ppn = ppn.get(idx).unwrap();
 
             print!("\x1B[2J");
             let header = format!(
-                "Rating {}/{} (path = {}, kind = {}, hash = {})",
+                "Rating {}/{} (path = {}, hash = {})",
                 idx + 1,
                 len,
                 filename,
-                kind,
                 hash
             );
 
