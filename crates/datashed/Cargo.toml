@@ -49,6 +49,7 @@ approx = { workspace = true }
 
 [features]
 default = ["performant", "unstable"]
-nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
+# nightly = ["pica-record/nightly", "polars/nightly", "hashbrown/nightly"]
+nightly = ["pica-record/nightly"]
 performant = ["pica-record/performant", "polars/cse", "polars/performant"]
 unstable = ["pica-record/unstable"]
