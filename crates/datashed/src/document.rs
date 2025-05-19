@@ -240,6 +240,28 @@ impl Document {
 
         alpha / total
     }
+
+    /// Returns the ratio of alpha-numberic characters to the total
+    /// number of characters in the document.
+    ///
+    /// ## Note
+    ///
+    /// The range of the function is $[0, 1]$ and the score of an empty
+    /// document is defined to $0.0$.
+    pub(crate) fn alphanum(&self) -> f64 {
+        let total = self.strlen() as f64;
+        if total <= 0.0 {
+            return 0.0;
+        }
+
+        let alphanum = self
+            .buf
+            .chars()
+            .filter(|c: &char| c.is_alphanumeric())
+            .count() as f64;
+
+        alphanum / total
+    }
 }
 
 #[cfg(test)]
