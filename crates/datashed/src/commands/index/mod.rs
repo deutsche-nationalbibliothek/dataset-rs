@@ -60,6 +60,7 @@ struct Row {
     lang_score: Option<f64>,
     lfreq: Option<f64>,
     alpha: f64,
+    alphanum: f64,
     words: u64,
     avg_word_len: f32,
     size: u64,
@@ -86,6 +87,7 @@ impl TryFrom<&PathBuf> for Row {
             doctype: doc.doctype(),
             lfreq: doc.lfreq(),
             alpha: doc.alpha(),
+            alphanum: doc.alphanum(),
             words: doc.word_count(),
             avg_word_len: doc.avg_word_len(),
             size: doc.size(),
@@ -136,6 +138,7 @@ impl Index {
         let mut lang_score: Vec<Option<f64>> = vec![];
         let mut lfreq: Vec<Option<f64>> = vec![];
         let mut alpha: Vec<f64> = vec![];
+        let mut alphanum: Vec<f64> = vec![];
         let mut words: Vec<u64> = vec![];
         let mut avg_word_len: Vec<f32> = vec![];
         let mut size: Vec<u64> = vec![];
@@ -154,6 +157,7 @@ impl Index {
             lang_score.push(row.lang_score);
             lfreq.push(row.lfreq);
             alpha.push(row.alpha);
+            alphanum.push(row.alphanum);
             words.push(row.words);
             avg_word_len.push(row.avg_word_len);
             size.push(row.size);
@@ -172,6 +176,7 @@ impl Index {
             Column::new("lang_score".into(), lang_score),
             Column::new("lfreq".into(), lfreq),
             Column::new("alpha".into(), alpha),
+            Column::new("alphanum".into(), alphanum),
             Column::new("words".into(), words),
             Column::new("avg_word_len".into(), avg_word_len),
             Column::new("size".into(), size),
