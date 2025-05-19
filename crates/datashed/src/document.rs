@@ -241,7 +241,7 @@ impl Document {
         alpha / total
     }
 
-    /// Returns the ratio of alpha-numberic characters to the total
+    /// Returns the ratio of alpha-numeric characters to the total
     /// number of characters in the document.
     ///
     /// ## Note
